@@ -7,7 +7,12 @@ spec:
   selector:
     app: nb-minio
   ports:
-    - protocol: TCP
+    - name: api
+      protocol: TCP
       port: 9000
       targetPort: 9000
+    - name: ui
+      protocol: TCP
+      port: 32889
+      targetPort: 32889
   type: ClusterIP
