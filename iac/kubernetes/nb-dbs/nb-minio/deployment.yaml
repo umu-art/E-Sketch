@@ -22,9 +22,9 @@ spec:
             - /data
           env:
             - name: MINIO_ACCESS_KEY
-              value: admin
+              value: minioadmin
             - name: MINIO_SECRET_KEY
-              value: admin
+              value: minioadmin
 
           readinessProbe:
             httpGet:
