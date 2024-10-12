@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nb-front
+  namespace: argocd
+  labels:
+    type: unit
+spec:
+  destination:
+    namespace: nb-units
+    server: https://kubernetes.default.svc
+  project: NagaBoard
+  source:
+    path: iac/kubernetes/nb-units/nb-front
+    repoURL: git@github.com:umu-art/NagaBoard.git
+    targetRevision: master
+  syncPolicy:
+    automated:
+      prune: true

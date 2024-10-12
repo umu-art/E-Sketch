@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nb-minio-pv
+  labels:
+    type: local
+    app: nb-minio
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 16Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/nb-minio-db"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nb-minio-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 16Gi

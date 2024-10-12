@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nb-pg
+  namespace: argocd
+  labels:
+    type: db
+spec:
+  destination:
+    namespace: nb-dbs
+    server: https://kubernetes.default.svc
+  project: NagaBoard
+  source:
+    path: iac/kubernetes/ng-dbs/ng-pg
+    repoURL: git@github.com:umu-art/NagaBoard.git
+    targetRevision: master
+  syncPolicy:
+    automated:
+      prune: true
