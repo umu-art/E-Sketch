@@ -1,0 +1,154 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+  build-nb-back-image:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for nb-front
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+
+      - name: Build and push Docker image for nb-front
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/nb-front/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+  build-nb-front-image:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 21
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Install deps
+        run: (cd ./nb-front;npm install)
+
+      - name: Build np-front
+        run: (cd ./nb-front;npm run build)
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for nb-front
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+
+      - name: Build and push Docker image for nb-front
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/nb-front/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+  build-nb-proxy-image:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for nb-front
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+
+      - name: Build and push Docker image for nb-front
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/nb-front/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+  kube-update:
+    needs: [ build-nb-back-image, build-nb-front-image, build-nb-proxy-image ]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        app: [ nb-back, nb-front, nb-proxy ]
+
+    steps:
+      - name: Set the Kubernetes context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBESECRET }}
+          context: kubernetes-admin@kubernetes
+
+      - name: Deploy ${{ matrix.app }}
+        run: kubectl rollout restart deployment/${{ matrix.app }} -n nb-units
