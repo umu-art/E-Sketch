@@ -9,7 +9,7 @@ spec:
   destination:
     namespace: nb-units
     server: https://kubernetes.default.svc
-  project: NagaBoard
+  project: naga-board
   source:
     path: iac/kubernetes/nb-units/nb-front
     repoURL: git@github.com:umu-art/NagaBoard.git

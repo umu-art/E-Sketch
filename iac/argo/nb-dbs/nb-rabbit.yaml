@@ -9,9 +9,9 @@ spec:
   destination:
     namespace: nb-dbs
     server: https://kubernetes.default.svc
-  project: NagaBoard
+  project: naga-board
   source:
-    path: iac/kubernetes/ng-dbs/ng-rabbit
+    path: iac/kubernetes/nb-dbs/nb-rabbit
     repoURL: git@github.com:umu-art/NagaBoard.git
     targetRevision: master
   syncPolicy:
