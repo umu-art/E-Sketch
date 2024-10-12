@@ -35,17 +35,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for nb-front
+      - name: Extract metadata for nb-back
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-back
 
-      - name: Build and push Docker image for nb-front
+      - name: Build and push Docker image for nb-back
         uses: docker/build-push-action@v5.3.0
         with:
           context: .
-          file: ./iac/images/nb-front/Dockerfile
+          file: ./iac/images/nb-back/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -118,17 +118,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for nb-front
+      - name: Extract metadata for nb-proxy
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-proxy
 
-      - name: Build and push Docker image for nb-front
+      - name: Build and push Docker image for nb-proxy
         uses: docker/build-push-action@v5.3.0
         with:
           context: .
-          file: ./iac/images/nb-front/Dockerfile
+          file: ./iac/images/nb-proxy/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
