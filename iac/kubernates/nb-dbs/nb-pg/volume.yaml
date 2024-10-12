@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nb-pg-pv
+  labels:
+    type: local
+    app: nb-pg
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/nb-pg-db"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nb-pg-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 4Gi

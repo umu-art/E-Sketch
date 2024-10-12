@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nb-back
+  namespace: nb-units
+  labels:
+    app: nb-back
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: nb-back
+  template:
+    metadata:
+      name: nb-back
+      labels:
+        app: nb-back
+    spec:
+      containers:
+        - name: nb-back
+          image: ghcr.io/umu-art/nb-back:master
+          imagePullPolicy: Always
+
+      imagePullSecrets:
+        - name: github-container-registry
+
+      restartPolicy: Always
+

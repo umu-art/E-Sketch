@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nb-rabbit
+  namespace: nb-dbs
+spec:
+  selector:
+    app: nb-rabbit
+  ports:
+    - protocol: TCP
+      name: metrics
+      port: 15672
+      targetPort: 15672
+    - protocol: TCP
+      name: main
+      port: 5672
+      targetPort: 5672
+  type: ClusterIP

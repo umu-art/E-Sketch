@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nb-pg
+  namespace: nb-dbs
+  labels:
+    app: nb-pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nb-pg
+  template:
+    metadata:
+      name: nb-pg
+      labels:
+        app: nb-pg
+    spec:
+      containers:
+        - name: nb-pg
+          image: dockerhub.timeweb.cloud/postgres:latest
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_DB
+              value: nb-data
+
+            - name: POSTGRES_USER
+              value: admin
+
+            - name: POSTGRES_PASSWORD
+              value: admin
+
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-storage
+
+          resources:
+            requests:
+              memory: "350Mi"
+              cpu: "500m"
+            limits:
+              memory: "1G"
+              cpu: "1"
+
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: nb-pg-pvc
+
+      restartPolicy: Always
