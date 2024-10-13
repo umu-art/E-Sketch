@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(service_template CXX)
-
+project(nb-back CXX)
 
 # Adding userver dependency
 find_package(userver COMPONENTS core postgresql QUIET)
