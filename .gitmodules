@@ -1,0 +1,3 @@
+[submodule "nb-back/third_party/userver"]
+	path = nb-back/third_party/userver
+	url = https://github.com/userver-framework/userver.git
