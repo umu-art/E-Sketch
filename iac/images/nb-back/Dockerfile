@@ -14,8 +14,6 @@ WORKDIR /app/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN cmake --build . --config Release --target nb-back
 
-ENTRYPOINT ["top", "-b"]
-
 FROM ubuntu:22.04
 LABEL author="vikazeni"
 
