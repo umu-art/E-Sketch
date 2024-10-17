@@ -13,14 +13,217 @@ security:
 
 paths:
 
-  #################################### Test ####################################
+  #################################### Board ####################################
 
-  /back/test:
+  /back/board/list/{userId}:
     get:
       tags:
-        - back
-      summary: Петя и Саша будут тут)
-      operationId: test
+        - board
+      summary: Получение списка досок
+      operationId: listByUserId
+      parameters:
+        - $ref: "#/components/parameters/UserId"
       responses:
         200:
-          description: Работаем, ребята!
+          description: Список досок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackBoardListDto"
+
+  /back/board/create:
+    post:
+      tags:
+        - board
+      summary: Создание доски
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertBoardDto"
+      responses:
+        200:
+          description: Новая доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackBoardDto"
+
+  /back/board/{boardId}:
+    get:
+      tags:
+        - board
+      summary: Получение доски по uuid
+      operationId: getByUuid
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Обновленная доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackBoardDto"
+    patch:
+      tags:
+        - board
+      summary: Обновление доски
+      operationId: update
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertBoardDto"
+      responses:
+        200:
+          description: Обновленная доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackBoardDto"
+    delete:
+      tags:
+        - board
+      summary: Удаление доски
+      operationId: delete
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Успешное удаление
+
+  /back/board/share/{boardId}:
+    post:
+      tags:
+        - board
+      summary: Поделиться доской
+      operationId: share
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackSharingDto"
+      responses:
+        200:
+          description: Успеха
+    delete:
+      tags:
+        - board
+      summary: Отозвать доступ к доске
+      operationId: unshare
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnshareBoardDto"
+      responses:
+        200:
+          description: Успеха
+
+components:
+  parameters:
+    UserId:
+      in: path
+      name: userId
+      required: true
+      description: id пользователя
+      schema:
+        type: string
+        format: uuid
+
+    BoardId:
+      name: boardId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    BackBoardDto:
+      required:
+        - id
+        - name
+        - description
+        - ownerId
+        - sharedWith
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/BackSharingDto"
+        linkSharedMode:
+          $ref: "#/components/schemas/LinkShareMode"
+
+    BackBoardListDto:
+      required:
+        - mine
+        - shared
+      properties:
+        mine:
+          type: array
+          items:
+            $ref: "#/components/schemas/BackBoardDto"
+        shared:
+          type: array
+          items:
+            $ref: "#/components/schemas/BackBoardDto"
+
+    BackSharingDto:
+      required:
+        - userId
+        - access
+      properties:
+        userId:
+          type: string
+          format: uuid
+        access:
+          $ref: "#/components/schemas/ShareMode"
+
+    LinkShareMode:
+      type: string
+      enum:
+        - read_by_link
+        - write_by_link
+
+    ShareMode:
+      type: string
+      enum:
+        - read
+        - write
+        - admin
+
+    UpsertBoardDto:
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    UnshareBoardDto:
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          format: uuid
