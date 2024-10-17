@@ -7,18 +7,31 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  super-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Super-linter
+        uses: super-linter/super-linter@v7.1.0
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   lint-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
-      - name: Install dependencies
+      - name: Install redocly
         run: npm i -g @redocly/cli@latest
 
       - name: Lint proxy API
@@ -27,34 +40,18 @@ jobs:
       - name: Lint back API
         run: cd ./api && npx @redocly/cli@latest lint ./est-back-api.yaml --config ./config/lint.yaml
 
-
   test-api:
-    needs: [ lint-api ]
+    needs: [ lint-api, super-lint ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
-
-      - name: Test API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh
-
+      - name: Build API
+        uses: ./.github/workflows/actions/build_api
 
   test-front:
     needs: [ test-api ]
@@ -64,32 +61,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh
+        uses: ./.github/workflows/actions/build_api
 
       - name: Install deps
         run: cd ./est-front && npm install
 
       - name: Test front
         run: cd ./est-front && npm run test
-
 
   test-proxy:
     needs: [ test-api ]
@@ -99,25 +81,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
+        uses: ./.github/workflows/actions/build_api
 
       - name: Install deps
         run: cd ./est-proxy && go mod tidy
@@ -125,3 +93,13 @@ jobs:
       - name: Test proxy
         run: cd ./est-proxy && go test -json ./...
 
+  test-back:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env

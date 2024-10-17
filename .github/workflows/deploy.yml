@@ -4,9 +4,6 @@ on:
   push:
     branches: [ "master" ]
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
   lint-api:
     runs-on: ubuntu-latest
@@ -14,12 +11,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
-      - name: Install dependencies
+      - name: Install redocly
         run: npm i -g @redocly/cli@latest
 
       - name: Lint proxy API
@@ -36,29 +31,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+      - name: Build API
+        uses: ./.github/workflows/actions/build_api
 
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
 
-      - name: Test API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh
+  test-back:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
 
   build-back-image:
-    needs: [ test-api ]
+    needs: [ test-back ]
     runs-on: ubuntu-latest
 
     permissions:
@@ -70,27 +63,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.1.0
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for est-back
-        id: meta
-        uses: docker/metadata-action@v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-back
-
-      - name: Build and push Docker image for est-back
-        uses: docker/build-push-action@v5.3.0
-        with:
-          context: .
-          file: ./iac/images/est-back/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          image: est-back
+          actor: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   test-front:
@@ -101,25 +79,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh
+        uses: ./.github/workflows/actions/build_api
 
       - name: Install deps
         run: cd ./est-front && npm install
@@ -141,53 +105,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh
+        uses: ./.github/workflows/actions/build_api
 
       - name: Install deps
-        run: (cd ./est-front;npm install)
+        run: cd ./est-front && npm install
 
       - name: Build np-front
-        run: (cd ./est-front;npm run build)
+        run: cd ./est-front && npm run build
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.1.0
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for est-front
-        id: meta
-        uses: docker/metadata-action@v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-front
-
-      - name: Build and push Docker image for est-front
-        uses: docker/build-push-action@v5.3.0
-        with:
-          context: .
-          file: ./iac/images/est-front/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          image: est-front
+          actor: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   test-proxy:
@@ -198,25 +133,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
+        uses: ./.github/workflows/actions/build_api
 
       - name: Install deps
         run: cd ./est-proxy && go mod tidy
@@ -238,53 +159,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 21
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
-        with:
-          go-version: 1.23.0
-          cache: true
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
 
       - name: Build API
-        run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
-
+        uses: ./.github/workflows/actions/build_api
+        
       - name: Install deps
         run: cd ./est-proxy && go mod tidy
 
       - name: Build proxy
         run: cd ./est-proxy && CGO_ENABLED=0 GOOS=linux go build -o ./build/app ./src
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.1.0
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for est-proxy
-        id: meta
-        uses: docker/metadata-action@v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-proxy
-
-      - name: Build and push Docker image for est-proxy
-        uses: docker/build-push-action@v5.3.0
-        with:
-          context: .
-          file: ./iac/images/est-proxy/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          image: est-proxy
+          actor: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   kube-update:

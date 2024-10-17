@@ -1,7 +1,7 @@
 openapi: 3.1.0
 
 info:
-  title: NB Proxy API
+  title: EST Proxy API
   description: Все запросы от фронта к прокси
   version: 1.0.0
 

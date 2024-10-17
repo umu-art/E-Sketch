@@ -1,0 +1,8 @@
+name: "Build api"
+description: "Сборка api"
+runs:
+  using: "composite"
+  steps:
+  - name: Build API
+    shell: bash
+    run: cd ./api && chmod +x ./build.sh && ./build.sh
