@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: est-monitoring
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      name: prometheus
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+          imagePullPolicy: Always
+
+          volumeMounts:
+            - mountPath: /etc/prometheus/prometheus.yml
+              name: scrape-config
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+
+          resources:
+            requests:
+              memory: "200M"
+              cpu: "100m"
+            limits:
+              memory: "400M"
+              cpu: "200m"
+
+      volumes:
+        - name: scrape-config
+          configMap:
+            name: scrape-config
+
+      restartPolicy: Always
+      

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: est-pg-pv
+  name: postgres-pv
   labels:
     type: local
-    app: est-pg
+    app: postgres
 spec:
   storageClassName: manual
   capacity:
@@ -12,13 +12,13 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/data/est-pg-db"
+    path: "/data/postgres-db"
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: est-pg-pvc
+  name: postgres-pvc
 spec:
   storageClassName: manual
   accessModes:

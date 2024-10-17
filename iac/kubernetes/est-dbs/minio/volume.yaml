@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: est-minio-pv
+  name: minio-pv
   labels:
     type: local
-    app: est-minio
+    app: minio
 spec:
   storageClassName: manual
   capacity:
@@ -12,13 +12,13 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/data/est-minio-db"
+    path: "/data/minio-db"
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: est-minio-pvc
+  name: minio-pvc
 spec:
   storageClassName: manual
   accessModes:

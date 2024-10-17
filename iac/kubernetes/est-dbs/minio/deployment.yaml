@@ -1,30 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: est-minio
+  name: minio
   namespace: est-dbs
   labels:
-    app: est-minio
+    app: minio
 spec:
   selector:
     matchLabels:
-      app: est-minio
+      app: minio
   template:
     metadata:
       labels:
-        app: est-minio
+        app: minio
     spec:
       containers:
-        - name: est-minio
+        - name: minio
           image: minio/minio
           args:
             - server
             - /data
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+
           env:
             - name: MINIO_ACCESS_KEY
               value: minioadmin
             - name: MINIO_SECRET_KEY
               value: minioadmin
+
+          resources:
+            requests:
+              memory: "200M"
+              cpu: "100m"
+            limits:
+              memory: "400M"
+              cpu: "200m"
 
           readinessProbe:
             httpGet:
@@ -47,4 +62,4 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: est-minio-pvc
+            claimName: minio-pvc

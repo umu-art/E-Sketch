@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: est-rabbit
+  name: rabbit
   namespace: est-dbs
 spec:
   selector:
-    app: est-rabbit
+    app: rabbit
   ports:
     - protocol: TCP
       name: metrics

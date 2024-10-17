@@ -1,25 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: est-rabbit
+  name: rabbit
   namespace: est-dbs
   labels:
-    app: est-rabbit
+    app: rabbit
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: est-rabbit
+      app: rabbit
   template:
     metadata:
-      name: est-rabbit
+      name: rabbit
       labels:
-        app: est-rabbit
+        app: rabbit
     spec:
       containers:
-        - name: est-rabbit
+        - name: rabbit
           image: dockerhub.timeweb.cloud/rabbitmq:3-management
           imagePullPolicy: Always
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+
           env:
             - name: RABBITMQ_DEFAULT_USER
               value: admin
@@ -32,11 +39,11 @@ spec:
 
           resources:
             requests:
-              memory: "350Mi"
+              memory: "300M"
               cpu: "100m"
             limits:
-              memory: "500Mi"
-              cpu: "500m"
+              memory: "600M"
+              cpu: "200m"
 
       restartPolicy: Always
       
