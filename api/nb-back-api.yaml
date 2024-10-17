@@ -1,0 +1,26 @@
+openapi: 3.1.0
+
+info:
+  title: NB Back API
+  description: Все запросы от прокси к бэку
+  version: 1.0.0
+
+servers:
+  - url: 'https'
+
+security:
+  - none: [ ]
+
+paths:
+
+  #################################### Test ####################################
+
+  /back/test:
+    get:
+      tags:
+        - back
+      summary: Петя и Саша будут тут)
+      operationId: test
+      responses:
+        200:
+          description: Работаем, ребята!

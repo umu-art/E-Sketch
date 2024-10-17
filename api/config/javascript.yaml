@@ -1,0 +1,3 @@
+additionalProperties:
+  projectName: 'nb_proxy_api'
+  usePromises: 'true'

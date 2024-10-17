@@ -1,0 +1,366 @@
+openapi: 3.1.0
+
+info:
+  title: NB Proxy API
+  description: Все запросы от фронта к прокси
+  version: 1.0.0
+
+servers:
+  - url: 'https'
+
+security:
+  - jwt: [ ]
+
+paths:
+
+  #################################### User ####################################
+
+  /proxy/user/search/{username}:
+    get:
+      tags:
+        - user
+      summary: Поиск пользователей по имени
+      operationId: search
+      parameters:
+        - $ref: "#/components/parameters/UserName"
+      responses:
+        200:
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserDto"
+
+  /proxy/user/login:
+    post:
+      tags:
+        - user
+      summary: Авторизация пользователя
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthDto"
+      responses:
+        200:
+          description: Успешная авторизация
+
+  /proxy/user/register:
+    post:
+      tags:
+        - user
+      summary: Регистрация пользователя
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDto"
+      responses:
+        200:
+          description: Успешная авторизация
+
+  /proxy/user/check-session:
+    get:
+      tags:
+        - user
+      summary: Проверка сессии
+      operationId: checkSession
+      responses:
+        200:
+          description: Успешно
+        401:
+          description: Нужно авторизоваться повторно
+
+  /proxy/user/self:
+    get:
+      tags:
+        - user
+      summary: Получение информации о себе
+      operationId: getSelf
+      responses:
+        200:
+          description: Информация о себе
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+
+  /proxy/user/{userId}:
+    get:
+      tags:
+        - user
+      summary: Получение информации о пользователе по id
+      operationId: getUserById
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        200:
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+
+  #################################### Board ####################################
+
+  /proxy/board/list:
+    get:
+      tags:
+        - board
+      summary: Получение списка досок
+      operationId: list
+      responses:
+        200:
+          description: Список досок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardListDto"
+
+  /proxy/board/create:
+    post:
+      tags:
+        - board
+      summary: Создание доски
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertBoardDto"
+      responses:
+        200:
+          description: Новая доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardDto"
+
+  /proxy/board/{boardId}:
+    patch:
+      tags:
+        - board
+      summary: Обновление доски
+      operationId: update
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertBoardDto"
+      responses:
+        200:
+          description: Обновленная доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardDto"
+    delete:
+      tags:
+        - board
+      summary: Удаление доски
+      operationId: delete
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Успешное удаление
+
+  /proxy/board/{boardId}/share:
+    post:
+      tags:
+        - board
+      summary: Поделиться доской
+      operationId: share
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareBoardDto"
+      responses:
+        200:
+          description: Успеха
+    delete:
+      tags:
+        - board
+      summary: Отозвать доступ к доске
+      operationId: unshare
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnshareBoardDto"
+      responses:
+        200:
+          description: Успеха
+
+  /proxy/board/{boardId}/connect:
+    get:
+      tags:
+        - board
+      summary: Переход на websocket, вся работа с рисунками будет там
+      operationId: connect
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        101:
+          description: Переход на websocket
+
+components:
+  parameters:
+    UserId:
+      in: path
+      name: userId
+      required: true
+      description: id пользователя
+      schema:
+        type: string
+        format: uuid
+
+    UserName:
+      in: path
+      name: username
+      required: true
+      description: Имя пользователя
+      schema:
+        type: string
+
+    BoardId:
+      name: boardId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    UserDto:
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        avatar:
+          description: Ссылка на аватар
+          type: string
+
+    AuthDto:
+      required:
+        - email
+        - passwordHash
+      properties:
+        email:
+          type: string
+        passwordHash:
+          type: string
+
+    RegisterDto:
+      required:
+        - username
+        - email
+        - passwordHash
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        passwordHash:
+          type: string
+          
+    BoardListDto:
+      required:
+        - mine
+        - shared
+      properties:
+        mine:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardDto"
+        shared:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardDto"
+
+    BoardDto:
+      required:
+        - id
+        - name
+        - description
+        - ownerInfo
+        - sharedWith
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        ownerInfo:
+          $ref: "#/components/schemas/UserDto"
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/SharingDto"
+        preview:
+          description: Ссылка на превью
+          type: string
+
+    SharingDto:
+      required:
+        - userInfo
+        - access
+      properties:
+        userInfo:
+          $ref: "#/components/schemas/UserDto"
+        access:
+          $ref: "#/components/schemas/ShareMode"
+
+    ShareMode:
+      type: string
+      enum:
+        - read
+        - write
+        - admin
+
+    UpsertBoardDto:
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    ShareBoardDto:
+      required:
+        - userId
+        - access
+      properties:
+        userId:
+          type: string
+          format: uuid
+        access:
+          $ref: "#/components/schemas/ShareMode"
+
+    UnshareBoardDto:
+      required:
+        - userIds
+      properties:
+        userId:
+          type: string
+          format: uuid

@@ -1,0 +1,17 @@
+package handlers
+{{#operations}}
+import (
+	"github.com/labstack/echo/v4"
+)
+
+type {{classname}} interface {
+{{#operation}}    // {{operationId}} - {{{summary}}}
+    {{operationId}}(ctx echo.Context) error
+{{/operation}}
+}{{/operations}}
+
+func Route{{classname}}(e *echo.Echo, c {{classname}}) {
+{{#operations}}{{#operation}}
+	e.{{httpMethod.toUpperCase}}("{{{basePathWithoutHost}}}{{{path}}}", c.{{operationId}})
+{{/operation}}{{/operations}}
+}
