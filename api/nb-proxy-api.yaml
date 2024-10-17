@@ -141,6 +141,20 @@ paths:
                 $ref: "#/components/schemas/BoardDto"
 
   /proxy/board/{boardId}:
+    get:
+      tags:
+        - board
+      summary: Получение доски по uuid
+      operationId: getByUuid
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Обновленная доска
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardDto"
     patch:
       tags:
         - board
@@ -315,6 +329,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SharingDto"
+        linkSharedMode:
+          $ref: "#/components/schemas/LinkShareMode"
         preview:
           description: Ссылка на превью
           type: string
@@ -328,6 +344,12 @@ components:
           $ref: "#/components/schemas/UserDto"
         access:
           $ref: "#/components/schemas/ShareMode"
+
+    LinkShareMode:
+      type: string
+      enum:
+        - read
+        - write
 
     ShareMode:
       type: string
