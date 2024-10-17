@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: est-proxy
+  namespace: est-units
+  labels:
+    app: est-proxy
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: est-proxy
+  template:
+    metadata:
+      name: est-proxy
+      labels:
+        app: est-proxy
+    spec:
+      containers:
+        - name: est-proxy
+          image: ghcr.io/umu-art/est-proxy:master
+          imagePullPolicy: Always
+
+      imagePullSecrets:
+        - name: github-container-registry
+
+      restartPolicy: Always
+

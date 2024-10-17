@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: est-front
+  namespace: est-units
+  labels:
+    app: est-front
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: est-front
+  template:
+    metadata:
+      name: est-front
+      labels:
+        app: est-front
+    spec:
+      containers:
+        - name: est-front
+          image: ghcr.io/umu-art/est-front:master
+          imagePullPolicy: Always
+
+      imagePullSecrets:
+        - name: github-container-registry
+
+      restartPolicy: Always
+

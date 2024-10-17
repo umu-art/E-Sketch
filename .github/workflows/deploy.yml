@@ -23,10 +23,10 @@ jobs:
         run: npm i -g @redocly/cli@latest
 
       - name: Lint proxy API
-        run: cd ./api && npx @redocly/cli@latest lint ./nb-proxy-api.yaml --config ./config/lint.yaml
+        run: cd ./api && npx @redocly/cli@latest lint ./est-proxy-api.yaml --config ./config/lint.yaml
 
       - name: Lint back API
-        run: cd ./api && npx @redocly/cli@latest lint ./nb-back-api.yaml --config ./config/lint.yaml
+        run: cd ./api && npx @redocly/cli@latest lint ./est-back-api.yaml --config ./config/lint.yaml
 
 
   test-api:
@@ -77,17 +77,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for nb-back
+      - name: Extract metadata for est-back
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-back
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-back
 
-      - name: Build and push Docker image for nb-back
+      - name: Build and push Docker image for est-back
         uses: docker/build-push-action@v5.3.0
         with:
           context: .
-          file: ./iac/images/nb-back/Dockerfile
+          file: ./iac/images/est-back/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -122,10 +122,10 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh
 
       - name: Install deps
-        run: cd ./nb-front && npm install
+        run: cd ./est-front && npm install
 
       - name: Test front
-        run: cd ./nb-front && npm run test
+        run: cd ./est-front && npm run test
 
 
   build-front-image:
@@ -162,10 +162,10 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh
 
       - name: Install deps
-        run: (cd ./nb-front;npm install)
+        run: (cd ./est-front;npm install)
 
       - name: Build np-front
-        run: (cd ./nb-front;npm run build)
+        run: (cd ./est-front;npm run build)
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.1.0
@@ -174,17 +174,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for nb-front
+      - name: Extract metadata for est-front
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-front
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-front
 
-      - name: Build and push Docker image for nb-front
+      - name: Build and push Docker image for est-front
         uses: docker/build-push-action@v5.3.0
         with:
           context: .
-          file: ./iac/images/nb-front/Dockerfile
+          file: ./iac/images/est-front/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -219,10 +219,10 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
 
       - name: Install deps
-        run: cd ./nb-proxy && go mod tidy
+        run: cd ./est-proxy && go mod tidy
 
       - name: Test proxy
-        run: cd ./nb-proxy && go test -json ./...
+        run: cd ./est-proxy && go test -json ./...
 
 
   build-proxy-image:
@@ -259,10 +259,10 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
 
       - name: Install deps
-        run: cd ./nb-proxy && go mod tidy
+        run: cd ./est-proxy && go mod tidy
 
       - name: Build proxy
-        run: cd ./nb-proxy && CGO_ENABLED=0 GOOS=linux go build -o ./build/app ./src
+        run: cd ./est-proxy && CGO_ENABLED=0 GOOS=linux go build -o ./build/app ./src
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.1.0
@@ -271,29 +271,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for nb-proxy
+      - name: Extract metadata for est-proxy
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.actor }}/nb-proxy
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/est-proxy
 
-      - name: Build and push Docker image for nb-proxy
+      - name: Build and push Docker image for est-proxy
         uses: docker/build-push-action@v5.3.0
         with:
           context: .
-          file: ./iac/images/nb-proxy/Dockerfile
+          file: ./iac/images/est-proxy/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
 
   kube-update:
-    needs: [ build-nb-back-image, build-nb-front-image, build-nb-proxy-image ]
+    needs: [ build-back-image, build-front-image, build-proxy-image ]
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        app: [ nb-back, nb-front, nb-proxy ]
+        app: [ est-back, est-front, est-proxy ]
 
     steps:
       - name: Set the Kubernetes context
@@ -304,4 +304,4 @@ jobs:
           context: kubernetes-admin@kubernetes
 
       - name: Deploy ${{ matrix.app }}
-        run: kubectl rollout restart deployment/${{ matrix.app }} -n nb-units
+        run: kubectl rollout restart deployment/${{ matrix.app }} -n est-units

@@ -22,10 +22,10 @@ jobs:
         run: npm i -g @redocly/cli@latest
 
       - name: Lint proxy API
-        run: cd ./api && npx @redocly/cli@latest lint ./nb-proxy-api.yaml --config ./config/lint.yaml
+        run: cd ./api && npx @redocly/cli@latest lint ./est-proxy-api.yaml --config ./config/lint.yaml
 
       - name: Lint back API
-        run: cd ./api && npx @redocly/cli@latest lint ./nb-back-api.yaml --config ./config/lint.yaml
+        run: cd ./api && npx @redocly/cli@latest lint ./est-back-api.yaml --config ./config/lint.yaml
 
 
   test-api:
@@ -85,10 +85,10 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh
 
       - name: Install deps
-        run: cd ./nb-front && npm install
+        run: cd ./est-front && npm install
 
       - name: Test front
-        run: cd ./nb-front && npm run test
+        run: cd ./est-front && npm run test
 
 
   test-proxy:
@@ -120,8 +120,8 @@ jobs:
         run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
 
       - name: Install deps
-        run: cd ./nb-proxy && go mod tidy
+        run: cd ./est-proxy && go mod tidy
 
       - name: Test proxy
-        run: cd ./nb-proxy && go test -json ./...
+        run: cd ./est-proxy && go test -json ./...
 

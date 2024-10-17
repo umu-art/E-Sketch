@@ -6,8 +6,8 @@ set -e
 if [[ " $* " == *" --help "* ]]; then
   echo "Использование: ./build.sh [--force] [--skip-js-build] [--skip-go-build]"
   echo "  --force         Перед началом сборки удалить папку build"
-  echo "  --skip-js-build Пропустить сборку клиента nb-proxy JS API"
-  echo "  --skip-go-build Пропустить сборку сервера nb-proxy Go API и клиента nb-back Go API"
+  echo "  --skip-js-build Пропустить сборку клиента est-proxy JS API"
+  echo "  --skip-go-build Пропустить сборку сервера est-proxy Go API и клиента est-back Go API"
   echo "Нужна установленная Java и wget"
   exit 0
 fi
@@ -40,38 +40,38 @@ if [ ! -f "build/openapi-generator-cli.jar" ]; then
 fi
 
 if [[ " $* " == *" --skip-js-build "* ]]; then
-  echo "Skipping the nb-proxy JS API client build"
+  echo "Skipping the est-proxy JS API client build"
 else
-  echo "Generating nb-proxy JS API client"
+  echo "Generating est-proxy JS API client"
   java -jar ./build/openapi-generator-cli.jar generate\
-    -i ./nb-proxy-api.yaml\
+    -i ./est-proxy-api.yaml\
     -g javascript\
-    -o ./build/nb-proxy-js\
+    -o ./build/est-proxy-js\
     -c ./config/javascript.yaml
-  (cd build/nb-proxy-js && npm install && npm run build)
+  (cd build/est-proxy-js && npm install && npm run build)
 fi
 
 if [[ " $* " == *" --skip-go-build "* ]]; then
-  echo "Skipping the nb-proxy Go API server build"
-  echo "Skipping the nb-back Go API client build"
+  echo "Skipping the est-proxy Go API server build"
+  echo "Skipping the est-back Go API client build"
 else
-  echo "Generating nb-proxy Go API server"
+  echo "Generating est-proxy Go API server"
   java -jar ./build/openapi-generator-cli.jar generate\
-    -i ./nb-proxy-api.yaml\
+    -i ./est-proxy-api.yaml\
     -g go-echo-server\
-    -o ./build/nb-proxy-go\
+    -o ./build/est-proxy-go\
     -c ./config/go-echo-server.yaml
-  echo "Building nb-proxy Go API server"
-  (cd build/nb-proxy-go && go mod tidy && go build)
+  echo "Building est-proxy Go API server"
+  (cd build/est-proxy-go && go mod tidy && go build)
 
-  echo "Generating nb-back Go API client"
+  echo "Generating est-back Go API client"
   java -jar ./build/openapi-generator-cli.jar generate\
-    -i ./nb-back-api.yaml\
+    -i ./est-back-api.yaml\
     -g go\
-    -o ./build/nb-back-go\
+    -o ./build/est-back-go\
     -c ./config/go.yaml
-  echo "Building nb-back Go API client"
-  (cd build/nb-back-go && go mod tidy && go build)
+  echo "Building est-back Go API client"
+  (cd build/est-back-go && go mod tidy && go build)
 fi
 
 echo "Build completed"
