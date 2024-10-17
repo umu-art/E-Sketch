@@ -1,0 +1,127 @@
+name: Test
+
+on:
+  pull_request: [ ]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  lint-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 21
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Install dependencies
+        run: npm i -g @redocly/cli@latest
+
+      - name: Lint proxy API
+        run: cd ./api && npx @redocly/cli@latest lint ./nb-proxy-api.yaml --config ./config/lint.yaml
+
+      - name: Lint back API
+        run: cd ./api && npx @redocly/cli@latest lint ./nb-back-api.yaml --config ./config/lint.yaml
+
+
+  test-api:
+    needs: [ lint-api ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 21
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.0.2
+        with:
+          go-version: 1.23.0
+          cache: true
+
+      - name: Test API
+        run: cd ./api && chmod +x ./build.sh && ./build.sh
+
+
+  test-front:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 21
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.0.2
+        with:
+          go-version: 1.23.0
+          cache: true
+
+      - name: Build API
+        run: cd ./api && chmod +x ./build.sh && ./build.sh
+
+      - name: Install deps
+        run: cd ./nb-front && npm install
+
+      - name: Test front
+        run: cd ./nb-front && npm run test
+
+
+  test-proxy:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 21
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.0.2
+        with:
+          go-version: 1.23.0
+          cache: true
+
+      - name: Build API
+        run: cd ./api && chmod +x ./build.sh && ./build.sh --skip-js-build
+
+      - name: Install deps
+        run: cd ./nb-proxy && go mod tidy
+
+      - name: Test proxy
+        run: cd ./nb-proxy && go test -json ./...
+

@@ -1,0 +1,4 @@
+templateDir: config/go-echo-server-templates
+additionalProperties:
+  serverPort: '80'
+  packageName: 'nb_proxy_api'

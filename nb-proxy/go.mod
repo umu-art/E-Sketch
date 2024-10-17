@@ -2,7 +2,11 @@ module nb-proxy
 
 go 1.23.0
 
-require github.com/labstack/echo/v4 v4.12.0
+require (
+	github.com/labstack/echo/v4 v4.12.0
+	nb_proxy_go v0.0.0
+	nb_back_go v0.0.0
+)
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -16,4 +20,9 @@ require (
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
+)
+
+replace (
+	nb_proxy_go => ../api/build/nb-proxy-go
+	nb_back_go => ../api/build/nb-back-go
 )
