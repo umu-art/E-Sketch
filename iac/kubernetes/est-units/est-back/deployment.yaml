@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: est-back
+  namespace: est-units
+  labels:
+    app: est-back
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: est-back
+  template:
+    metadata:
+      name: est-back
+      labels:
+        app: est-back
+    spec:
+      containers:
+        - name: est-back
+          image: ghcr.io/umu-art/est-back:master
+          imagePullPolicy: Always
+
+      imagePullSecrets:
+        - name: github-container-registry
+
+      restartPolicy: Always
+

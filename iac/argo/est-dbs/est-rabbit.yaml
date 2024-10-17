@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: est-rabbit
+  namespace: argocd
+  labels:
+    type: db
+spec:
+  destination:
+    namespace: est-dbs
+    server: https://kubernetes.default.svc
+  project: naga-board
+  source:
+    path: iac/kubernetes/est-dbs/est-rabbit
+    repoURL: git@github.com:umu-art/NagaBoard.git
+    targetRevision: master
+  syncPolicy:
+    automated:
+      prune: true

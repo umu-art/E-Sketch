@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: est-pg
+  namespace: est-dbs
+  labels:
+    app: est-pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: est-pg
+  template:
+    metadata:
+      name: est-pg
+      labels:
+        app: est-pg
+    spec:
+      containers:
+        - name: est-pg
+          image: dockerhub.timeweb.cloud/postgres:latest
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_DB
+              value: est-data
+
+            - name: POSTGRES_USER
+              value: admin
+
+            - name: POSTGRES_PASSWORD
+              value: admin
+
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-storage
+
+          resources:
+            requests:
+              memory: "350Mi"
+              cpu: "500m"
+            limits:
+              memory: "1G"
+              cpu: "1"
+
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: est-pg-pvc
+
+      restartPolicy: Always
