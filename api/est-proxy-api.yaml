@@ -96,7 +96,7 @@ paths:
       summary: Получение информации о пользователе по id
       operationId: getUserById
       parameters:
-        - $ref: "#/components/parameters/UserId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/UserId"
       responses:
         200:
           description: Информация о пользователе
@@ -131,7 +131,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpsertBoardDto"
+              $ref: "./est-back-api.yaml/#/components/schemas/UpsertBoardDto"
       responses:
         200:
           description: Новая доска
@@ -147,7 +147,7 @@ paths:
       summary: Получение доски по uuid
       operationId: getByUuid
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       responses:
         200:
           description: Обновленная доска
@@ -161,12 +161,12 @@ paths:
       summary: Обновление доски
       operationId: update
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpsertBoardDto"
+              $ref: "./est-back-api.yaml/#/components/schemas/UpsertBoardDto"
       responses:
         200:
           description: Обновленная доска
@@ -180,7 +180,7 @@ paths:
       summary: Удаление доски
       operationId: delete
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       responses:
         200:
           description: Успешное удаление
@@ -192,7 +192,7 @@ paths:
       summary: Поделиться доской
       operationId: share
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       requestBody:
         content:
           application/json:
@@ -207,12 +207,12 @@ paths:
       summary: Отозвать доступ к доске
       operationId: unshare
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UnshareBoardDto"
+              $ref: "./est-back-api.yaml/#/components/schemas/UnshareBoardDto"
       responses:
         200:
           description: Успеха
@@ -224,22 +224,13 @@ paths:
       summary: Переход на websocket, вся работа с рисунками будет там
       operationId: connect
       parameters:
-        - $ref: "#/components/parameters/BoardId"
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       responses:
         101:
           description: Переход на websocket
 
 components:
   parameters:
-    UserId:
-      in: path
-      name: userId
-      required: true
-      description: id пользователя
-      schema:
-        type: string
-        format: uuid
-
     UserName:
       in: path
       name: username
@@ -247,14 +238,6 @@ components:
       description: Имя пользователя
       schema:
         type: string
-
-    BoardId:
-      name: boardId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
 
   schemas:
     UserDto:
@@ -330,7 +313,7 @@ components:
           items:
             $ref: "#/components/schemas/SharingDto"
         linkSharedMode:
-          $ref: "#/components/schemas/LinkShareMode"
+          $ref: "./est-back-api.yaml/#/components/schemas/LinkShareMode"
         preview:
           description: Ссылка на превью
           type: string
@@ -343,30 +326,7 @@ components:
         userInfo:
           $ref: "#/components/schemas/UserDto"
         access:
-          $ref: "#/components/schemas/ShareMode"
-
-    LinkShareMode:
-      type: string
-      enum:
-        - read
-        - write
-
-    ShareMode:
-      type: string
-      enum:
-        - read
-        - write
-        - admin
-
-    UpsertBoardDto:
-      required:
-        - name
-        - description
-      properties:
-        name:
-          type: string
-        description:
-          type: string
+          $ref: "./est-back-api.yaml/#/components/schemas/ShareMode"
 
     ShareBoardDto:
       required:
@@ -377,12 +337,5 @@ components:
           type: string
           format: uuid
         access:
-          $ref: "#/components/schemas/ShareMode"
+          $ref: "./est-back-api.yaml/#/components/schemas/ShareMode"
 
-    UnshareBoardDto:
-      required:
-        - userIds
-      properties:
-        userId:
-          type: string
-          format: uuid
