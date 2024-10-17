@@ -1,7 +1,7 @@
 openapi: 3.1.0
 
 info:
-  title: NB Back API
+  title: EST Back API
   description: Все запросы от прокси к бэку
   version: 1.0.0
 
