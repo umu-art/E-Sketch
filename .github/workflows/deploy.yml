@@ -40,7 +40,7 @@ jobs:
 
 
   test-api:
-    needs: [ lint-api, super-lint ]
+    needs: [ lint-api ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

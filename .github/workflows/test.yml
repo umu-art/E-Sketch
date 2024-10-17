@@ -41,7 +41,7 @@ jobs:
         run: cd ./api && npx @redocly/cli@latest lint ./est-back-api.yaml --config ./config/lint.yaml
 
   test-api:
-    needs: [ lint-api, super-lint ]
+    needs: [ lint-api ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
