@@ -1,0 +1,20 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+  labels:
+    type: monitoring
+spec:
+  destination:
+    namespace: est-monitoring
+    server: https://kubernetes.default.svc
+  project: e-sketch
+  source:
+    path: iac/kubernetes/est-monitoring/prometheus
+    repoURL: git@github.com:umu-art/e-sketch.git
+    targetRevision: master
+  syncPolicy:
+    automated:
+      prune: true
