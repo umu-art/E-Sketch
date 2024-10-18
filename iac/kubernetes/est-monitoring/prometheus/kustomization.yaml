@@ -10,3 +10,4 @@ configMapGenerator:
 generatorOptions:
   labels:
     app: prometheus
+  disableNameSuffixHash: true

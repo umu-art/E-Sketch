@@ -11,3 +11,4 @@ configMapGenerator:
 generatorOptions:
   labels:
     app: grafana
+  disableNameSuffixHash: true
