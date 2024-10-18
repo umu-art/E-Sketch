@@ -22,7 +22,7 @@ func (h *Listener) Serve() {
 
 	e.GET("/actuator", h.Actuator)
 
-	e.Logger.Fatal(e.Start(":80"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
 func (h *Listener) Actuator(c echo.Context) error {

@@ -41,14 +41,14 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator
-              port: 80
+              port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
 
           livenessProbe:
             httpGet:
               path: /actuator
-              port: 80
+              port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
 
