@@ -5,7 +5,7 @@ resources:
 configMapGenerator:
   - name: scrape-config
     files:
-      - scrape_configs.yml
+      - prometheus.yml
 
 generatorOptions:
   labels:

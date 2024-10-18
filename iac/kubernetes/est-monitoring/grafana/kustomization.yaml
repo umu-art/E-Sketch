@@ -6,7 +6,7 @@ resources:
 configMapGenerator:
   - name: grafana-datasources-config
     files:
-      - datasources.yaml
+      - all.yaml
 
 generatorOptions:
   labels:

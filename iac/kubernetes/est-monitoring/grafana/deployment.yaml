@@ -29,13 +29,11 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/grafana
               name: grafana-storage
-            - mountPath: /etc/grafana/provisioning/datasources/all.yaml
+            - mountPath: /etc/grafana/provisioning/datasources/
               name: grafana-datasources-config
 
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 1000
-            runAsGroup: 1000
 
           resources:
             requests:

@@ -23,7 +23,7 @@ spec:
           imagePullPolicy: Always
 
           volumeMounts:
-            - mountPath: /etc/prometheus/prometheus.yml
+            - mountPath: /etc/prometheus/
               name: scrape-config
 
           securityContext:
