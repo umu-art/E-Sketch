@@ -6,3 +6,4 @@
 /.angular
 api/build/
 est-proxy/build/
+iac/kubernetes/est-secret

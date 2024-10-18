@@ -6,6 +6,7 @@ metadata:
   labels:
     app: postgres
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   selector:
     matchLabels:
@@ -23,8 +24,6 @@ spec:
 
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 1000
-            runAsGroup: 1000
 
           env:
             - name: POSTGRES_DB
@@ -45,30 +44,6 @@ spec:
             limits:
               memory: "600M"
               cpu: "600m"
-
-          readinessProbe:
-            exec:
-              command:
-                - psql
-                - -U
-                - postgres
-                - -c
-                - 'select 1'
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-
-          livenessProbe:
-            exec:
-              command:
-                - psql
-                - -U
-                - postgres
-                - -c
-                - 'select 1'
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
 
       volumes:
         - name: db-storage

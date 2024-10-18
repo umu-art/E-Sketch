@@ -6,6 +6,7 @@ metadata:
   labels:
     app: minio
 spec:
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: minio
@@ -16,15 +17,13 @@ spec:
     spec:
       containers:
         - name: minio
-          image: minio/minio
+          image: dockerhub.timeweb.cloud/minio/minio
           args:
             - server
             - /data
 
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 1000
-            runAsGroup: 1000
 
           env:
             - name: MINIO_ACCESS_KEY
