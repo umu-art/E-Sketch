@@ -11,4 +11,4 @@ std::string SayHelloTo(std::string_view name);
 
 void AppendHello(userver::components::ComponentList &component_list);
 
-} // namespace est_back
+}  // namespace est_back

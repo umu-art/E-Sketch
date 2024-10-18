@@ -53,6 +53,23 @@ jobs:
       - name: Build API
         uses: ./.github/workflows/actions/build_api
 
+  lint-cpp:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: './est-back/.clang-format'  # Use .clang-format config file
+          tidy-checks: '-*' # disable clang-tidy
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+      - name: Fail
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
+
   test-front:
     needs: [ test-api ]
     runs-on: ubuntu-latest
@@ -94,7 +111,7 @@ jobs:
         run: cd ./est-proxy && go test -json ./...
 
   test-back:
-    needs: [ test-api ]
+    needs: [ lint-cpp ]
     runs-on: ubuntu-latest
 
     steps:

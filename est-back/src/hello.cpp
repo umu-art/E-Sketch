@@ -10,29 +10,31 @@ namespace {
 
 class Hello final : public userver::server::handlers::HttpHandlerBase {
 public:
-  static constexpr std::string_view kName = "handler-hello";
+    static constexpr std::string_view kName = "handler-hello";
 
-  using HttpHandlerBase::HttpHandlerBase;
+    using HttpHandlerBase::HttpHandlerBase;
 
-  std::string HandleRequestThrow(
-      const userver::server::http::HttpRequest &request,
-      userver::server::request::RequestContext &) const override {
-    return est_back::SayHelloTo(request.GetArg("name"));
-  }
+    std::string HandleRequestThrow(const userver::server::http::HttpRequest &request,
+                                   userver::server::request::RequestContext &) const override {
+        return est_back::SayHelloTo(request.GetArg("name"));
+    }
+
+private:
+    int to_string_ = 1;
 };
 
-} // namespace
+}  // namespace
 
 std::string SayHelloTo(std::string_view name) {
-  if (name.empty()) {
-    name = "unknown user";
-  }
+    if (name.empty()) {
+        name = "unknown user";
+    }
 
-  return fmt::format("Hello, {}!\n", name);
+    return fmt::format("Hello, {}!\n", name);
 }
 
 void AppendHello(userver::components::ComponentList &component_list) {
-  component_list.Append<Hello>();
+    component_list.Append<Hello>();
 }
 
-} // namespace est_back
+}  // namespace est_back
