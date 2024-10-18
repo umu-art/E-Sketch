@@ -18,10 +18,11 @@ spec:
     spec:
       securityContext:
         runAsUser: 0
+        fsGroup: 0
 
       containers:
         - name: grafana
-          image: grafana/grafana:10.4.1
+          image: dockerhub.timeweb.cloud/grafana/grafana:10.4.1
           imagePullPolicy: Always
 
           volumeMounts:
