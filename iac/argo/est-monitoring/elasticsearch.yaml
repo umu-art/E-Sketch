@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: elasticsearch
   namespace: argocd
   labels:
     type: monitoring
@@ -12,7 +12,7 @@ spec:
     server: https://kubernetes.default.svc
   project: e-sketch
   source:
-    path: iac/kubernetes/est-monitoring/grafana
+    path: iac/kubernetes/est-monitoring/elasticsearch
     repoURL: git@github.com:umu-art/e-sketch.git
     targetRevision: master
   syncPolicy:

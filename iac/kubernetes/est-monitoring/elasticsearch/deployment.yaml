@@ -1,0 +1,124 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: est-monitoring
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    matchLabels:
+      app: elasticsearch
+
+  replicas: 1
+
+  template:
+    metadata:
+      name: elasticsearch
+      labels:
+        app: elasticsearch
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+
+      volumes:
+        - name: elasticsearch-certs
+          secret:
+            secretName: elasticsearch-certs
+        - name: elasticsearch-data
+          persistentVolumeClaim:
+            claimName: elasticsearch-data
+
+      enableServiceLinks: true
+
+      initContainers:
+        - name: configure-sysctl
+          securityContext:
+            runAsUser: 0
+            privileged: true
+          image: "dockerhub.timeweb.cloud/elasticsearch:8.14.3"
+          imagePullPolicy: "IfNotPresent"
+          command: [ "sysctl", "-w", "vm.max_map_count=262144" ]
+          resources:
+            { }
+
+        - name: fix-permissions
+          securityContext:
+            runAsUser: 0
+            privileged: true
+          image: "busybox"
+          command: [ "sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data" ]
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+
+      containers:
+        - name: elasticsearch
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1000
+
+          image: "dockerhub.timeweb.cloud/elasticsearch:8.14.3"
+          imagePullPolicy: "IfNotPresent"
+
+          ports:
+            - name: http
+              containerPort: 9200
+            - name: transport
+              containerPort: 9300
+
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+
+          env:
+            - name: ES_JAVA_OPTS
+              value: "-Xms500m -Xmx500m"
+            - name: discovery.type
+              value: "single-node"
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                  secretKeyRef:
+                    name: elasticsearch-credentials
+                    key: username
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-credentials
+                  key: password
+            - name: xpack.security.enabled
+              value: "true"
+            - name: xpack.security.transport.ssl.enabled
+              value: "true"
+            - name: xpack.security.http.ssl.enabled
+              value: "true"
+            - name: xpack.security.transport.ssl.verification_mode
+              value: "certificate"
+            - name: xpack.security.transport.ssl.key
+              value: "/usr/share/elasticsearch/config/certs/elastic-without-pass.key"
+            - name: xpack.security.transport.ssl.certificate
+              value: "/usr/share/elasticsearch/config/certs/elastic.crt"
+            - name: xpack.security.transport.ssl.certificate_authorities
+              value: "/usr/share/elasticsearch/config/certs/elastic.crt"
+            - name: xpack.security.http.ssl.key
+              value: "/usr/share/elasticsearch/config/certs/elastic-without-pass.key"
+            - name: xpack.security.http.ssl.certificate
+              value: "/usr/share/elasticsearch/config/certs/elastic.crt"
+            - name: xpack.security.http.ssl.certificate_authorities
+              value: "/usr/share/elasticsearch/config/certs/elastic.crt"
+
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+
+            - name: elasticsearch-certs
+              mountPath: /usr/share/elasticsearch/config/certs
+              readOnly: true

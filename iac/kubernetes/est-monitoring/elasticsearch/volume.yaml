@@ -1,28 +1,28 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: grafana-pv
+  name: elasticsearch-data
   labels:
     type: local
-    app: grafana
+    app: elasticsearch
 spec:
   storageClassName: manual
   capacity:
-    storage: 1Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/data/grafana"
+    path: "/data/elasticsearch-data"
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: grafana-pvc
+  name: elasticsearch-data
 spec:
   storageClassName: manual
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi
