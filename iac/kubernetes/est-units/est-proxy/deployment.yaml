@@ -32,7 +32,7 @@ spec:
 
           env:
             - name: ELASTIC_APM_SERVER_URL
-              value: http://apm-server:8200
+              value: http://apm-server.est-monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-proxy
             - name: ELASTIC_APM_ENVIRONMENT
