@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.elastic.co/apm/module/apmechov4/v2"
 	"net/http"
 )
 
@@ -19,6 +20,7 @@ func (h *Listener) Serve() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(apmechov4.Middleware())
 
 	e.GET("/actuator", h.Actuator)
 

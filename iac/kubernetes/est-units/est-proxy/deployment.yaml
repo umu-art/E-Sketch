@@ -30,6 +30,20 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
 
+          env:
+            - name: ELASTIC_APM_SERVER_URL
+              value: http://apm-server:8200
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: est-proxy
+            - name: ELASTIC_APM_ENVIRONMENT
+              value: est
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-credentials
+                  key: password
+                  optional: false
+
           resources:
             requests:
               memory: "200M"
