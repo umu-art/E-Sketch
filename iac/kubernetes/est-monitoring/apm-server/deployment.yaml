@@ -60,7 +60,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /
-              port: http
+              port: 8200
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -69,7 +69,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /
-              port: http
+              port: 8200
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
