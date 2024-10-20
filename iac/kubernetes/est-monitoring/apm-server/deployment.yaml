@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: apm-server
+  namespace: est-monitoring
   labels:
     app: apm-server
 spec:

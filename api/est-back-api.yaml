@@ -200,6 +200,7 @@ components:
     LinkShareMode:
       type: string
       enum:
+        - none_by_link
         - read_by_link
         - write_by_link
 
