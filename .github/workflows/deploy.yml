@@ -103,6 +103,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
+
+      - name: Build API
+        uses: ./.github/workflows/actions/build_api
+
       - name: Build image
         uses: ./.github/workflows/actions/build_image
         with:
