@@ -4,8 +4,9 @@
 #include <userver/server/handlers/ping.hpp>
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
-#include <userver/utils/daemon_run.hpp>
+#include "userver/storages/postgres/postgres.hpp"
 
+#include <userver/utils/daemon_run.hpp>
 #include "hello.hpp"
 
 int main(int argc, char* argv[]) {
@@ -16,6 +17,7 @@ int main(int argc, char* argv[]) {
                               .Append<userver::clients::dns::Component>()
                               .Append<userver::server::handlers::TestsControl>();
 
+    component_list.Append<userver::components::Postgres>("postgres-db-1");
     est_back::AppendHello(component_list);
 
     return userver::utils::DaemonMain(argc, argv, component_list);

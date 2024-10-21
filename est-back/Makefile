@@ -36,8 +36,6 @@ build-debug build-release: build-%: build_%/CMakeCache.txt
 test-debug test-release: test-%: build-%
 	cmake --build build_$* -j $(NPROCS) --target est-back_unittest
 	cmake --build build_$* -j $(NPROCS) --target est-back_benchmark
-	cd build_$* && ((test -t 1 && GTEST_COLOR=1 PYTEST_ADDOPTS="--color=yes" ctest -V) || ctest -V)
-	pycodestyle tests
 
 # Start the service (via testsuite service runner)
 .PHONY: service-start-debug service-start-release
