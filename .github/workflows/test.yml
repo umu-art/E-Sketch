@@ -111,7 +111,7 @@ jobs:
         run: cd ./est-proxy && go test -json ./...
 
   test-back:
-    needs: [ lint-cpp ]
+    needs: [ test-api ]
     runs-on: ubuntu-latest
 
     steps:
@@ -120,3 +120,13 @@ jobs:
 
       - name: Prepare
         uses: ./.github/workflows/actions/prepare_env
+
+      - name: Build API
+        uses: ./.github/workflows/actions/build_api
+        
+      - name: Run tests in docker
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/est-back/test/Dockerfile
+          push: false

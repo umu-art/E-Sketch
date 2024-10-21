@@ -1,17 +1,14 @@
 FROM ghcr.io/userver-framework/ubuntu-22.04-userver:latest AS builder
 LABEL authors="vikazeni"
 
-COPY ./est-back /app
-WORKDIR /app
+COPY ./est-back /app/est-back
+COPY ./api/build/est-back-cpp /app/api/build/est-back-cpp
+WORKDIR /app/est-back
 
 RUN adduser user
 RUN chown user -R /app
 
 USER user
 
-RUN mkdir build
-WORKDIR /app/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --config Release --target est-back
-
-ENTRYPOINT ["top", "-b"]
+RUN make test-debug
+ENTRYPOINT ["echo", "completed"]
