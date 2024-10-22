@@ -1,9 +1,0 @@
-worker-threads: 4
-worker-fs-threads: 2
-logger-level: debug
-
-is_testing: true
-
-server-port: 8080
-
-dbconnection: 'postgresql://admin:admin@postgres.est-dbs.svc.cluster.local:5432/est-data'

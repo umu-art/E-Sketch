@@ -1,0 +1,43 @@
+listeners:
+  - address: 0.0.0.0
+    port: 8080
+
+db_clients:
+  - name: est-data
+    rdbms: postgresql
+    host: 127.0.0.1
+    port: 5432
+    dbname: est-data
+    user: admin
+    password: admin
+    number_of_connections: 1
+    timeout: 5
+    auto_batch: false
+
+app:
+  number_of_threads: 4
+  max_connections: 100000
+
+  log:
+    log_level: TRACE
+    display_local_time: true
+
+plugins:
+  - name: drogon::plugin::PromExporter
+    dependencies: []
+    config:
+      path: /metrics
+
+  - name: drogon::plugin::AccessLogger
+    dependencies: []
+    config:
+      use_spdlog: false
+      log_path: ''
+      log_format: ''
+      log_file: access.log
+      log_size_limit: 0
+      use_local_time: true
+      log_index: 0
+      show_microseconds: true
+
+custom_config: {}

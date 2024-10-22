@@ -1,3 +1,0 @@
-[submodule "est-back/third_party/userver"]
-	path = est-back/third_party/userver
-	url = https://github.com/userver-framework/userver.git
