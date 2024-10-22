@@ -63,9 +63,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: './est-back/.clang-format'  # Use .clang-format config file
+          style: 'file'  # Use .clang-format config file
           tidy-checks: '-*' # disable clang-tidy
           thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          files-changed-only: false
       - name: Fail
         if: steps.linter.outputs.checks-failed > 0
         run: exit 1
