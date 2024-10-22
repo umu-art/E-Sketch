@@ -29,9 +29,15 @@ spec:
             - name: POSTGRES_DB
               value: est-data
             - name: POSTGRES_USER
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
             - name: POSTGRES_PASSWORD
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
 
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
