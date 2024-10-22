@@ -8,10 +8,10 @@ namespace est_back::controller {
     class PingController : public drogon::HttpController<PingController> {
     public:
         METHOD_LIST_BEGIN
-            ADD_METHOD_TO(PingController::get, "/ping", Get);
+        ADD_METHOD_TO(PingController::get, "/ping", Get);
         METHOD_LIST_END
-
-        void get(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) const;
+    private:
+        using Callback = std::function<void(const HttpResponsePtr&)>&&;
+        void get(const HttpRequestPtr& req, Callback callback) const;
     };
-}
-
+}  // namespace est_back::controller

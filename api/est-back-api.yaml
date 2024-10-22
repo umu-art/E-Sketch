@@ -6,7 +6,8 @@ info:
   version: 1.0.0
 
 servers:
-  - url: 'https'
+  - url: 'https://e-sketch.ru'
+  - url: 'http://localhost:8080'
 
 security:
   - none: [ ]
@@ -88,7 +89,7 @@ paths:
       tags:
         - board
       summary: Удаление доски
-      operationId: delete
+      operationId: deleteBoard
       parameters:
         - $ref: "#/components/parameters/BoardId"
       responses:

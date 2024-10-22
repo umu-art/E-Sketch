@@ -178,7 +178,7 @@ paths:
       tags:
         - board
       summary: Удаление доски
-      operationId: delete
+      operationId: deleteBoard
       parameters:
         - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
       responses:
