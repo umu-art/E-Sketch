@@ -24,6 +24,18 @@ spec:
           image: ghcr.io/umu-art/est-back:master
           imagePullPolicy: Always
 
+          env:
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
           resources:
             requests:
               memory: "200M"
