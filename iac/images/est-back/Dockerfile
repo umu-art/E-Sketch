@@ -2,7 +2,9 @@ FROM ubuntu:24.10 AS builder
 LABEL authors="vikazeni"
 
 RUN apt-get update
-RUN apt-get install -y postgresql-all git gcc g++ cmake libjsoncpp-dev uuid-dev zlib1g-dev
+
+# Install Drogon
+RUN apt-get install -y libpq-dev git gcc g++ cmake libjsoncpp-dev uuid-dev zlib1g-dev
 
 WORKDIR /
 RUN git clone https://github.com/drogonframework/drogon
@@ -15,21 +17,29 @@ WORKDIR /drogon/build
 RUN cmake ..
 RUN make && make install
 
+# Install OpenTelemetry
+RUN apt-get install -y protobuf-compiler curl libcurl4-openssl-dev
+
+WORKDIR /
+RUN git clone https://github.com/open-telemetry/opentelemetry-cpp.git
+
+WORKDIR /opentelemetry-cpp
+RUN git submodule update --init --recursive
+RUN mkdir build
+
+WORKDIR /opentelemetry-cpp/build
+RUN cmake -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP_HTTP=ON -DOPENTELEMETRY_INSTALL=ON ..
+RUN make && make install
+
+# Copy source code
 COPY ./est-back /app/est-back
 COPY ./api/build/est-back-cpp /app/api/build/est-back-cpp
 
+# Build source code
 WORKDIR /app/est-back/build
 RUN cmake ..
 RUN make
 
-FROM ubuntu:24.10
+# TODO: remake imgae
 
-RUN apt-get update
-RUN apt-get install -y libpq-dev libjsoncpp-dev uuid-dev
-
-COPY --from=builder /app/est-back/build/est-back /app/app
-COPY --from=builder /app/est-back/config.json /config.json
-
-WORKDIR /app
-
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["./est-back"]

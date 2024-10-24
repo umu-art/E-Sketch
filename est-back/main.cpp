@@ -1,5 +1,6 @@
 #include <drogon/drogon.h>
-#include "PingController.hpp"
+#include "./apm.cpp"
+
 
 int main() {
     // Load config
@@ -18,6 +19,9 @@ int main() {
             .autoBatch = true
     };
     drogon::app().addDbClient(dbConfig);
+
+    // Init Apm
+    initApm();
 
     // Start
     drogon::app().run();

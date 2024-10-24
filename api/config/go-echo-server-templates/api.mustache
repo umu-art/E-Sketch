@@ -2,6 +2,7 @@ package handlers
 {{#operations}}
 import (
 	"github.com/labstack/echo/v4"
+	"go.elastic.co/apm/v2"
 )
 
 type {{classname}} interface {
@@ -10,8 +11,13 @@ type {{classname}} interface {
 {{/operation}}
 }{{/operations}}
 
-func Route{{classname}}(e *echo.Echo, c {{classname}}) {
+func Route{{classname}}(e *echo.Echo, handler {{classname}}) {
 {{#operations}}{{#operation}}
-	e.{{httpMethod.toUpperCase}}("{{{basePathWithoutHost}}}{{{path}}}", c.{{operationId}})
+    e.{{httpMethod.toUpperCase}}("{{{basePathWithoutHost}}}{{{path}}}", func(c echo.Context) error {
+		ctx := c.Request().Context()
+		span, _ := apm.StartSpan(ctx, "{{classname}}.{{operationId}}", "service")
+		defer span.End()
+		return handler.{{operationId}}(c)
+	})
 {{/operation}}{{/operations}}
 }

@@ -3,6 +3,9 @@ module est-proxy
 go 1.23.0
 
 require (
+	est_back_go v0.0.1
+	est_proxy_go v0.0.1
+	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	go.elastic.co/apm/module/apmechov4/v2 v2.6.2
 )
@@ -18,7 +21,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/procfs v0.0.0-20190425082905-87a4384529e0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.elastic.co/apm/module/apmhttp/v2 v2.6.2 // indirect

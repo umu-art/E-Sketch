@@ -7,6 +7,7 @@ metadata:
   labels:
     app: est-back
 spec:
+  revisionHistoryLimit: 3
   replicas: 2
   strategy:
     type: RollingUpdate
@@ -35,6 +36,13 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: password
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://apm-server.est-monitoring.svc.cluster.local:8200
+            - name: OTEL_EXPORTER_AUTH
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: elasticsearch-credentials
 
           resources:
             requests:
@@ -48,14 +56,14 @@ spec:
             httpGet:
               path: /ping
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             periodSeconds: 20
 
           livenessProbe:
             httpGet:
               path: /ping
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             periodSeconds: 20
 
       imagePullSecrets:
