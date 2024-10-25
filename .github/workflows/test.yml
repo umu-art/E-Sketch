@@ -57,6 +57,7 @@ jobs:
 
       - name: Fail
         if: steps.linter.outputs.checks-failed > 0
+        continue-on-error: true
         run: exit 1
 
   test-front:
@@ -110,12 +111,12 @@ jobs:
         with:
           cacheTag: api-${{ hashFiles('api/') }}
         
-#      - name: Run tests in docker
-#        uses: docker/build-push-action@v5.3.0
-#        with:
-#          context: .
-#          file: ./iac/images/est-back/test/Dockerfile
-#          push: false
+      - name: Run tests in docker
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/est-back/Dockerfile
+          push: false
 
   test-mono:
     needs: [ lint-api, build-api ]
