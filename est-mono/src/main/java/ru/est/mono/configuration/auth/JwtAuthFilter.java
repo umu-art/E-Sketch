@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +22,8 @@ import ru.est.mono.service.impl.JwtService;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import static java.util.Objects.isNull;
 
 @Slf4j
 @Component
@@ -42,7 +45,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String jwt = parseJwtHeader(request);
 
         if (jwt == null || !jwtService.validateJwtToken(jwt)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getOutputStream().write(StringUtils.getBytesUtf8("{\"errorCode\":401,\"errorMessage\":\"Требуется авторизация\"}"));
+            return;
         }
 
         String username = jwtService.getUserNameFromJwtToken(jwt);
@@ -58,6 +64,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String parseJwtHeader(HttpServletRequest request) {
+        if (isNull(request.getCookies())) {
+            return null;
+        }
+
         var authCookie = Arrays.stream(request.getCookies())
                 .filter(cookie -> AUTH_COOKIE.equals(cookie.getName()))
                 .findFirst();

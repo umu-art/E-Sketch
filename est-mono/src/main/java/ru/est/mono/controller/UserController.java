@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import ru.est.mono.api.UserApi;
 import ru.est.mono.domain.UserEntity;
+import ru.est.mono.exception.BadRequestException;
+import ru.est.mono.exception.NotFoundException;
 import ru.est.mono.model.AuthDto;
 import ru.est.mono.model.RegisterDto;
 import ru.est.mono.model.UserDto;
@@ -31,7 +33,7 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<Void> register(RegisterDto registerDto) {
         if (userService.existsByUsername(registerDto.getUsername())) {
-            return ResponseEntity.badRequest().build();
+            throw new BadRequestException("Пользователь с таким username уже существует");
         }
 
         UserEntity user = new UserEntity();
@@ -77,7 +79,7 @@ public class UserController implements UserApi {
     public ResponseEntity<UserDto> getUserById(UUID userId) {
         return userService.getUserById(userId)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new NotFoundException(UserEntity.class, userId));
     }
 
     @Override

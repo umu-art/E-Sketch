@@ -1,11 +1,9 @@
 package ru.est.mono.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class NotAllowedException extends RuntimeException {
+public class NotAllowedException extends MonoException {
     public NotAllowedException() {
-        super();
+        super("Доступ запрещен", HttpStatus.FORBIDDEN);
     }
 }
