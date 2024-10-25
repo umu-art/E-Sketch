@@ -73,10 +73,10 @@ spec:
 
           resources:
             limits:
-              cpu: 200m
+              cpu: 1000m
               memory: 2Gi
             requests:
-              cpu: 1000m
+              cpu: 200m
               memory: 2Gi
 
           env:
