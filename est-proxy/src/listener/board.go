@@ -55,6 +55,11 @@ func (b BoardListener) Share(ctx echo.Context) error {
 	panic("implement me")
 }
 
+func (b BoardListener) ChangeAccess(ctx echo.Context) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (b BoardListener) Unshare(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
