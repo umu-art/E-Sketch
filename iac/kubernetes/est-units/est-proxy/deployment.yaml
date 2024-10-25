@@ -31,6 +31,8 @@ spec:
             runAsGroup: 1000
 
           env:
+            - name: EST_BACK_URL
+              value: http://est-back.est-units.svc.cluster.local
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-server.est-monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
@@ -46,11 +48,11 @@ spec:
 
           resources:
             requests:
+              memory: "50M"
+              cpu: "50m"
+            limits:
               memory: "100M"
               cpu: "100m"
-            limits:
-              memory: "200M"
-              cpu: "200m"
 
           readinessProbe:
             httpGet:
