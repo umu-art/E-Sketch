@@ -50,28 +50,12 @@ spec:
             - name: config
               mountPath: /config
 
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            initialDelaySeconds: 80
-            periodSeconds: 10
-            failureThreshold: 15
-
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8080
-            initialDelaySeconds: 80
-            periodSeconds: 10
-            failureThreshold: 15
-
           resources:
             requests:
-              memory: "500Mi"
+              memory: "400Mi"
               cpu: "300m"
             limits:
-              memory: "1000Mi"
+              memory: "800Mi"
               cpu: "600m"
 
       volumes:
