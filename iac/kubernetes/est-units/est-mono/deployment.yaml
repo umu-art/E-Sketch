@@ -8,6 +8,7 @@ metadata:
     app: est-mono
 
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
 
   selector:
@@ -57,7 +58,9 @@ spec:
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: ru.est.mono
             - name: ELASTIC_APM_ENVIRONMENT
-              value: production
+              value: est
+            - name: ELASTIC_APM_TRACE_METHODS
+              value: ru.est.mono.*
 
           volumeMounts:
             - name: config
@@ -65,11 +68,11 @@ spec:
 
           resources:
             requests:
-              memory: "400Mi"
-              cpu: "300m"
+              memory: "500Mi"
+              cpu: "500m"
             limits:
-              memory: "800Mi"
-              cpu: "600m"
+              memory: "1000Mi"
+              cpu: "1000m"
 
       volumes:
         - name: config
