@@ -86,4 +86,18 @@ else
     -c ./config/cpp-restbed-server.yaml
 fi
 
+
+if [[ " $* " == *" --skip-java-build "* ]]; then
+  echo "Skipping the est-mono-api API server build"
+else
+  echo "Generating est-mono-api API server"
+  java -jar ./build/openapi-generator-cli.jar generate\
+    -i ./est-proxy-api.yaml\
+    -g spring\
+    -o ./build/est-mono-api\
+    -c ./config/java-spring.yaml
+  echo "Building est-mono-api API server"
+  (cd build/est-mono-api && mvn clean install)
+fi
+
 echo "Build completed"

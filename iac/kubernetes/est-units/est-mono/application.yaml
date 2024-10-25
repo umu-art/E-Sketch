@@ -1,0 +1,48 @@
+est:
+  auth:
+    jwtSecret: ${JWT_SECRET}
+    jwtExpirationHours: 48
+
+spring:
+  application:
+    name: est-mono
+
+  datasource:
+    url: jdbc:postgresql://postgres.est-dbs.svc.cluster.local:5432/est-data
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: '/proxy/swagger-ui.html'
+  api-docs:
+    path: '/proxy/v3/api-docs'
+
+logging:
+  level:
+    ru: trace
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

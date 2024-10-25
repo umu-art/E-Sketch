@@ -131,3 +131,21 @@ jobs:
 #          context: .
 #          file: ./iac/images/est-back/test/Dockerfile
 #          push: false
+
+  test-mono:
+    needs: [ test-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare
+        uses: ./.github/workflows/actions/prepare_env
+
+      - name: Build API
+        uses: ./.github/workflows/actions/build_api
+
+      - name: Build with Maven
+        working-directory: ./est-mono
+        run: mvn -B test -T1C --file pom.xml
