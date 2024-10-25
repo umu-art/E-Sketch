@@ -10,3 +10,4 @@ iac/kubernetes/est-secret
 est-back/cmake-build-debug/
 */target
 est-mono/**/application.yaml
+*/.DS_Store
