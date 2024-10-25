@@ -2,10 +2,9 @@ name: "Prepare env"
 description: "Подготовка окружения для пайпы, установка java, node, go"
 
 inputs:
-  generateCache:
-    description: 'Генерировать ли кэш'
-    required: false
-    default: 'false'
+  cacheTag:
+    description: cacheTag
+    required: true
 
 runs:
   using: "composite"
@@ -39,12 +38,11 @@ runs:
         .github/workflows/actions/prepare_env/cache/go.sum
 
   - name: Restore api cache
-    if: inputs.generateCache == 'false'
     id: api-cache-restore
     uses: actions/cache/restore@v4
     with:
       path: api/build
-      key: api
+      key: ${{ inputs.cacheTag }}
 
   - name: Build API
     if: steps.api-cache-restore.outputs.cache-hit != 'true'
@@ -56,4 +54,4 @@ runs:
     uses: actions/cache/save@v4
     with:
       path: api/build
-      key: api
+      key: ${{ inputs.cacheTag }}
