@@ -39,27 +39,31 @@ void initApm() {
             [&tracer](const drogon::HttpRequestPtr &req) {
                 auto traceId = req->getHeader("trace_id");
                 auto parentSpanId = req->getHeader("parent_span_id");
+                std::cout << "Parent trace: " << traceId << " span: " << parentSpanId << std::endl;
+
+                trace_api::StartSpanOptions options;
 
                 if (traceId.size() != 32 || parentSpanId.size() != 16) {
                     std::cerr << "Invalid trace_id or parent_span_id length" << std::endl;
-                    return;
+                } else {
+                    // convert to opentelemetry types
+                    std::vector<uint8_t> traceIdVec(traceId.begin(), traceId.end());
+                    std::vector<u_int8_t> parentSpanIdVec(parentSpanId.begin(), parentSpanId.end());
+
+                    auto traceIdP = trace_api::TraceId(
+                            opentelemetry::nostd::span<const uint8_t, 16>(traceIdVec.data(), 16));
+                    auto parentSpanIdP = trace_api::SpanId(
+                            opentelemetry::nostd::span<const uint8_t, 8>(parentSpanIdVec.data(), 8));
+
+                    trace_api::SpanContext spanContext = trace_api::SpanContext(
+                            traceIdP,
+                            parentSpanIdP,
+                            trace_api::TraceFlags(trace_api::TraceFlags::kIsSampled),
+                            true
+                    );
+
+                    options.parent = spanContext;
                 }
-
-                // convert to opentelemetry types
-                std::vector<uint8_t> traceIdVec(traceId.begin(), traceId.end());
-                std::vector<u_int8_t> parentSpanIdVec(parentSpanId.begin(), parentSpanId.end());
-
-                auto traceIdP = trace_api::TraceId(
-                        opentelemetry::nostd::span<const uint8_t, 16>(traceIdVec.data(), 16));
-                auto parentSpanIdP = trace_api::SpanId(
-                        opentelemetry::nostd::span<const uint8_t, 8>(parentSpanIdVec.data(), 8));
-
-                trace_api::SpanContext spanContext = trace_api::SpanContext(
-                        traceIdP,
-                        parentSpanIdP,
-                        trace_api::TraceFlags(trace_api::TraceFlags::kIsSampled),
-                        true
-                );
 
                 std::map<std::string, opentelemetry::common::AttributeValue> attributes;
                 attributes["service.name"] = "est-back";
@@ -67,9 +71,6 @@ void initApm() {
                 attributes["deployment.environment"] = "production";
                 attributes["http.method"] = req->method();
                 attributes["http.url"] = req->path();
-
-                trace_api::StartSpanOptions options;
-                options.parent = spanContext;
 
                 spans[traceId] = tracer->StartSpan(req->path(), attributes, options);
             });
@@ -84,6 +85,8 @@ void initApm() {
                     } else {
                         spans[traceId]->SetStatus(opentelemetry::trace::StatusCode::kOk);
                     }
+
+                    std::cout << "Sending trace: " << traceId << std::endl;
                     spans[traceId]->End();
 
                     spans.erase(traceId);

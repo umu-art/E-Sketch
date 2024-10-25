@@ -45,6 +45,19 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: password
+            - name: ELASTIC_APM_SERVER_URL
+              value: http://apm-server.est-monitoring.svc.cluster.local:8200
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-credentials
+                  key: password
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: est-mono
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: ru.est.mono
+            - name: ELASTIC_APM_ENVIRONMENT
+              value: production
 
           volumeMounts:
             - name: config
