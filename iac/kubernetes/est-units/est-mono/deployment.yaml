@@ -60,7 +60,9 @@ spec:
             - name: ELASTIC_APM_ENVIRONMENT
               value: est
             - name: ELASTIC_APM_TRACE_METHODS
-              value: ru.est.mono.*
+              value: >-
+                ru.est.mono.service.*
+                ru.est.mono.controller.*
 
           volumeMounts:
             - name: config
