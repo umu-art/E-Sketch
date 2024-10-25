@@ -112,6 +112,21 @@ paths:
       responses:
         200:
           description: Успеха
+    patch:
+      tags:
+        - board
+      summary: Обновить доступ к доске
+      operationId: updateShare
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackSharingDto"
+      responses:
+        200:
+          description: Успеха
     delete:
       tags:
         - board
@@ -215,12 +230,13 @@ components:
     UpsertBoardDto:
       required:
         - name
-        - description
       properties:
         name:
           type: string
         description:
           type: string
+        linkSharedMode:
+          $ref: "#/components/schemas/LinkShareMode"
 
     UnshareBoardDto:
       required:

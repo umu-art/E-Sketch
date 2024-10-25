@@ -201,6 +201,21 @@ paths:
       responses:
         200:
           description: Успеха
+    patch:
+      tags:
+        - board
+      summary: Изменить уровень доступа к доске
+      operationId: changeAccess
+      parameters:
+        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareBoardDto"
+      responses:
+        200:
+          description: Успеха
     delete:
       tags:
         - board
@@ -256,10 +271,10 @@ components:
 
     AuthDto:
       required:
-        - email
+        - username
         - passwordHash
       properties:
-        email:
+        username:
           type: string
         passwordHash:
           type: string

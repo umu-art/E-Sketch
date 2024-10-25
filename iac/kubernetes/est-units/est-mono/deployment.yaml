@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: est-mono
+  namespace: est-units
+  labels:
+    app: est-mono
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: est-mono
+
+  template:
+    metadata:
+      name: est-mono
+      labels:
+        app: est-mono
+
+    spec:
+      containers:
+        - name: est-mono
+          image: ghcr.io/umu-art/est-mono:master
+          imagePullPolicy: Always
+
+          env:
+            - name: JAVA_OPTS
+              value: >-
+                -Dspring.config.location=file:/config/application.yml
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-token
+                  key: token
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 3001
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 15
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 3001
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 15
+
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "300m"
+            limits:
+              memory: "1000Mi"
+              cpu: "600m"
+
+      volumes:
+        - name: config
+          configMap:
+            name: application-properties-mono
+
+      imagePullSecrets:
+        - name: github-container-registry
+
+      restartPolicy: Always
+      
