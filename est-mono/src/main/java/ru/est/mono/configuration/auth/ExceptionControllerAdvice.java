@@ -44,6 +44,8 @@ public class ExceptionControllerAdvice {
             error.setErrorMessage("Неверный логин или пароль");
         }
 
-        return ResponseEntity.ok(error);
+        return ResponseEntity
+                .status(error.getErrorCode())
+                .body(error);
     }
 }
