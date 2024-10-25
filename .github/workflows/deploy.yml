@@ -5,29 +5,16 @@ on:
     branches: [ "master" ]
 
 jobs:
-  super-lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Super-linter
-        uses: super-linter/super-linter@v7.1.0
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   lint-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
-        uses: ./.github/workflows/actions/prepare_env
+      - name: Set up Node.js 21
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: 21
 
       - name: Install redocly
         run: npm i -g @redocly/cli@latest
@@ -38,50 +25,50 @@ jobs:
       - name: Lint back API
         run: cd ./api && npx @redocly/cli@latest lint ./est-back-api.yaml --config ./config/lint.yaml
 
-
-  test-api:
-    needs: [ lint-api ]
+  build-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
   lint-cpp:
-    needs: [ test-api ]
+    needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: cpp-linter/cpp-linter-action@v2
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: './est-back/.clang-format'  # Use .clang-format config file
+          style: 'file'  # Use .clang-format config file
           tidy-checks: '-*' # disable clang-tidy
           thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          files-changed-only: false
+
       - name: Fail
         if: steps.linter.outputs.checks-failed > 0
         run: exit 1
 
   test-back:
-    needs: [ test-api ]
+    needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
 #      - name: Run tests in docker
 #        uses: docker/build-push-action@v5.3.0
@@ -103,11 +90,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Build image
         uses: ./.github/workflows/actions/build_image
@@ -118,18 +104,17 @@ jobs:
 
 
   test-front:
-    needs: [ test-api ]
+    needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Install deps
         run: cd ./est-front && npm install
@@ -151,11 +136,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Install deps
         run: cd ./est-front && npm install
@@ -172,18 +156,17 @@ jobs:
 
 
   test-proxy:
-    needs: [ test-api ]
+    needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Install deps
         run: cd ./est-proxy && go mod tidy
@@ -205,11 +188,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Install deps
         run: cd ./est-proxy && go mod tidy
@@ -226,18 +208,17 @@ jobs:
 
 
   test-mono:
-    needs: [ test-api ]
+    needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Build with Maven
         working-directory: ./est-mono
@@ -257,11 +238,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare
+      - name: Prepare and build Api
         uses: ./.github/workflows/actions/prepare_env
-
-      - name: Build API
-        uses: ./.github/workflows/actions/build_api
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
 
       - name: Build with Maven
         working-directory: ./est-mono
