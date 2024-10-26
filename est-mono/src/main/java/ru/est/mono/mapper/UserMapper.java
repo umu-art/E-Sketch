@@ -5,7 +5,6 @@ import ru.est.mono.domain.UserEntity;
 import ru.est.mono.model.UserDto;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

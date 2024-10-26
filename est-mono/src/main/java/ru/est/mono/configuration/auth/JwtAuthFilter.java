@@ -35,6 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
+    public static UserEntity getPerformer() {
+        return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         if (IGNORE_URL.contains(request.getRequestURI())) {
@@ -47,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (jwt == null || !jwtService.validateJwtToken(jwt)) {
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getOutputStream().write(StringUtils.getBytesUtf8("{\"errorCode\":401,\"errorMessage\":\"Требуется авторизация\"}"));
+            response.getOutputStream().write(StringUtils.getBytesUtf8("Требуется авторизация"));
             return;
         }
 
@@ -75,9 +79,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return authCookie
                 .map(Cookie::getValue)
                 .orElse(null);
-    }
-
-    public static UserEntity getPerformer() {
-        return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
