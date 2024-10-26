@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME} main.cpp)
 find_package(absl REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(CURL REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 find_package(opentelemetry-cpp CONFIG REQUIRED)
 target_include_directories(${PROJECT_NAME} PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})

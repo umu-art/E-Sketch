@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogon/HttpController.h>
+#include "../services/BoardService.h"
 
 using namespace drogon;
 

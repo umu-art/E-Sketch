@@ -1,7 +1,6 @@
 #include <drogon/drogon.h>
 #include "./apm.cpp"
 
-
 int main() {
     // Load config
     drogon::app().loadConfigFile("../config.json");
