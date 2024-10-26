@@ -90,7 +90,8 @@ else
     java -jar ./build/openapi-generator-cli.jar generate\
       -i ./est-back-api.yaml\
       -g cpp-pistache-server\
-      -o ./build/est-back-cpp
+      -o ./build/est-back-cpp\
+      -c ./config/cpp.yaml
     echo "est-back-cpp C++ API server build completed"
   } &
   pids+=($!)
