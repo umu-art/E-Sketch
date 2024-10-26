@@ -89,9 +89,8 @@ else
     echo "Generating est-back-cpp C++ API server"
     java -jar ./build/openapi-generator-cli.jar generate\
       -i ./est-back-api.yaml\
-      -g cpp-restbed-server\
-      -o ./build/est-back-cpp\
-      -c ./config/cpp-restbed-server.yaml
+      -g cpp-pistache-server\
+      -o ./build/est-back-cpp
     echo "est-back-cpp C++ API server build completed"
   } &
   pids+=($!)

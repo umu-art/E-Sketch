@@ -1,3 +1,0 @@
-additionalProperties:
-  apiPackage: est_back.api
-  modelPackage: est_back.model
