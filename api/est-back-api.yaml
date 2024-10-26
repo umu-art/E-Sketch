@@ -170,6 +170,7 @@ components:
         - description
         - ownerId
         - sharedWith
+        - linkSharedMode
       properties:
         id:
           type: string

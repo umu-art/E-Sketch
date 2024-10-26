@@ -18,19 +18,13 @@ namespace est_back::controller {
         METHOD_LIST_END
     private:
         using Callback = std::function<void(const HttpResponsePtr&)>&&;
-        void listByUserId(const HttpRequestPtr& req, Callback callback,
-                          std::string&& userId);
+        void listByUserId(const HttpRequestPtr& req, Callback callback, std::string&& userId);
         void create(const HttpRequestPtr& req, Callback callback);
-        void getByUuid(const HttpRequestPtr& req, Callback callback,
-                       std::string&& boardId);
-        void update(const HttpRequestPtr& req, Callback callback,
-                    std::string&& boardId);
-        void deleteBoard(const HttpRequestPtr& req, Callback callback,
-                         std::string&& boardId);
-        void share(const HttpRequestPtr& req, Callback callback,
-                   std::string&& boardId);
-        void unshare(const HttpRequestPtr& req, Callback callback,
-                     std::string&& boardId);
+        void getByUuid(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void update(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void share(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void unshare(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
     };
 }  // namespace est_back::controller
 // namespace est- back

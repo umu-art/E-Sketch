@@ -1,13 +1,14 @@
 #include "BoardController.hpp"
-
+#include "../services/BoardService.h"
 using namespace est_back::controller;
 
-void BoardController::listByUserId(const HttpRequestPtr& req, Callback callback,
-                                   std::string&& userId) {
-    LOG_DEBUG << "User: " << userId;
-    Json::Value ret;
-    ret["userId"] = userId;
-    auto resp = HttpResponse::newHttpJsonResponse(ret);
+void BoardController::listByUserId(const HttpRequestPtr& req, Callback callback, std::string&& userId) {
+    auto backBoardListDto = est_back::service::getBackBoardListDto(userId);
+
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(backBoardListDto.toJsonString());
     callback(resp);
 }
 
@@ -20,22 +21,17 @@ void BoardController::create(const HttpRequestPtr& req, Callback callback) {
     callback(resp);
 }
 
-void BoardController::getByUuid(const HttpRequestPtr& req, Callback callback,
-                                std::string&& boardId) {
+void BoardController::getByUuid(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
 
-void BoardController::update(const HttpRequestPtr& req, Callback callback,
-                             std::string&& boardId) {
+void BoardController::update(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
 
-void BoardController::deleteBoard(const HttpRequestPtr& req, Callback callback,
-                                  std::string&& boardId) {
+void BoardController::deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
 
-void BoardController::share(const HttpRequestPtr& req, Callback callback,
-                            std::string&& boardId) {
+void BoardController::share(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
 
-void BoardController::unshare(const HttpRequestPtr& req, Callback callback,
-                              std::string&& boardId) {
+void BoardController::unshare(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
