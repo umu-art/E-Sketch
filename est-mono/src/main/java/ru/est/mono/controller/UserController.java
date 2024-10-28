@@ -3,6 +3,7 @@ package ru.est.mono.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -33,7 +34,11 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<Void> register(RegisterDto registerDto) {
         if (userService.existsByUsername(registerDto.getUsername())) {
-            throw new BadRequestException("Пользователь с таким username уже существует");
+            throw new BadRequestException("Пользователь с таким никнеймом уже существует");
+        }
+
+        if (userService.existsByEmail(registerDto.getEmail())) {
+            throw new BadRequestException("На этот email уже есть аккаунт");
         }
 
         UserEntity user = new UserEntity();
@@ -55,8 +60,14 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<Void> login(AuthDto authDto) {
+        var user = userService.getByEmail(authDto.getEmail());
+
+        if (user.isEmpty()) {
+            throw new BadCredentialsException("Неверный email или пароль");
+        }
+
         var authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authDto.getUsername(), authDto.getPasswordHash()));
+                new UsernamePasswordAuthenticationToken(user.get().getUsername(), authDto.getPasswordHash()));
 
         var token = jwtService.generateJwtToken(authentication);
 

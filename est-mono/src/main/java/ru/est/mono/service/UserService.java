@@ -11,11 +11,15 @@ public interface UserService {
 
     boolean existsByUsername(String username);
 
+    boolean existsByEmail(String email);
+
     void register(UserEntity user);
 
     UserDto getSelf();
 
     Optional<UserDto> getUserById(UUID id);
+
+    Optional<UserDto> getByEmail(String email);
 
     List<UserDto> searchByUsername(String username);
 }

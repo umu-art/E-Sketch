@@ -272,10 +272,10 @@ components:
 
     AuthDto:
       required:
-        - username
+        - email
         - passwordHash
       properties:
-        username:
+        email:
           type: string
         passwordHash:
           type: string

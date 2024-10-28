@@ -40,6 +40,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    public boolean existsByEmail(String email) {
+        return userJpa.existsByEmail(email);
+    }
+
+    @Override
     @Transactional
     public void register(UserEntity user) {
         user.setId(UUID.randomUUID());
@@ -57,6 +62,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional(readOnly = true)
     public Optional<UserDto> getUserById(UUID id) {
         var entity = userJpa.findById(id);
+        return entity.map(userMapper::toDto);
+    }
+
+    @Override
+    public Optional<UserDto> getByEmail(String email) {
+        var entity = userJpa.findByEmail(email);
         return entity.map(userMapper::toDto);
     }
 

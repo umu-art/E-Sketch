@@ -33,7 +33,7 @@ public class ExceptionControllerAdvice {
 
         if (ex instanceof BadCredentialsException) {
             errorCode = 401;
-            errorMessage = "Неверный логин или пароль";
+            errorMessage = "Неверный email или пароль";
         }
 
         return ResponseEntity
