@@ -131,6 +131,10 @@ jobs:
         with:
           cacheTag: api-${{ hashFiles('api/') }}
 
+      - name: Install java api
+        working-directory: api/build/est-mono-api
+        run: mvn clean install
+
       - name: Build with Maven
         working-directory: ./est-mono
         run: mvn -B test -T1C --file pom.xml
