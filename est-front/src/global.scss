@@ -1,0 +1,64 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.flex {
+    display: flex;
+}
+
+.column {
+    flex-direction: column;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-items-center {
+    justify-items: center;
+}
+
+.align-content-center {
+    align-content: center;
+}
+
+.w100vw {
+    width: 100vw;
+}
+
+.h100vh {
+    height: 100vh;
+}
+
+.w100p {
+    width: 100%;
+}
+
+.h100p {
+    height: 100%;
+}
+
+.mw100vw {
+    min-width: 100vw;
+}
+
+.mh100vh {
+    min-height: 100vh;
+}
+
+.mw100p {
+    min-width: 100%;
+}
+
+.mh100p {
+    min-height: 100%;
+}
