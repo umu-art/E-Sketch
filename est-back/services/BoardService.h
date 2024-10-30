@@ -35,6 +35,19 @@ namespace est_back::service {
         return oss.str();
     }
 
+    osm::BackBoardDto rowToBoardDto(const drogon::orm::Row& row) {
+        osm::BackBoardDto boardDto;
+        boardDto.setId(row["id"].as<std::string>());
+        boardDto.setName(row["name"].as<std::string>());
+        boardDto.setDescription(row["description"].as<std::string>());
+        boardDto.setOwnerId(row["owner_id"].as<std::string>());
+        osm::LinkShareMode linkShareMode;
+        nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
+        osm::from_json(j, linkShareMode);
+        boardDto.setLinkSharedMode(linkShareMode);
+        return boardDto;
+    }
+
     void addBackSharingDtoToMap(std::map<std::string, std::vector<osm::BackSharingDto>>& mp,
                                 const drogon::orm::Row& sharingDtoRow) {
         nlohmann::json backSharingDtoJson = nlohmann::json::object();
@@ -94,15 +107,7 @@ namespace est_back::service {
             }
         }
         for (const auto& row : resGet) {
-            osm::BackBoardDto boardDto;
-            boardDto.setId(row["id"].as<std::string>());
-            boardDto.setName(row["name"].as<std::string>());
-            boardDto.setDescription(row["description"].as<std::string>());
-            boardDto.setOwnerId(row["owner_id"].as<std::string>());
-            osm::LinkShareMode linkShareMode;
-            nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
-            osm::from_json(j, linkShareMode);
-            boardDto.setLinkSharedMode(linkShareMode);
+            osm::BackBoardDto boardDto = rowToBoardDto(row);
             if (row["owner_id"].as<std::string>() == userId) {
                 boardDto.setSharedWith(mineSharedWith[row["id"].as<std::string>()]);
                 mine.push_back(boardDto);
@@ -140,8 +145,8 @@ namespace est_back::service {
         boardDto.setOwnerId(userId);
         osm::LinkShareMode linkShareMode;
         if (upsertBoardDto.getLinkSharedMode().getValue() ==
-            org::openapitools::server::model::LinkShareMode::eLinkShareMode::INVALID_VALUE_OPENAPI_GENERATED) {
-            linkShareMode.setValue(org::openapitools::server::model::LinkShareMode::eLinkShareMode::NONE_BY_LINK);
+            osm::LinkShareMode::eLinkShareMode::INVALID_VALUE_OPENAPI_GENERATED) {
+            linkShareMode.setValue(osm::LinkShareMode::eLinkShareMode::NONE_BY_LINK);
         } else {
             linkShareMode.setValue(upsertBoardDto.getLinkSharedMode().getValue());
         }
@@ -152,19 +157,24 @@ namespace est_back::service {
 
     osm::BackBoardDto getBoard(const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto res = clientPtr->execSqlAsyncFuture(
-            "select * from board where id = $1;",
-            boardId);
+        auto res = clientPtr->execSqlAsyncFuture("select * from board where id = $1;", boardId);
         auto row = res.get().front();
-        osm::BackBoardDto boardDto;
-        boardDto.setId(row["id"].as<std::string>());
-        boardDto.setName(row["name"].as<std::string>());
-        boardDto.setDescription(row["description"].as<std::string>());
-        boardDto.setOwnerId(row["owner_id"].as<std::string>());
-        osm::LinkShareMode linkShareMode;
-        nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
-        osm::from_json(j, linkShareMode);
-        boardDto.setLinkSharedMode(linkShareMode);
+        osm::BackBoardDto boardDto = rowToBoardDto(row);
         return boardDto;
+    }
+
+    void updateBoard(const osm::UpsertBoardDto& upsertBoardDto, const std::string& boardId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        osm::LinkShareMode linkShareMode;
+        if (upsertBoardDto.getLinkSharedMode().getValue() ==
+            osm::LinkShareMode::eLinkShareMode::INVALID_VALUE_OPENAPI_GENERATED) {
+            linkShareMode.setValue(osm::LinkShareMode::eLinkShareMode::NONE_BY_LINK);
+        } else {
+            linkShareMode.setValue(upsertBoardDto.getLinkSharedMode().getValue());
+        }
+        clientPtr->execSqlSync(
+            "update board set name = $1, description = $2, link_shared_mode = $3 where id = $4;",
+            upsertBoardDto.getName(), upsertBoardDto.getDescription(),
+            toUpper(linkSharedModeToString(linkShareMode)), boardId);
     }
 }  // namespace est_back::service
