@@ -3,7 +3,6 @@ using namespace est_back::controller;
 
 void BoardController::listByUserId(const HttpRequestPtr& req, Callback callback, std::string&& userId) {
     auto backBoardListDto = est_back::service::getBackBoardListDto(userId);
-
     auto resp = HttpResponse::newHttpResponse();
     resp->setStatusCode(k200OK);
     resp->setContentTypeCode(CT_APPLICATION_JSON);
@@ -78,7 +77,27 @@ void BoardController::share(const HttpRequestPtr& req, Callback callback, std::s
 }
 
 void BoardController::updateShare(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
+    auto body = req->getBody();
+    auto j = nlohmann::json::parse(body);
+    org::openapitools::server::model::BackSharingDto sharingDto;
+    org::openapitools::server::model::from_json(j, sharingDto);
+    est_back::service::updateShare(sharingDto, boardId);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_TEXT_PLAIN);
+    resp->setBody("OK");
+    callback(resp);
 }
 
 void BoardController::unshare(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
+    auto body = req->getBody();
+    auto j = nlohmann::json::parse(body);
+    org::openapitools::server::model::UnshareBoardDto unshareBoardDto;
+    org::openapitools::server::model::from_json(j, unshareBoardDto);
+    est_back::service::unshareBoard(unshareBoardDto, boardId);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_TEXT_PLAIN);
+    resp->setBody("OK");
+    callback(resp);
 }
