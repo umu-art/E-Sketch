@@ -1,45 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
-import {UserApi} from 'est_proxy_api';
+import './global.scss';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-let apiInstance = new UserApi();
-apiInstance.apiClient.basePath = window.location.origin;
-apiInstance.apiClient.defaultHeaders = {
-    ...apiInstance.apiClient.defaultHeaders,
-    'Authorization': 'Bearer token_example'
-}
-let opts = {
-    'authDto': {
-        'email': 'email_example',
-        'password': 'password_example'
-    }
-};
-apiInstance.login(opts).then(() => {
-    console.log('API called successfully.');
-}, (error) => {
-    console.error(error);
-});
+import SignUpPage from './Pages/Auth/SignUpPage/SignUpPage';
+import SignInPage from './Pages/Auth/SignInPage/SignInPage';
 
 
 function App() {
     return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo"/>
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
-        </div>
+      <Router>
+          <Routes>
+            <Route path='auth'>
+                <Route path="signup" element={<SignUpPage />} />
+                <Route path="signin" element={<SignInPage />} />
+            </Route>
+          </Routes>
+      </Router>
     );
-}
+  } 
 
 export default App;
