@@ -150,4 +150,21 @@ namespace est_back::service {
         return boardDto;
     }
 
+    osm::BackBoardDto getBoard(const std::string& boardId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        auto res = clientPtr->execSqlAsyncFuture(
+            "select * from board where id = $1;",
+            boardId);
+        auto row = res.get().front();
+        osm::BackBoardDto boardDto;
+        boardDto.setId(row["id"].as<std::string>());
+        boardDto.setName(row["name"].as<std::string>());
+        boardDto.setDescription(row["description"].as<std::string>());
+        boardDto.setOwnerId(row["owner_id"].as<std::string>());
+        osm::LinkShareMode linkShareMode;
+        nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
+        osm::from_json(j, linkShareMode);
+        boardDto.setLinkSharedMode(linkShareMode);
+        return boardDto;
+    }
 }  // namespace est_back::service
