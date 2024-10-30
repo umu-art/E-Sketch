@@ -15,6 +15,7 @@ namespace est_back::controller {
         ADD_METHOD_TO(BoardController::update, "/back/board/{boardId}", Patch);
         ADD_METHOD_TO(BoardController::deleteBoard, "/back/board/{boardId}", Delete);
         ADD_METHOD_TO(BoardController::share, "/back/board/share/{boardId}", Post);
+        ADD_METHOD_TO(BoardController::updateShare, "/back/board/share/{boardId}", Patch);
         ADD_METHOD_TO(BoardController::unshare, "/back/board/share/{boardId}", Delete);
         METHOD_LIST_END
     private:
@@ -25,6 +26,7 @@ namespace est_back::controller {
         void update(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void share(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void updateShare(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void unshare(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
     };
 }  // namespace est_back::controller

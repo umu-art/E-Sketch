@@ -172,9 +172,24 @@ namespace est_back::service {
         } else {
             linkShareMode.setValue(upsertBoardDto.getLinkSharedMode().getValue());
         }
-        clientPtr->execSqlSync(
-            "update board set name = $1, description = $2, link_shared_mode = $3 where id = $4;",
-            upsertBoardDto.getName(), upsertBoardDto.getDescription(),
-            toUpper(linkSharedModeToString(linkShareMode)), boardId);
+        clientPtr->execSqlSync("update board set name = $1, description = $2, link_shared_mode = $3 where id = $4;",
+                               upsertBoardDto.getName(), upsertBoardDto.getDescription(),
+                               toUpper(linkSharedModeToString(linkShareMode)), boardId);
     }
+
+    void deleteBoard(const std::string& boardId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        clientPtr->execSqlAsyncFuture("delete from board where id = $1;", boardId);
+    }
+
+    void shareBoard(const osm::BackSharingDto& sharingDto, const std::string& boardId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        auto sharingDtoJson = nlohmann::json::object();
+        osm::to_json(sharingDtoJson, sharingDto);
+        clientPtr->execSqlAsyncFuture(
+            "insert into board_sharing(id, board_id, user_id, sharing_mode) values($1, $2, $3, $4);",
+            drogon::utils::getUuid(), boardId, sharingDto.getUserId(),
+            toUpper(sharingDtoJson["access"].get<std::string>()));
+    }
+
 }  // namespace est_back::service
