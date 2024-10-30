@@ -14,6 +14,7 @@ function App() {
                 <Route path="signup" element={<SignUpPage />} />
                 <Route path="signin" element={<SignInPage />} />
             </Route>
+            <Route path='*' element={"-_-"} />
           </Routes>
       </Router>
     );
