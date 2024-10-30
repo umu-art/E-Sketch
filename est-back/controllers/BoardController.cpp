@@ -56,9 +56,28 @@ void BoardController::update(const HttpRequestPtr& req, Callback callback, std::
 }
 
 void BoardController::deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
+    est_back::service::deleteBoard(boardId);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_TEXT_PLAIN);
+    resp->setBody("OK");
+    callback(resp);
 }
 
 void BoardController::share(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
+    auto body = req->getBody();
+    auto j = nlohmann::json::parse(body);
+    org::openapitools::server::model::BackSharingDto sharingDto;
+    org::openapitools::server::model::from_json(j, sharingDto);
+    est_back::service::shareBoard(sharingDto, boardId);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_TEXT_PLAIN);
+    resp->setBody("OK");
+    callback(resp);
+}
+
+void BoardController::updateShare(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
 }
 
 void BoardController::unshare(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
