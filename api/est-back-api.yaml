@@ -32,12 +32,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackBoardListDto"
 
-  /back/board/create:
+  /back/board/create/{userId}:
     post:
       tags:
         - board
       summary: Создание доски
       operationId: create
+      parameters:
+        - $ref: "#/components/parameters/UserId"
       requestBody:
         content:
           application/json:
