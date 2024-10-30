@@ -5,9 +5,9 @@
 
 #include "../../api/build/est-back-cpp/model/BackBoardListDto.h"
 #include "../../api/build/est-back-cpp/model/LinkShareMode.h"
-#include "../../api/build//est-back-cpp/model/UpsertBoardDto.h";
+#include "../../api/build//est-back-cpp/model/UpsertBoardDto.h"
 namespace est_back::service {
-
+    namespace osm = org::openapitools::server::model;
     std::string toUpper(const std::string& s) {
         std::string res;
         res.reserve(s.size());
@@ -35,19 +35,18 @@ namespace est_back::service {
         return oss.str();
     }
 
-    void addBackSharingDtoToMap(
-        std::map<std::string, std::vector<org::openapitools::server::model::BackSharingDto>>& mp,
-        const drogon::orm::Row& sharingDtoRow) {
+    void addBackSharingDtoToMap(std::map<std::string, std::vector<osm::BackSharingDto>>& mp,
+                                const drogon::orm::Row& sharingDtoRow) {
         nlohmann::json backSharingDtoJson = nlohmann::json::object();
         auto boardId = sharingDtoRow["board_id"].as<std::string>();
         backSharingDtoJson["userId"] = sharingDtoRow["user_id"].as<std::string>();
         backSharingDtoJson["access"] = toLower(sharingDtoRow["sharing_mode"].as<std::string>());
-        org::openapitools::server::model::BackSharingDto backSharingDto;
-        org::openapitools::server::model::from_json(backSharingDtoJson, backSharingDto);
+        osm::BackSharingDto backSharingDto;
+        osm::from_json(backSharingDtoJson, backSharingDto);
         mp[boardId].push_back(backSharingDto);
     }
 
-    org::openapitools::server::model::BackBoardListDto getBackBoardListDto(const std::string& userId) {
+    osm::BackBoardListDto getBackBoardListDto(const std::string& userId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto res = clientPtr->execSqlAsyncFuture(
             "select * "
@@ -58,8 +57,8 @@ namespace est_back::service {
             userId);
         std::vector<std::string> mineBoardId;
         std::vector<std::string> sharedBoardId;
-        std::vector<org::openapitools::server::model::BackBoardDto> mine;
-        std::vector<org::openapitools::server::model::BackBoardDto> shared;
+        std::vector<osm::BackBoardDto> mine;
+        std::vector<osm::BackBoardDto> shared;
         auto resGet = res.get();
         for (const auto& row : resGet) {
             if (row["owner_id"].as<std::string>() == userId) {
@@ -68,8 +67,8 @@ namespace est_back::service {
                 sharedBoardId.push_back(row["id"].as<std::string>());
             }
         }
-        std::map<std::string, std::vector<org::openapitools::server::model::BackSharingDto>> mineSharedWith;
-        std::map<std::string, std::vector<org::openapitools::server::model::BackSharingDto>> sharedSharedWith;
+        std::map<std::string, std::vector<osm::BackSharingDto>> mineSharedWith;
+        std::map<std::string, std::vector<osm::BackSharingDto>> sharedSharedWith;
         auto mineBoardIdStr = strVectorToString(mineBoardId);
         auto sharedBoardIdStr = strVectorToString(sharedBoardId);
         if (!mineBoardIdStr.empty()) {
@@ -95,14 +94,14 @@ namespace est_back::service {
             }
         }
         for (const auto& row : resGet) {
-            org::openapitools::server::model::BackBoardDto boardDto;
+            osm::BackBoardDto boardDto;
             boardDto.setId(row["id"].as<std::string>());
             boardDto.setName(row["name"].as<std::string>());
             boardDto.setDescription(row["description"].as<std::string>());
             boardDto.setOwnerId(row["owner_id"].as<std::string>());
-            org::openapitools::server::model::LinkShareMode linkShareMode;
+            osm::LinkShareMode linkShareMode;
             nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
-            org::openapitools::server::model::from_json(j, linkShareMode);
+            osm::from_json(j, linkShareMode);
             boardDto.setLinkSharedMode(linkShareMode);
             if (row["owner_id"].as<std::string>() == userId) {
                 boardDto.setSharedWith(mineSharedWith[row["id"].as<std::string>()]);
@@ -112,13 +111,43 @@ namespace est_back::service {
                 shared.push_back(boardDto);
             }
         }
-        org::openapitools::server::model::BackBoardListDto backBoardListDto;
+        osm::BackBoardListDto backBoardListDto;
         backBoardListDto.setMine(mine);
         backBoardListDto.setShared(shared);
         return backBoardListDto;
     }
 
-    void createBoard(org::openapitools::server::model::UpsertBoardDto upsertBoardDto) {
+    std::string linkSharedModeToString(const osm::LinkShareMode& linkShareMode) {
+        nlohmann::json j;
+        osm::to_json(j, linkShareMode);
+        return j.get<std::string>();
+    }
+
+    void createBoardInDB(const osm::BackBoardDto& boardDto) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        clientPtr->execSqlAsyncFuture(
+            "insert into board(id, name, description, owner_id, link_shared_mode) "
+            "values($1, $2, $3, $4, $5);",
+            boardDto.getId(), boardDto.getName(), boardDto.getDescription(), boardDto.getOwnerId(),
+            toUpper(linkSharedModeToString(boardDto.getLinkSharedMode())));
+    }
+
+    osm::BackBoardDto createBoard(const osm::UpsertBoardDto& upsertBoardDto, const std::string& userId) {
+        osm::BackBoardDto boardDto;
+        boardDto.setId(drogon::utils::getUuid());
+        boardDto.setName(upsertBoardDto.getName());
+        boardDto.setDescription(upsertBoardDto.getDescription());
+        boardDto.setOwnerId(userId);
+        osm::LinkShareMode linkShareMode;
+        if (upsertBoardDto.getLinkSharedMode().getValue() ==
+            org::openapitools::server::model::LinkShareMode::eLinkShareMode::INVALID_VALUE_OPENAPI_GENERATED) {
+            linkShareMode.setValue(org::openapitools::server::model::LinkShareMode::eLinkShareMode::NONE_BY_LINK);
+        } else {
+            linkShareMode.setValue(upsertBoardDto.getLinkSharedMode().getValue());
+        }
+        boardDto.setLinkSharedMode(linkShareMode);
+        createBoardInDB(boardDto);
+        return boardDto;
     }
 
 }  // namespace est_back::service

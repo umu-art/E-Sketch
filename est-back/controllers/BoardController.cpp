@@ -13,16 +13,18 @@ void BoardController::listByUserId(const HttpRequestPtr& req, Callback callback,
     callback(resp);
 }
 
-void BoardController::create(const HttpRequestPtr& req, Callback callback) {
+void BoardController::create(const HttpRequestPtr& req, Callback callback, std::string&& userId) {
     auto body = req->getBody();
     nlohmann::json j = nlohmann::json::parse(body);
     org::openapitools::server::model::UpsertBoardDto upsertBoardDto;
     org::openapitools::server::model::from_json(j, upsertBoardDto);
-    //    createBoard(upsertBoardDto);
+    auto boardDto = est_back::service::createBoard(upsertBoardDto, userId);
+    nlohmann::json respJson = nlohmann::json::object();
+    org::openapitools::server::model::to_json(respJson, boardDto);
     auto resp = HttpResponse::newHttpResponse();
     resp->setStatusCode(k200OK);
-    resp->setContentTypeCode(CT_TEXT_PLAIN);
-    resp->setBody("OK");
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(respJson.dump());
     callback(resp);
 }
 

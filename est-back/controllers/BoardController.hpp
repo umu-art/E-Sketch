@@ -10,7 +10,7 @@ namespace est_back::controller {
     public:
         METHOD_LIST_BEGIN
         ADD_METHOD_TO(BoardController::listByUserId, "/back/board/list/{userId}", Get);
-        ADD_METHOD_TO(BoardController::create, "/back/board/create", Post);
+        ADD_METHOD_TO(BoardController::create, "/back/board/create/{userId}", Post);
         ADD_METHOD_TO(BoardController::getByUuid, "/back/board/{boardId}", Get);
         ADD_METHOD_TO(BoardController::update, "/back/board/{boardId}", Patch);
         ADD_METHOD_TO(BoardController::deleteBoard, "/back/board/{boardId}", Delete);
@@ -20,7 +20,7 @@ namespace est_back::controller {
     private:
         using Callback = std::function<void(const HttpResponsePtr&)>&&;
         void listByUserId(const HttpRequestPtr& req, Callback callback, std::string&& userId);
-        void create(const HttpRequestPtr& req, Callback callback);
+        void create(const HttpRequestPtr& req, Callback callback, std::string&& userId);
         void getByUuid(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void update(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
