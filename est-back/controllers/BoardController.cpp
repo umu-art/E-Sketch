@@ -40,6 +40,19 @@ void BoardController::getByUuid(const HttpRequestPtr& req, Callback callback, st
 }
 
 void BoardController::update(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
+    auto body = req->getBody();
+    nlohmann::json j = nlohmann::json::parse(body);
+    org::openapitools::server::model::UpsertBoardDto upsertBoardDto;
+    org::openapitools::server::model::from_json(j, upsertBoardDto);
+    est_back::service::updateBoard(upsertBoardDto, boardId);
+    auto boardDto = est_back::service::getBoard(boardId);
+    auto respJson = nlohmann::json::object();
+    org::openapitools::server::model::to_json(respJson, boardDto);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(respJson.dump());
+    callback(resp);
 }
 
 void BoardController::deleteBoard(const HttpRequestPtr& req, Callback callback, std::string&& boardId) {
