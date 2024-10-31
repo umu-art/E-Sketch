@@ -3,6 +3,7 @@ package service
 import (
 	"est-proxy/src/models"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -10,27 +11,25 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const kSecretKey string = "real-secret-for-real-men"
-const kSigningMethog string = "HS256"
-const kDefaultJWTDuration time.Duration = time.Hour * 2
-
 func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
-	if token.Method.Alg() != kSigningMethog {
-		return nil, fmt.Errorf("invalid JWT signing method: %w, must be %w", token.Method.Alg(), kSigningMethog)
+	signingMethod := os.Getenv("JWT_SIGNING_METHOD")
+
+	if token.Method.Alg() != signingMethod {
+		return nil, fmt.Errorf("Invalid JWT signing method: %s, must be %s", token.Method.Alg(), signingMethod)
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		userIDStr, ok := claims["userID"].(string)
 		if !ok {
-			return nil, fmt.Errorf("missing or invalid 'userUUID' claim")
+			return nil, fmt.Errorf("Missing or invalid 'userID' claim")
 		}
 		userID, err := uuid.Parse(userIDStr)
 		if err != nil {
-			return nil, fmt.Errorf("invalid 'userID' format: %w", err)
+			return nil, fmt.Errorf("Invalid 'userID' format: %w", err)
 		}
 
 		expirationTimeUnix, ok := claims["expirationTime"].(int64)
 		if !ok {
-			return nil, fmt.Errorf("missing or invalid 'expirationTime' claim")
+			return nil, fmt.Errorf("Missing or invalid 'expirationTime' claim")
 		}
 		expirationTime := time.Unix(expirationTimeUnix, 0)
 
@@ -39,13 +38,13 @@ func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
 			ExpirationTime: expirationTime,
 		}, nil
 	}
-	return nil, fmt.Errorf("failed to claim JWT")
+	return nil, fmt.Errorf("Failed to claim JWT")
 }
 
 func GetUserJWTtoken(ctx echo.Context) (*jwt.Token, error) {
 	user, ok := ctx.Get("user").(*jwt.Token)
 	if !ok {
-		return nil, fmt.Errorf("missing or invalid user in context")
+		return nil, fmt.Errorf("Missing or invalid user in context")
 	}
 	return user, nil
 }
@@ -58,8 +57,14 @@ func GetAndParseUserJWT(ctx echo.Context) (*models.ParsedJWT, error) {
 	return ParseUserJWTtoken(*jwtToken)
 }
 
-func GenerateUserJWTtoken(userID uuid.UUID) (jwt.Token, error) {
-	expirationTime := time.Now().Add(kDefaultJWTDuration)
+func GenerateUserJWTtoken(userID uuid.UUID) (*jwt.Token, error) {
+	durationStr := os.Getenv("JWT_DURATION_TIME")
+	duration, err := time.ParseDuration(durationStr)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get jwt duration time: %w", err)
+	}
+
+	expirationTime := time.Now().Add(duration)
 
 	claims := jwt.MapClaims{
 		"userID":       userID.String(),
@@ -68,17 +73,19 @@ func GenerateUserJWTtoken(userID uuid.UUID) (jwt.Token, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return *token, nil
+	return token, nil
 }
 
 func GenerateUserJWTstring(userID uuid.UUID) (string, error) {
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+
 	token, err := GenerateUserJWTtoken(userID)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate token: %w", err)
+		return "", fmt.Errorf("Failed to generate token: %w", err)
 	}
-	tokenString, err := token.SignedString([]byte(kSecretKey))
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", fmt.Errorf("failed to convert token to string: %w", err)
+		return "", fmt.Errorf("Failed to convert token to string: %w", err)
 	}
 	return tokenString, nil
 }

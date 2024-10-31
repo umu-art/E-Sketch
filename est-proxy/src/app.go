@@ -10,8 +10,6 @@ import (
 	"os"
 )
 
-const kDBConfig string = "postgres://est-admin:wjq49t3q_i29f@postgres.est-dbs.svc.cluster.local:5432/est-data"
-
 func main() {
 	checkEnv()
 
@@ -28,7 +26,7 @@ func main() {
 	backApi := estbackapi.NewAPIClient(backApiConfig)
 
 	// PostgreSQL
-	userRepository := service.NewUserRepository(kDBConfig)
+	userRepository := service.NewUserRepository()
 	defer userRepository.Release()
 
 	// Хандлеры
