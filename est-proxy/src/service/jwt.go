@@ -42,11 +42,25 @@ func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
 }
 
 func GetUserJWTtoken(ctx echo.Context) (*jwt.Token, error) {
-	user, ok := ctx.Get("user").(*jwt.Token)
-	if !ok {
-		return nil, fmt.Errorf("Missing or invalid user in context")
+	signingMethod := os.Getenv("JWT_SIGNING_METHOD")
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+
+	tokenCookie, err := ctx.Cookie("jwt_token")
+	if err != nil {
+		return nil, fmt.Errorf("Ошибка при попытке получить кукисы: %w", err)
 	}
-	return user, nil
+	
+	token, err := jwt.Parse(tokenCookie.Value, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != signingMethod {
+			return nil, fmt.Errorf("Неподдерживаемый алгоритм подписи")
+		}
+		return secretKey, nil
+	})
+	
+	if err != nil {
+		return nil, fmt.Errorf("Отсутствует или некорретный jwt токен: %w", err)
+	}
+	return token, nil
 }
 
 func GetAndParseUserJWT(ctx echo.Context) (*models.ParsedJWT, error) {
