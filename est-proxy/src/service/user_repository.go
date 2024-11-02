@@ -18,6 +18,9 @@ type UserRepository struct {
 
 func NewUserRepository() *UserRepository {
 	config, err := pgxpool.ParseConfig(os.Getenv("USER_REPOSIRORY_ADDRESS"))
+
+	config.MaxConns = 1
+
     if err != nil {
         log.Fatalf("Unable to parse config: %v", err)
     }
@@ -59,7 +62,9 @@ func (r *UserRepository) GetIDByUsername(username string) (*uuid.UUID, error) {
 		return nil, fmt.Errorf("Unverified query to closed db")
 	}
 
-	row = r.db.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1", username)
+	row = r.db.QueryRow(context.Background(), 
+		"SELECT id FROM users WHERE username = $1", 
+		username)
 	err = row.Scan(&id)
 	if err == nil {
 		return &id, nil
@@ -77,7 +82,9 @@ func (r *UserRepository) GetIDByEmail(email string) (*uuid.UUID, error) {
 		return nil, fmt.Errorf("Unverified query to closed db")
 	}
 
-	row = r.db.QueryRow(context.Background(), "SELECT id FROM users WHERE email = $1", email)
+	row = r.db.QueryRow(context.Background(), 
+		"SELECT id FROM users WHERE email = $1", 
+		email)
 	err = row.Scan(&id)
 	if err == nil {
 		return &id, nil
@@ -94,11 +101,58 @@ func (r *UserRepository) GetUserByID(id *uuid.UUID) (*models.User, error) {
 		return nil, fmt.Errorf("Unverified query to closed db")
 	}
 
-	row = r.db.QueryRow(context.Background(), "SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1", id)
+	row = r.db.QueryRow(context.Background(), 
+		"SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1", 
+		id)
 	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find user: %w", err)
 	}
 
 	return &user, nil
+}
+
+func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) (*uuid.UUID, error) {
+	var id uuid.UUID
+
+	if r.db == nil {
+		return nil, fmt.Errorf("Unverified query to closed db")
+	}
+
+	err := r.db.QueryRow(context.Background(), 
+		"SELECT id FROM users WHERE username = $1 OR email = $2 LIMIT 1", 
+		username, email).Scan(&id)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	
+	return &id, nil
+}
+
+func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) ([]models.User, error) {
+	query := "SELECT id, username, password_hash, email, avatar FROM users WHERE username ILIKE '%' || $1 || '%'"
+    rows, err := r.db.Query(ctx, query, username)
+    if err != nil {
+        return nil, fmt.Errorf("Failed to parse users, %w", err)
+    }
+    defer rows.Close()
+
+    var users []models.User
+    for rows.Next() {
+        var user models.User
+        if err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar); err != nil {
+            return nil, fmt.Errorf("Failed to parse users, %w", err)
+        }
+        users = append(users, user)
+    }
+
+    if rows.Err() != nil {
+        return nil, fmt.Errorf("Failed to parse users, %w", rows.Err())
+    }
+
+    return users, nil
 }

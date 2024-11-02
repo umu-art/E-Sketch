@@ -19,130 +19,154 @@ func NewUserListener(userRepository *service.UserRepository) *UserListener {
 	return &UserListener{userRepository: userRepository}
 }
 
-func (u UserListener) getSessionStatus(ctx echo.Context) (int, string) {
+func (u UserListener) getSession(ctx echo.Context) (*uuid.UUID, error) {
 	session, err := service.GetAndParseUserJWT(ctx)
 	if err != nil {
-		return http.StatusBadRequest, "Missing or invalid session token"
+		return nil, ctx.String(http.StatusUnauthorized, "Отсутствует или некорректный токен")
 	}
 
 	if session.ExpirationTime.After(time.Now()) {
-		return http.StatusUnauthorized, "Session expired"
+		return nil, ctx.String(http.StatusUnauthorized, "Срок сессии истёк")
 	}
 
 	if _, err := u.userRepository.GetUserByID(&session.UserID); err != nil {
-		return http.StatusUnauthorized, "User entity not found"
+		return nil, ctx.String(http.StatusUnauthorized, "Пользователь не найден")
 	}
 
-	return http.StatusOK, "Session if valid"
+	return &session.UserID, nil
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	statusCode, statusMessage := u.getSessionStatus(ctx)
-	return ctx.String(statusCode, statusMessage)
+	_, sessionStatus := u.getSession(ctx)
+	if sessionStatus != nil {
+		return sessionStatus
+	}
+	return ctx.String(http.StatusOK, "Сессия действительна")
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	session, err := service.GetAndParseUserJWT(ctx)
-	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Missing or invalid session token")
+	userId, sessionStatus := u.getSession(ctx)
+	if sessionStatus != nil {
+		return sessionStatus
 	}
 	
-	user, err := u.userRepository.GetUserByID(&session.UserID)
+	user, err := u.userRepository.GetUserByID(userId)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "User entity not found")
+		return ctx.String(http.StatusBadRequest, "Пользователь не найден")
 	}
 
-	return ctx.JSON(http.StatusOK, mapToProxyDTO(user))
+	return ctx.JSON(http.StatusOK, mapToProxyDto(user))
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
+	_, sessionStatus := u.getSession(ctx)
+	if sessionStatus != nil {
+		return sessionStatus
+	}
+	
 	userIdStr := ctx.QueryParam("userId")
 	userId, err := uuid.Parse(userIdStr)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Missing or invalid User ID")
+		return ctx.String(http.StatusBadRequest, "Отсутствует или некорректный ID")
 	}
 
 	user, err := u.userRepository.GetUserByID(&userId)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "User entity not found")
+		return ctx.String(http.StatusBadRequest, "Пользователь не найден")
 	}
 
-	return ctx.JSON(http.StatusOK, mapToProxyDTO(user))
+	return ctx.JSON(http.StatusOK, mapToProxyDto(user))
 }
 
 func (u UserListener) Login(ctx echo.Context) error {
 	var authDto proxy_models.AuthDto
 	if err := ctx.Bind(&authDto); err != nil {
-		return ctx.String(http.StatusBadRequest, "Missing or invalid email or password")
+		return ctx.String(http.StatusBadRequest, "Отствует или некорректный адрес почты или пароль")
 	}
 
 	userId, err := u.userRepository.GetIDByEmail(authDto.Email)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "User entity not found")
+		return ctx.String(http.StatusBadRequest, "Отствует или некорректный адрес почты или пароль")
 	}
 	
 	user, err := u.userRepository.GetUserByID(userId)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "User entity not found")
+		return ctx.String(http.StatusBadRequest, "Отствует или некорректный адрес почты или пароль")
 	}
 
 	if authDto.PasswordHash != user.PasswordHash {
-		return ctx.String(http.StatusUnauthorized, "Incorrect password")
+		return ctx.String(http.StatusBadRequest, "Отствует или некорректный адрес почты или пароль")
 	}
 
 	token, err := service.GenerateUserJWTstring(*userId)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, "Failed to create session")
+		return ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
 	}
 
-	ctx.Response().Header().Set("Authorization", token)
-	return ctx.String(http.StatusOK, "Account logged in successfully")
+	cookie := new(http.Cookie)
+	cookie.Name = "jwt_token"
+	cookie.Value = token
+	ctx.SetCookie(cookie)
+
+	return ctx.String(http.StatusOK, "Вход в аккаунт выполнен успешно")
 }
 
 func (u UserListener) Register(ctx echo.Context) error {
 	var regDto proxy_models.RegisterDto
 	if err := ctx.Bind(&regDto); err != nil {
-		return ctx.String(http.StatusBadRequest, "Missing or invalid username, email or password")
+		return ctx.String(http.StatusBadRequest, "Отсутствует или некорректный адрес почты, имя пользователя или пароль")
 	}
 
-	userId, _ := u.userRepository.GetIDByUsername(regDto.Username)
-	if userId != nil {
-		return ctx.String(http.StatusConflict, "Account with this username already exists")
+	userId, err := u.userRepository.UserExistsByUsernameOrEmail(regDto.Username, regDto.Email)
+	if userId != nil || err != nil {
+		return ctx.String(http.StatusConflict, "Пользователь с таким именем или email уже существует")
 	}
 
-	userId, _ = u.userRepository.GetIDByEmail(regDto.Email)
-	if userId != nil {
-		return ctx.String(http.StatusConflict, "Account with this email already exists")
-	}
-
-	err := u.userRepository.Create(regDto.Username, regDto.Email, regDto.PasswordHash)
+	err = u.userRepository.Create(regDto.Username, regDto.Email, regDto.PasswordHash)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, "Failed to create account")
+		return ctx.String(http.StatusInternalServerError, "Не получилось создать аккаунт")
 	}
 
-	userId, err = u.userRepository.GetIDByUsername(regDto.Username)
+	userId, err = u.userRepository.GetIDByEmail(regDto.Username)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, "Created user is not found")
+		return ctx.String(http.StatusUnauthorized, "Пользователь не найден")
 	}
 
 	token, err := service.GenerateUserJWTstring(*userId)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, "Failed to create session")
+		return ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
 	}
 
-	ctx.Response().Header().Set("Authorization", token)
-	return ctx.String(http.StatusOK, "Account is registered successfully")
+	cookie := new(http.Cookie)
+	cookie.Name = "jwt_token"
+	cookie.Value = token
+	ctx.SetCookie(cookie)
+	
+	return ctx.String(http.StatusOK, "Аккаунт успешно зарегистрирован")
 }
 
 func (u UserListener) Search(ctx echo.Context) error {
-	//TODO implement me
-	panic("implement me")
+	username := ctx.QueryParam("username")
+	users, err := u.userRepository.SearchByUsernameIgnoreCase(ctx.Request().Context(), username)
+	if err != nil {
+		return ctx.String(http.StatusBadRequest, "Пользователи по данному запросу не найдены")
+	}
+
+	return ctx.JSON(http.StatusOK, mapListToProxyDto(users))
 }
 
-func mapToProxyDTO(user *models.User) proxy_models.UserDto {
+func mapToProxyDto(user *models.User) proxy_models.UserDto {
 	return proxy_models.UserDto{
 		Id: user.ID.String(),
 		Username: user.Username,
 		Avatar: user.Avatar,
 	}
+}
+
+func mapListToProxyDto(users []models.User) []proxy_models.UserDto {
+	var dtos []proxy_models.UserDto
+	for _, user := range users {
+		dtos = append(dtos, mapToProxyDto(&user))
+	}
+	return dtos
 }
