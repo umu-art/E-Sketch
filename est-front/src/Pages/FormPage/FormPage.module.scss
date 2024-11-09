@@ -1,9 +1,15 @@
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 
-    height: 100vh;
-    
-    background-color: #f0f2f5;
+  height: 100vh;
+
+  background-color: #f0f2f5;
+}
+
+.inory {
+  width: 350px;
+  transform: translateX(165px);
 }

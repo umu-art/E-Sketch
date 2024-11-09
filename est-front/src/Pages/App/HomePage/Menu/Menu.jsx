@@ -66,7 +66,7 @@ const AppMenu = () => {
                 content: error,
             })
           });
-    }, []);
+    }, [messageApi]);
 
     return (
         <>

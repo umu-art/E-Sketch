@@ -11,6 +11,7 @@ import classes from './FormPage.module.scss';
 const FormPage = ({title, form, children}) => {
     return (
         <div className={classes.container}>
+            <img className={classes.inory} src="/inory.png" alt="inory"/>
             <Card>
                 <Flex>
                     <Flex style={{ width: 300 }} align='center' justify="center" vertical>

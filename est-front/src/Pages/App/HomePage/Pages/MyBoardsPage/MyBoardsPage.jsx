@@ -38,7 +38,7 @@ const MyBoardsPage = () => {
                 navigate("/auth/signin");
             }
         })
-    }, [])
+    }, [messageApi, navigate])
 
     return (
         <Flex vertical style={{padding: "20px 50px", width: '-webkit-fill-available'}}>
