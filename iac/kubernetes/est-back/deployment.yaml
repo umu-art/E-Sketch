@@ -3,11 +3,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: est-back
-  namespace: est-units
+  namespace: e-sketch
   labels:
     app: est-back
 spec:
-  revisionHistoryLimit: 3
+  revisionHistoryLimit: 2
   replicas: 2
   strategy:
     type: RollingUpdate
@@ -29,20 +29,15 @@ spec:
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: username
+                  name: kasumi-secrets
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: password
+                  name: kasumi-secrets
+                  key: POSTGRES_PASSWORD
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://apm-server.est-monitoring.svc.cluster.local:8200
-            - name: OTEL_EXPORTER_AUTH
-              valueFrom:
-                secretKeyRef:
-                  key: password
-                  name: elasticsearch-credentials
 
           resources:
             requests:

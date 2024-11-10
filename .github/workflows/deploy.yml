@@ -278,7 +278,6 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBESECRET }}
-          context: kubernetes-admin@kubernetes
 
       - name: Deploy ${{ matrix.app }}
-        run: kubectl rollout restart deployment/${{ matrix.app }} -n est-units
+        run: kubectl rollout restart deployment/${{ matrix.app }} -n e-sketch

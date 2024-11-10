@@ -3,10 +3,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: est-front
-  namespace: est-units
+  namespace: e-sketch
   labels:
     app: est-front
 spec:
+  revisionHistoryLimit: 2
   replicas: 2
   strategy:
     type: RollingUpdate
@@ -39,14 +40,14 @@ spec:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             periodSeconds: 20
 
           livenessProbe:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             periodSeconds: 20
 
       imagePullSecrets:

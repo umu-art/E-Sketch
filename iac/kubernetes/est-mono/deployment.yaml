@@ -3,12 +3,12 @@ kind: Deployment
 
 metadata:
   name: est-mono
-  namespace: est-units
+  namespace: e-sketch
   labels:
     app: est-mono
 
 spec:
-  revisionHistoryLimit: 3
+  revisionHistoryLimit: 2
   replicas: 1
 
   selector:
@@ -39,20 +39,15 @@ spec:
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: username
+                  name: kasumi-secrets
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: password
+                  name: kasumi-secrets
+                  key: POSTGRES_PASSWORD
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-server.est-monitoring.svc.cluster.local:8200
-            - name: ELASTIC_APM_SECRET_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: elasticsearch-credentials
-                  key: password
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-mono
             - name: ELASTIC_APM_APPLICATION_PACKAGES

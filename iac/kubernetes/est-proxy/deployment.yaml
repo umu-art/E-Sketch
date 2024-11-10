@@ -3,11 +3,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: est-proxy
-  namespace: est-units
+  namespace: e-sketch
   labels:
     app: est-proxy
 spec:
+  revisionHistoryLimit: 2
   replicas: 2
+
   strategy:
     type: RollingUpdate
   selector:
@@ -32,19 +34,13 @@ spec:
 
           env:
             - name: EST_BACK_URL
-              value: http://est-back.est-units.svc.cluster.local
+              value: http://est-back.e-sketch.svc.cluster.local
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-server.est-monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-proxy
             - name: ELASTIC_APM_ENVIRONMENT
               value: est
-            - name: ELASTIC_APM_SECRET_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: elasticsearch-credentials
-                  key: password
-                  optional: false
 
           resources:
             requests:
