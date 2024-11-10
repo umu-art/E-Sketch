@@ -21,10 +21,6 @@ void initApm() {
     opentelemetry::exporter::otlp::OtlpHttpExporterOptions opts;
     opts.url = getenv("OTEL_EXPORTER_OTLP_ENDPOINT");
 
-//    opts.http_headers = opentelemetry::exporter::otlp::OtlpHeaders{
-//        {"Authorization", "Bearer " + std::string(getenv("OTEL_EXPORTER_AUTH"))},
-//    };
-
     auto exporter = opentelemetry::exporter::otlp::OtlpHttpExporterFactory::Create(opts);
     auto processor = opentelemetry::sdk::trace::BatchSpanProcessorFactory::Create(std::move(exporter), bspOpts);
     std::shared_ptr<trace_api::TracerProvider> provider =

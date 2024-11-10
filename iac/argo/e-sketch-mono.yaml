@@ -11,11 +11,9 @@ spec:
     namespace: e-sketch
     server: https://kubernetes.default.svc
   source:
-    path: iac/kubernetes
+    path: iac/kubernetes-tmp
     repoURL: git@github.com:umu-art/e-sketch.git
     targetRevision: HEAD
-    directory:
-      recurse: true
   project: default
   syncPolicy:
     automated:
