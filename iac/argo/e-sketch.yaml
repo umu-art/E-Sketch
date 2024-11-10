@@ -4,8 +4,6 @@ kind: Application
 metadata:
   name: e-sketch
   namespace: argocd
-  labels:
-    type: unit
 spec:
   destination:
     namespace: e-sketch

@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: e-sketch
+  name: e-sketch-mono
   namespace: argocd
   labels:
     type: unit
@@ -11,7 +11,7 @@ spec:
     namespace: e-sketch
     server: https://kubernetes.default.svc
   source:
-    path: iac/kubernetes-tmp
+    path: iac/kubernetes-tmp/est-mono
     repoURL: git@github.com:umu-art/e-sketch.git
     targetRevision: HEAD
   project: default
