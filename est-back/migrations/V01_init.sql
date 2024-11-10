@@ -3,7 +3,7 @@ create table if not exists users
     id            uuid         not null primary key,
     username      varchar(64)  not null unique,
     password_hash varchar(512) not null,
-    email         varchar(128) not null,
+    email         varchar(128) not null unique,
     avatar        varchar(64)
 );
 

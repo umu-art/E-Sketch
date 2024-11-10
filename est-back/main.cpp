@@ -8,7 +8,7 @@ int main() {
     // Register db client
     auto dbConfig = drogon::orm::PostgresConfig{.host = "postgres.databases.svc.cluster.local",
                                                 .port = 5432,
-                                                .databaseName = "kasumi",
+                                                .databaseName = "e-sketch",
                                                 .username = getenv("POSTGRES_USERNAME"),
                                                 .password = getenv("POSTGRES_PASSWORD"),
                                                 .connectionNumber = 10,

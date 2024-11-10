@@ -25,7 +25,7 @@ public class UserEntity implements UserDetails {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Override

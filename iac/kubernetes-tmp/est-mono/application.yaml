@@ -8,7 +8,7 @@ spring:
     name: est-mono
 
   datasource:
-    url: jdbc:postgresql://postgres.databases.svc.cluster.local:5432/kasumi
+    url: jdbc:postgresql://postgres.databases.svc.cluster.local:5432/e-sketch
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
 
