@@ -36,7 +36,7 @@ spec:
             - name: EST_BACK_URL
               value: http://est-back.e-sketch.svc.cluster.local
             - name: ELASTIC_APM_SERVER_URL
-              value: http://apm-server.est-monitoring.svc.cluster.local:8200
+              value: http://apm-server.monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-proxy
             - name: ELASTIC_APM_ENVIRONMENT

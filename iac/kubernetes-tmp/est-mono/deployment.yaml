@@ -47,7 +47,7 @@ spec:
                   name: kasumi-secrets
                   key: POSTGRES_PASSWORD
             - name: ELASTIC_APM_SERVER_URL
-              value: http://apm-server.est-monitoring.svc.cluster.local:8200
+              value: http://apm-server.monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-mono
             - name: ELASTIC_APM_APPLICATION_PACKAGES
