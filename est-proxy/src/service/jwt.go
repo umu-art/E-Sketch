@@ -1,9 +1,10 @@
 package service
 
 import (
+	"est-proxy/src/config"
 	"est-proxy/src/models"
+
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -12,10 +13,8 @@ import (
 )
 
 func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
-	signingMethod := os.Getenv("JWT_SIGNING_METHOD")
-
-	if token.Method.Alg() != signingMethod {
-		return nil, fmt.Errorf("Invalid JWT signing method: %s, must be %s", token.Method.Alg(), signingMethod)
+	if token.Method.Alg() != config.JWT_SIGNING_METHOD {
+		return nil, fmt.Errorf("Invalid JWT signing method: %s, must be %s", token.Method.Alg(), config.JWT_SIGNING_METHOD)
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		userIDStr, ok := claims["userID"].(string)
@@ -42,19 +41,16 @@ func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
 }
 
 func GetUserJWTtoken(ctx echo.Context) (*jwt.Token, error) {
-	signingMethod := os.Getenv("JWT_SIGNING_METHOD")
-	secretKey := os.Getenv("JWT_SECRET_KEY")
-
 	tokenCookie, err := ctx.Cookie("jwt_token")
 	if err != nil {
 		return nil, fmt.Errorf("Ошибка при попытке получить кукисы: %w", err)
 	}
 	
 	token, err := jwt.Parse(tokenCookie.Value, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != signingMethod {
+		if token.Method.Alg() != config.JWT_SIGNING_METHOD {
 			return nil, fmt.Errorf("Неподдерживаемый алгоритм подписи")
 		}
-		return secretKey, nil
+		return config.JWT_SECRET, nil
 	})
 	
 	if err != nil {
@@ -72,13 +68,7 @@ func GetAndParseUserJWT(ctx echo.Context) (*models.ParsedJWT, error) {
 }
 
 func GenerateUserJWTtoken(userID uuid.UUID) (*jwt.Token, error) {
-	durationStr := os.Getenv("JWT_DURATION_TIME")
-	duration, err := time.ParseDuration(durationStr)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get jwt duration time: %w", err)
-	}
-
-	expirationTime := time.Now().Add(duration)
+	expirationTime := time.Now().Add(config.JWT_DURATION_TIME)
 
 	claims := jwt.MapClaims{
 		"userID":       userID.String(),
@@ -91,13 +81,11 @@ func GenerateUserJWTtoken(userID uuid.UUID) (*jwt.Token, error) {
 }
 
 func GenerateUserJWTstring(userID uuid.UUID) (string, error) {
-	secretKey := os.Getenv("JWT_SECRET_KEY")
-
 	token, err := GenerateUserJWTtoken(userID)
 	if err != nil {
 		return "", fmt.Errorf("Failed to generate token: %w", err)
 	}
-	tokenString, err := token.SignedString([]byte(secretKey))
+	tokenString, err := token.SignedString([]byte(config.JWT_SECRET))
 	if err != nil {
 		return "", fmt.Errorf("Failed to convert token to string: %w", err)
 	}
