@@ -1,11 +1,11 @@
 package service
 
 import (
-	"context"
+	"est-proxy/src/config"
 	"est-proxy/src/models"
+	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -17,9 +17,15 @@ type UserRepository struct {
 }
 
 func NewUserRepository() *UserRepository {
-	config, err := pgxpool.ParseConfig(os.Getenv("USER_REPOSIRORY_ADDRESS"))
+	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", 
+		config.POSTGRES_USERNAME, 
+		config.POSTGRES_PASSWORD, 
+		config.POSTGRES_HOST, 
+		config.POSTGRES_PORT, 
+		config.POSTGRES_DATABASE)
 
-	config.MaxConns = 1
+	config, err := pgxpool.ParseConfig(repositoryAddress)
+	config.MaxConns = 20
 
     if err != nil {
         log.Fatalf("Unable to parse config: %v", err)
@@ -40,52 +46,39 @@ func (r *UserRepository) Release() {
 	}
 }
 
-func (r *UserRepository) Create(username string, email string, password_hash string) error {
-	if r.db == nil {
-		return fmt.Errorf("Unverified query to closed db")
-	}
+func (r *UserRepository) Create(username string, email string, passwordHash string) error {
 	_, err := r.db.Exec(context.Background(),  
 		"INSERT INTO users (id, username, password_hash, email) VALUES ($1, $2, $3, $4)", 
-		uuid.New(), username, password_hash, email)
-	if (err != nil) {
+		uuid.New(), username, passwordHash, email)
+	if err != nil {
 		return fmt.Errorf("Failed to create user: %w", err)
 	}
 	return nil
 }
 
-func (r *UserRepository) GetIDByUsername(username string) (*uuid.UUID, error) {
-	var id uuid.UUID
+func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
 	var row pgx.Row
-	var err error = nil
-
-	if r.db == nil {
-		return nil, fmt.Errorf("Unverified query to closed db")
-	}
 
 	row = r.db.QueryRow(context.Background(), 
-		"SELECT id FROM users WHERE username = $1", 
-		username)
-	err = row.Scan(&id)
-	if err == nil {
-		return &id, nil
+		"SELECT id, username, password_hash, email, avatar FROM users WHERE email = $1", 
+		email)
+	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find user with email %s: %w", email, err)
 	}
 	
-	return nil, fmt.Errorf("Failed to find user with username %s: %w", username, err)
+	return &user, nil
 }
 
 func (r *UserRepository) GetIDByEmail(email string) (*uuid.UUID, error) {
 	var id uuid.UUID
 	var row pgx.Row
-	var err error = nil
-
-	if r.db == nil {
-		return nil, fmt.Errorf("Unverified query to closed db")
-	}
 
 	row = r.db.QueryRow(context.Background(), 
 		"SELECT id FROM users WHERE email = $1", 
 		email)
-	err = row.Scan(&id)
+	err := row.Scan(&id)
 	if err == nil {
 		return &id, nil
 	}
@@ -96,10 +89,6 @@ func (r *UserRepository) GetIDByEmail(email string) (*uuid.UUID, error) {
 func (r *UserRepository) GetUserByID(id *uuid.UUID) (*models.User, error) {
 	var user models.User
 	var row pgx.Row
-
-	if r.db == nil {
-		return nil, fmt.Errorf("Unverified query to closed db")
-	}
 
 	row = r.db.QueryRow(context.Background(), 
 		"SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1", 
@@ -112,25 +101,21 @@ func (r *UserRepository) GetUserByID(id *uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) (*uuid.UUID, error) {
-	var id uuid.UUID
-
-	if r.db == nil {
-		return nil, fmt.Errorf("Unverified query to closed db")
-	}
+func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) (bool, error) {
+	var count int
 
 	err := r.db.QueryRow(context.Background(), 
-		"SELECT id FROM users WHERE username = $1 OR email = $2 LIMIT 1", 
-		username, email).Scan(&id)
+		"SELECT COUNT(*) FROM users username = $1 OR email = $2", 
+		username, email).Scan(&count)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, nil
+			return false, nil
 		}
-		return nil, err
+		return false, err
 	}
 	
-	return &id, nil
+	return count > 0, nil
 }
 
 func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) ([]models.User, error) {

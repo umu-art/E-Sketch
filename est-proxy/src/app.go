@@ -1,13 +1,13 @@
 package main
 
 import (
+	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
 	"est-proxy/src/service"
 	estbackapi "est_back_go"
 	"log"
 	nethttp "net/http"
-	"os"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	backApiConfig := estbackapi.NewConfiguration()
 	backApiConfig.Servers = estbackapi.ServerConfigurations{
 		{
-			URL: os.Getenv("EST_BACK_URL"),
+			URL: config.EST_BACK_URL,
 		},
 	}
 	backApiConfig.HTTPClient = &nethttp.Client{
@@ -30,7 +30,7 @@ func main() {
 	defer userRepository.Release()
 
 	// Хандлеры
-	boardListener := listener.NewBoardListener(backApi.BoardAPI)
+	boardListener := listener.NewBoardListener(backApi.BoardAPI, userRepository)
 	userListener := listener.NewUserListener(userRepository)
 
 	// HTTP сервер
@@ -43,7 +43,7 @@ func main() {
 }
 
 func checkEnv() {
-	if os.Getenv("EST_BACK_URL") == "" {
+	if config.EST_BACK_URL == "" {
 		log.Fatal("EST_BACK_URL is not set")
 	}
 }
