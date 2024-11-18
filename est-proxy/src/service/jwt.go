@@ -3,6 +3,7 @@ package service
 import (
 	"est-proxy/src/config"
 	"est-proxy/src/models"
+	"log"
 
 	"fmt"
 	"time"
@@ -12,67 +13,77 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ParseUserJWTtoken(token jwt.Token) (*models.ParsedJWT, error) {
+func ParseUserJWT(token *jwt.Token) *models.ParsedJWT {
+	if token == nil {
+		return nil
+	}
 	if token.Method.Alg() != config.JWT_SIGNING_METHOD {
-		return nil, fmt.Errorf("Invalid JWT signing method: %s, must be %s", token.Method.Alg(), config.JWT_SIGNING_METHOD)
+		log.Printf("Unsupported signing method: %v", token.Header["alg"])
+		return nil
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		userIDStr, ok := claims["userID"].(string)
 		if !ok {
-			return nil, fmt.Errorf("Missing or invalid 'userID' claim")
+			log.Printf("Failed to parse user id from claims: %v", claims)
+			return nil
 		}
 		userID, err := uuid.Parse(userIDStr)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid 'userID' format: %w", err)
+			log.Printf("Failed to parse user id from claims: %v", claims)
+			return nil
 		}
 
-		expirationTimeUnix, ok := claims["expirationTime"].(int64)
+		expirationTimeUnix, ok := claims["exp"].(int64)
 		if !ok {
-			return nil, fmt.Errorf("Missing or invalid 'expirationTime' claim")
+			log.Printf("Failed to parse expiration time from claims: %v", claims)
+			return nil
 		}
 		expirationTime := time.Unix(expirationTimeUnix, 0)
 
 		return &models.ParsedJWT{
 			UserID:         userID,
 			ExpirationTime: expirationTime,
-		}, nil
+		}
 	}
-	return nil, fmt.Errorf("Failed to claim JWT")
+	return nil
 }
 
-func GetUserJWTtoken(ctx echo.Context) (*jwt.Token, error) {
+func GetUserJWTCookie(ctx echo.Context) *jwt.Token {
 	tokenCookie, err := ctx.Cookie("jwt_token")
 	if err != nil {
-		return nil, fmt.Errorf("Ошибка при попытке получить кукисы: %w", err)
+		log.Printf("Failed to get cookie %v", err)
+		return nil
 	}
-	
+
 	token, err := jwt.Parse(tokenCookie.Value, func(token *jwt.Token) (interface{}, error) {
 		if token.Method.Alg() != config.JWT_SIGNING_METHOD {
-			return nil, fmt.Errorf("Неподдерживаемый алгоритм подписи")
+			log.Printf("Invalid signing method: %s", token.Header["alg"])
+			return nil, fmt.Errorf("неподдерживаемый алгоритм подписи")
 		}
 		return config.JWT_SECRET, nil
 	})
-	
+
 	if err != nil {
-		return nil, fmt.Errorf("Отсутствует или некорретный jwt токен: %w", err)
+		log.Printf("Failed to parse cookie %v", err)
+		return nil
 	}
-	return token, nil
+	return token
 }
 
-func GetAndParseUserJWT(ctx echo.Context) (*models.ParsedJWT, error) {
-	jwtToken, err := GetUserJWTtoken(ctx)
-	if err != nil {
-		return nil, err
+func GetAndParseUserJWTCookie(ctx echo.Context) *models.ParsedJWT {
+	jwtToken := GetUserJWTCookie(ctx)
+	if jwtToken == nil {
+		return nil
 	}
-	return ParseUserJWTtoken(*jwtToken)
+	return ParseUserJWT(jwtToken)
 }
 
-func GenerateUserJWTtoken(userID uuid.UUID) (*jwt.Token, error) {
+func GenerateUserJWT(userID *uuid.UUID) (*jwt.Token, error) {
 	expirationTime := time.Now().Add(config.JWT_DURATION_TIME)
 
 	claims := jwt.MapClaims{
-		"userID":       userID.String(),
-		"expirationTime": expirationTime.Unix(),
+		"userID": userID.String(),
+		"exp":    expirationTime.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -80,14 +91,16 @@ func GenerateUserJWTtoken(userID uuid.UUID) (*jwt.Token, error) {
 	return token, nil
 }
 
-func GenerateUserJWTstring(userID uuid.UUID) (string, error) {
-	token, err := GenerateUserJWTtoken(userID)
+func GenerateUserJWTString(userID *uuid.UUID) *string {
+	token, err := GenerateUserJWT(userID)
 	if err != nil {
-		return "", fmt.Errorf("Failed to generate token: %w", err)
+		log.Printf("Failed to generate token: %v", err)
+		return nil
 	}
 	tokenString, err := token.SignedString([]byte(config.JWT_SECRET))
 	if err != nil {
-		return "", fmt.Errorf("Failed to convert token to string: %w", err)
+		log.Printf("Failed to sign token: %v", err)
+		return nil
 	}
-	return tokenString, nil
+	return &tokenString
 }

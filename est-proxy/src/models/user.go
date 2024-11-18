@@ -1,4 +1,4 @@
-package models 
+package models
 
 import (
 	"github.com/google/uuid"
@@ -6,8 +6,8 @@ import (
 
 type User struct {
 	ID uuid.UUID
-	
-	Username string 
+
+	Username string
 
 	PasswordHash string
 

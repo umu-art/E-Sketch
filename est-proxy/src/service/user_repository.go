@@ -1,15 +1,14 @@
 package service
 
 import (
+	"context"
 	"est-proxy/src/config"
 	"est-proxy/src/models"
-	"context"
 	"fmt"
-	"log"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
 type UserRepository struct {
@@ -17,26 +16,26 @@ type UserRepository struct {
 }
 
 func NewUserRepository() *UserRepository {
-	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", 
-		config.POSTGRES_USERNAME, 
-		config.POSTGRES_PASSWORD, 
-		config.POSTGRES_HOST, 
-		config.POSTGRES_PORT, 
+	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		config.POSTGRES_USERNAME,
+		config.POSTGRES_PASSWORD,
+		config.POSTGRES_HOST,
+		config.POSTGRES_PORT,
 		config.POSTGRES_DATABASE)
 
-	config, err := pgxpool.ParseConfig(repositoryAddress)
-	config.MaxConns = 20
+	pgxConfig, err := pgxpool.ParseConfig(repositoryAddress)
+	pgxConfig.MaxConns = 20
 
-    if err != nil {
-        log.Fatalf("Unable to parse config: %v", err)
-    }
+	if err != nil {
+		log.Fatalf("Unable to parse config: %v", err)
+	}
 
-    db, err := pgxpool.NewWithConfig(context.Background(), config)
-    if err != nil {
-        log.Fatalf("Unable to connect to database: %v", err)
-    }
+	db, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
 
-    return &UserRepository{db: db}
+	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) Release() {
@@ -46,98 +45,103 @@ func (r *UserRepository) Release() {
 	}
 }
 
-func (r *UserRepository) Create(username string, email string, passwordHash string) error {
-	_, err := r.db.Exec(context.Background(),  
-		"INSERT INTO users (id, username, password_hash, email) VALUES ($1, $2, $3, $4)", 
+func (r *UserRepository) Create(username string, email string, passwordHash string) *uuid.UUID {
+	_, err := r.db.Exec(context.Background(),
+		"INSERT INTO users (id, username, password_hash, email) VALUES ($1, $2, $3, $4)",
 		uuid.New(), username, passwordHash, email)
 	if err != nil {
-		return fmt.Errorf("Failed to create user: %w", err)
+		log.Printf("Failed to create user: %v", err)
+		return nil
 	}
-	return nil
+	return r.GetIDByEmail(email)
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
+func (r *UserRepository) GetUserByEmail(email string) *models.User {
 	var user models.User
 	var row pgx.Row
 
-	row = r.db.QueryRow(context.Background(), 
-		"SELECT id, username, password_hash, email, avatar FROM users WHERE email = $1", 
+	row = r.db.QueryRow(context.Background(),
+		"SELECT id, username, password_hash, email, avatar FROM users WHERE email = $1",
 		email)
 	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find user with email %s: %w", email, err)
+		log.Printf("Failed to get user: %v", err)
+		return nil
 	}
-	
-	return &user, nil
+
+	return &user
 }
 
-func (r *UserRepository) GetIDByEmail(email string) (*uuid.UUID, error) {
+func (r *UserRepository) GetIDByEmail(email string) *uuid.UUID {
 	var id uuid.UUID
 	var row pgx.Row
 
-	row = r.db.QueryRow(context.Background(), 
-		"SELECT id FROM users WHERE email = $1", 
+	row = r.db.QueryRow(context.Background(),
+		"SELECT id FROM users WHERE email = $1",
 		email)
 	err := row.Scan(&id)
-	if err == nil {
-		return &id, nil
+	if err != nil {
+		log.Printf("Failed to get user: %v", err)
+		return nil
 	}
-	
-	return nil, fmt.Errorf("Failed to find user with email %s: %w", email, err)
+
+	return &id
 }
 
-func (r *UserRepository) GetUserByID(id *uuid.UUID) (*models.User, error) {
+func (r *UserRepository) GetUserByID(id *uuid.UUID) *models.User {
 	var user models.User
 	var row pgx.Row
 
-	row = r.db.QueryRow(context.Background(), 
-		"SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1", 
+	row = r.db.QueryRow(context.Background(),
+		"SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1",
 		id)
 	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find user: %w", err)
+		log.Printf("Failed to get user: %v", err)
+		return nil
 	}
 
-	return &user, nil
+	return &user
 }
 
-func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) (bool, error) {
+func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) bool {
 	var count int
 
-	err := r.db.QueryRow(context.Background(), 
-		"SELECT COUNT(*) FROM users username = $1 OR email = $2", 
+	err := r.db.QueryRow(context.Background(),
+		"SELECT COUNT(*) FROM users username = $1 OR email = $2",
 		username, email).Scan(&count)
 
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return false, nil
-		}
-		return false, err
+		log.Printf("Failed to count users: %v", err)
+		return false
 	}
-	
-	return count > 0, nil
+
+	return count > 0
 }
 
-func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) ([]models.User, error) {
+func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.User {
 	query := "SELECT id, username, password_hash, email, avatar FROM users WHERE username ILIKE '%' || $1 || '%'"
-    rows, err := r.db.Query(ctx, query, username)
-    if err != nil {
-        return nil, fmt.Errorf("Failed to parse users, %w", err)
-    }
-    defer rows.Close()
+	rows, err := r.db.Query(ctx, query, username)
+	if err != nil {
+		log.Printf("Failed to search users: %v", err)
+		return nil
+	}
+	defer rows.Close()
 
-    var users []models.User
-    for rows.Next() {
-        var user models.User
-        if err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar); err != nil {
-            return nil, fmt.Errorf("Failed to parse users, %w", err)
-        }
-        users = append(users, user)
-    }
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar); err != nil {
+			fmt.Printf("Failed to parse user, %v \n", err)
+			continue
+		}
+		users = append(users, user)
+	}
 
-    if rows.Err() != nil {
-        return nil, fmt.Errorf("Failed to parse users, %w", rows.Err())
-    }
+	if rows.Err() != nil {
+		log.Printf("Failed to search users: %v", rows.Err())
+		return nil
+	}
 
-    return users, nil
+	return &users
 }
