@@ -14,13 +14,13 @@ import (
 )
 
 type BoardListener struct {
-	boardApi *estbackapi.BoardAPIService
+	boardApi       *estbackapi.BoardAPIService
 	userRepository *service.UserRepository
 }
 
 func NewBoardListener(boardApi *estbackapi.BoardAPIService, userRepository *service.UserRepository) *BoardListener {
 	return &BoardListener{
-		boardApi: boardApi,
+		boardApi:       boardApi,
 		userRepository: userRepository,
 	}
 }
@@ -66,7 +66,7 @@ func (b BoardListener) Create(ctx echo.Context) error {
 	var createRequest models.CreateRequest
 	err := ctx.Bind(&createRequest)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Некорректный запрос")
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
 
 	linkSharedMode := (*estbackapi.LinkShareMode)(&createRequest.LinkSharedMode)
@@ -74,8 +74,8 @@ func (b BoardListener) Create(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, "Некорректный link shared mode")
 	}
 	upsertBoardDto := estbackapi.UpsertBoardDto{
-		Name: createRequest.Name,
-		Description: &createRequest.Description,
+		Name:           createRequest.Name,
+		Description:    &createRequest.Description,
 		LinkSharedMode: linkSharedMode,
 	}
 
@@ -106,16 +106,16 @@ func (b BoardListener) Update(ctx echo.Context) error {
 	var updateRequest models.CreateRequest
 	err = ctx.Bind(&updateRequest)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Некорректный запрос")
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
 
 	linkSharedMode := (*estbackapi.LinkShareMode)(&updateRequest.LinkSharedMode)
 	if !linkSharedMode.IsValid() {
-		return ctx.String(http.StatusBadRequest, "Некорректный link shared mode")
+		return ctx.String(http.StatusBadRequest, "Некорректный запрос: некорректный link shared mode")
 	}
 	upsertBoardDto := estbackapi.UpsertBoardDto{
-		Name: updateRequest.Name,
-		Description: &updateRequest.Description,
+		Name:           updateRequest.Name,
+		Description:    &updateRequest.Description,
 		LinkSharedMode: linkSharedMode,
 	}
 
@@ -169,7 +169,7 @@ func (b BoardListener) Share(ctx echo.Context) error {
 	var shareBoardDto models.ShareBoardDto
 	err = ctx.Bind(&shareBoardDto)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Некорректный запрос")
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
 
 	backSharingDto := estbackapi.BackSharingDto{
@@ -177,8 +177,8 @@ func (b BoardListener) Share(ctx echo.Context) error {
 		Access: estbackapi.ShareMode(shareBoardDto.Access),
 	}
 
-	_, err = b.boardApi.Share(ctx.Request().Context(), 
-							  boardId).BackSharingDto(backSharingDto).Execute()
+	_, err = b.boardApi.Share(ctx.Request().Context(),
+		boardId).BackSharingDto(backSharingDto).Execute()
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось выдать права доступа на доску")
 	}
@@ -204,7 +204,7 @@ func (b BoardListener) ChangeAccess(ctx echo.Context) error {
 	var shareBoardDto models.ShareBoardDto
 	err = ctx.Bind(&shareBoardDto)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Некорректный запрос")
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
 
 	backSharingDto := estbackapi.BackSharingDto{
@@ -212,8 +212,8 @@ func (b BoardListener) ChangeAccess(ctx echo.Context) error {
 		Access: estbackapi.ShareMode(shareBoardDto.Access),
 	}
 
-	_, err = b.boardApi.UpdateShare(ctx.Request().Context(), 
-									boardId).BackSharingDto(backSharingDto).Execute()
+	_, err = b.boardApi.UpdateShare(ctx.Request().Context(),
+		boardId).BackSharingDto(backSharingDto).Execute()
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось изменить права доступа на доску")
 	}
@@ -246,8 +246,8 @@ func (b BoardListener) Unshare(ctx echo.Context) error {
 		UserId: unshareRequest.UserId,
 	}
 
-	_, err = b.boardApi.Unshare(ctx.Request().Context(), 
-								boardId).UnshareBoardDto(unshareBoardDto).Execute()
+	_, err = b.boardApi.Unshare(ctx.Request().Context(),
+		boardId).UnshareBoardDto(unshareBoardDto).Execute()
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось изменить права доступа на доску")
 	}
@@ -281,8 +281,8 @@ func (b BoardListener) getMappedUserInfo(userIdStr string) models.UserDto {
 	userInfo := models.UserDto{}
 	userId, err := uuid.Parse(userIdStr)
 	if err == nil {
-		user, err := b.userRepository.GetUserByID(&userId)
-		if err == nil {
+		user := b.userRepository.GetUserByID(&userId)
+		if user != nil {
 			userInfo.Id = userIdStr
 			userInfo.Username = user.Username
 			userInfo.Avatar = user.Avatar
@@ -294,35 +294,36 @@ func (b BoardListener) getMappedUserInfo(userIdStr string) models.UserDto {
 func (b BoardListener) mapToProxy(dto *estbackapi.BackBoardDto) models.BoardDto {
 	sharedWith := make([]models.SharingDto, 0)
 
-	for _, shared_dto := range dto.SharedWith { 
+	for _, sharedDto := range dto.SharedWith {
 		sharedWith = append(sharedWith, models.SharingDto{
-			UserInfo: b.getMappedUserInfo(shared_dto.UserId),
-			Access: string(shared_dto.Access),
+			UserInfo: b.getMappedUserInfo(sharedDto.UserId),
+			Access:   string(sharedDto.Access),
 		})
 	}
 
 	return models.BoardDto{
-		Id: dto.Id,
-		Name: dto.Name,
-		Description: dto.Description,
-		OwnerInfo: b.getMappedUserInfo(dto.OwnerId),
-		SharedWith: sharedWith,
+		Id:             dto.Id,
+		Name:           dto.Name,
+		Description:    dto.Description,
+		OwnerInfo:      b.getMappedUserInfo(dto.OwnerId),
+		SharedWith:     sharedWith,
 		LinkSharedMode: string(dto.LinkSharedMode),
-		Preview: "TODO",
+		Preview:        "TODO",
 	}
 }
 
 func (b BoardListener) getSession(ctx echo.Context) (*uuid.UUID, error) {
-	session, err := service.GetAndParseUserJWT(ctx)
-	if err != nil {
-		return nil, ctx.String(http.StatusUnauthorized, "Отсутствует или некорректный токен")
+	session := service.GetAndParseUserJWTCookie(ctx)
+	if session == nil {
+		return nil, ctx.String(http.StatusUnauthorized, fmt.Sprintf("Отсутствует или некорректная сессия"))
 	}
 
 	if session.ExpirationTime.After(time.Now()) {
 		return nil, ctx.String(http.StatusUnauthorized, "Срок сессии истёк")
 	}
 
-	if _, err := b.userRepository.GetUserByID(&session.UserID); err != nil {
+	//TODO exists by id
+	if user := b.userRepository.GetUserByID(&session.UserID); user == nil {
 		return nil, ctx.String(http.StatusUnauthorized, "Пользователь не найден")
 	}
 
@@ -330,7 +331,7 @@ func (b BoardListener) getSession(ctx echo.Context) (*uuid.UUID, error) {
 }
 
 func (b BoardListener) getBoard(ctx echo.Context, boardId string) (*models.BoardDto, error) {
-	boardDto, _, err := b.boardApi.GetByUuid(ctx.Request().Context(), "").Execute()
+	boardDto, _, err := b.boardApi.GetByUuid(ctx.Request().Context(), boardId).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -348,10 +349,10 @@ func (b BoardListener) checkAccess(userId *uuid.UUID, boardDto *models.BoardDto)
 	for _, sharedInfo := range boardDto.SharedWith {
 		accessed = accessed || (userIdStr == sharedInfo.UserInfo.Id)
 	}
-	
+
 	if !accessed {
 		return fmt.Errorf("access denied")
 	}
 
-	return nil;
+	return nil
 }

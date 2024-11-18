@@ -14,7 +14,8 @@ var POSTGRES_PORT = os.Getenv("POSTGRES_PORT")
 var POSTGRES_DATABASE = os.Getenv("POSTGRES_DATABASE")
 
 var JWT_SECRET = os.Getenv("JWT_SECRET")
-const JWT_SIGNING_METHOD string = "HS256"
-const JWT_DURATION_TIME time.Duration = time.Hour * 2
 
-const JWT_COOKIE_NAME string = "jwt-token"
+const JWT_SIGNING_METHOD string = "HS256"
+const JWT_DURATION_TIME = time.Hour * 48
+
+const JWT_COOKIE_NAME string = "estu"
