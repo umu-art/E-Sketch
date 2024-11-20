@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { Flex } from 'antd';
 

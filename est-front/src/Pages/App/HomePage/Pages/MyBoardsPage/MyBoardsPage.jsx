@@ -29,6 +29,7 @@ const MyBoardsPage = () => {
         }).catch((error) => {
             navigate("/auth/signin");
             console.log(error);
+            
             if (error.statusCode === 401) {
                 messageApi.open({
                     type: 'error',
@@ -38,7 +39,7 @@ const MyBoardsPage = () => {
                 navigate("/auth/signin");
             }
         })
-    }, [messageApi, navigate])
+    }, [])
 
     return (
         <Flex vertical style={{padding: "20px 50px", width: '-webkit-fill-available'}}>

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { AppstoreOutlined, LinkOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { UserApi } from 'est_proxy_api';
 
+
 const items = (data) => [
     {
         key: "head_group",
@@ -49,24 +50,27 @@ const items = (data) => [
 const apiInstance = new UserApi();
 
 const AppMenu = () => {
-    const [userData, setUserData] = useState({
-        email: "",
-    });
+    const [userData, setUserData] = useState(null);
 
     const [messageApi, context] = message.useMessage(); 
 
     useEffect(() => {
         apiInstance.getSelf().then((data) => {
-            console.log(data)
             setUserData(data);
-          }, (error) => {
+        }).catch((error) => {
             console.log(error);
             messageApi.open({
                 type: "error",
                 content: error,
             })
-          });
-    }, [messageApi]);
+        });
+    }, []);
+
+    if (!userData) {
+        return (
+            <></>
+        );
+    }
 
     return (
         <>

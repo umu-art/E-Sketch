@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Card, Flex, Typography, Divider } from 'antd';
+import { Card, Divider, Flex, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import 'antd/dist/reset.css';
