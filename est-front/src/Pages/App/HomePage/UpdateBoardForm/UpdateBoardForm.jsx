@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Form, Input, Button, message } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 import 'antd/dist/reset.css';
 
 import { BoardApi } from 'est_proxy_api';

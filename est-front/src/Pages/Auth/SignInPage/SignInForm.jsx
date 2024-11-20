@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Form, Input, Button, Flex, Checkbox, Typography, message } from 'antd';
+import { Button, Checkbox, Flex, Form, Input, message, Typography } from 'antd';
 import 'antd/dist/reset.css';
 
 import { UserApi } from 'est_proxy_api';
