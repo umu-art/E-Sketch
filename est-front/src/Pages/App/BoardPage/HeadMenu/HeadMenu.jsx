@@ -49,7 +49,7 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
                 'unshareRequest': {
                     userId: user.id,
                 }
-            }).then((data) => {
+            }).then(() => {
                 refreshData();
             }).catch((error) => {
                 messageApi.open({
@@ -66,7 +66,7 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
                 userId: user.id,
                 access: newAccess,
             }
-        }).then((data) => {
+        }).then(() => {
             messageApi.open({
                 type: 'success',
                 content: 'Вы успешно изменили права!'
@@ -154,7 +154,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
 
         boardApiInstance.share(data.id, {
             'shareBoardDto': accessSettingsData,
-        }).then((data) => {
+        }).then(() => {
             refreshData();
 
             messageApi.open({
