@@ -34,7 +34,7 @@ const UpdateBoardForm = ({ data, onDataChange, closeModal }) => {
                 type: 'success',
                 content: 'Изменения сохранены!'
             })
-            
+
             closeModal();
         } catch (error) {
             messageApi.open({
@@ -54,7 +54,7 @@ const UpdateBoardForm = ({ data, onDataChange, closeModal }) => {
             }}
             layout="vertical"
             requiredMark={false}
-        >   
+        >
             {contextHolder}
             <Form.Item
                 name="name"

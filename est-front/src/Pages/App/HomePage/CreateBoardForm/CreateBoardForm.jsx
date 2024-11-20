@@ -51,7 +51,7 @@ const CreateBoardForm = () => {
             }}
             layout="vertical"
             requiredMark={false}
-        >   
+        >
             {contextHolder}
             <Form.Item
                 name="name"

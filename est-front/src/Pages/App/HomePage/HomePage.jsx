@@ -10,14 +10,14 @@ import MyBoardsPage from './Pages/MyBoardsPage/MyBoardsPage.jsx';
 
 const HomePage = () => {
     return (
-        <Flex className="mh100vh" style={{padding: "50px 100px"}}>
+        <Flex className="mh100vh" style={{ padding: "50px 100px" }}>
             <Flex className='h100p'>
-               <Menu />
+                <Menu/>
             </Flex>
             <Routes>
-                <Route path='my' element={<MyBoardsPage />}/>
-                <Route path='*' element={<Navigate to="my" />}/> 
-                <Route path='' element={<Navigate to="my" />}/> 
+                <Route path='my' element={<MyBoardsPage/>}/>
+                <Route path='*' element={<Navigate to="my"/>}/>
+                <Route path='' element={<Navigate to="my"/>}/>
             </Routes>
         </Flex>
     );

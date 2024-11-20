@@ -53,7 +53,7 @@ const SignInForm = () => {
             }}
             layout="vertical"
             requiredMark={false}
-        >   
+        >
             {contextHolder}
             <Form.Item
                 name="email"
@@ -88,7 +88,7 @@ const SignInForm = () => {
             >
                 <Flex align='center' justify='space-between'>
                     <Checkbox>Запомнить меня?</Checkbox>
-                            
+
                     <Typography.Link>
                         Забыли пароль?
                     </Typography.Link>

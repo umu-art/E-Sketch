@@ -10,7 +10,7 @@ import { Config } from '../../../config';
 
 
 const SignUpForm = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
 
     const apiInstance = new UserApi();

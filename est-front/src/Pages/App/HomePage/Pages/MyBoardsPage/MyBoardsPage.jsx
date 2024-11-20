@@ -29,7 +29,7 @@ const MyBoardsPage = () => {
         }).catch((error) => {
             navigate("/auth/signin");
             console.log(error);
-            
+
             if (error.statusCode === 401) {
                 messageApi.open({
                     type: 'error',
@@ -39,10 +39,10 @@ const MyBoardsPage = () => {
                 navigate("/auth/signin");
             }
         })
-    }, [])
+    }, [messageApi, navigate])
 
     return (
-        <Flex vertical style={{padding: "20px 50px", width: '-webkit-fill-available'}}>
+        <Flex vertical style={{ padding: "20px 50px", width: '-webkit-fill-available' }}>
             {contextHolder}
             <Modal
                 centered
@@ -51,26 +51,27 @@ const MyBoardsPage = () => {
                 onCancel={() => setCreateBoardModalOpen(false)}
                 footer={null}
             >
-                <CreateBoardForm />
+                <CreateBoardForm/>
             </Modal>
             <Flex className="w100p" align='center' justify='space-between'>
-                <Typography.Title style={{margin: 0}}>
+                <Typography.Title style={{ margin: 0 }}>
                     Мои доски
                 </Typography.Title>
-                <Button icon={<PlusOutlined />} type='primary' onClick={() => setCreateBoardModalOpen(true)}>Новая доска</Button>
+                <Button icon={<PlusOutlined/>} type='primary' onClick={() => setCreateBoardModalOpen(true)}>Новая
+                    доска</Button>
             </Flex>
-            
+
             <Divider></Divider>
             <Flex className='w100p' align='center' vertical>
-                <Flex wrap gap="large" style={{width: 'auto'}}>
+                <Flex wrap gap="large" style={{ width: 'auto' }}>
                     {
                         boards === null ?
-                        <LoadingOutlined /> 
-                        :
-                        boards.map(
-                            (board, i) =>
-                                <BoardCard data={board} key={i}/>
-                        )
+                            <LoadingOutlined/>
+                            :
+                            boards.map(
+                                (board, i) =>
+                                    <BoardCard data={board} key={i}/>
+                            )
                     }
                 </Flex>
             </Flex>

@@ -16,7 +16,7 @@ const BoardPage = () => {
     const navigate = useNavigate();
 
     const updateData = (newData) => {
-        apiInstance.update(boardId, {'createRequest': newData}).then((respData) => {
+        apiInstance.update(boardId, { 'createRequest': newData }).then((respData) => {
             setData(respData);
         }).catch((error) => {
             console.log(error);
@@ -36,28 +36,29 @@ const BoardPage = () => {
 
     useEffect(() => {
         refreshBoardData();
-    }, [])
+    })
 
     if (!data) {
         return (
-            <LoadingPage />
+            <LoadingPage/>
         );
     }
 
     return (
-        <>  
-            <Board className="h100vh w100vw" style={{position: 'absolute'}} boardId={boardId}/>
+        <>
+            <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId}/>
             { /* Menu wrap */}
-            <Flex className="h100vh w100vw" style={{padding: "20px 20px", position: 'absolute'}} vertical align='center' justify='space-between'>
+            <Flex className="h100vh w100vw" style={{ padding: "20px 20px", position: 'absolute' }} vertical
+                  align='center' justify='space-between'>
                 { /* Top */}
                 <HeadMenu data={data} updateData={updateData} refreshData={refreshBoardData}/>
                 { /* Bottom */}
                 <Flex className='w100p' justify='center'>
-                    <ToolPanel onToolChange={(tool) => console.log(tool)} />
+                    <ToolPanel onToolChange={(tool) => console.log(tool)}/>
                 </Flex>
             </Flex>
         </>
-        
+
     );
 };
 

@@ -15,26 +15,26 @@ const ToolPanel = ({ onToolChange }) => {
     return (
         <Card size='small' className='shadow'>
             <Flex gap="small" align='center'>
-                <Button 
+                <Button
                     type={selectedTool === 'pencil' ? 'primary' : 'default'}
-                    icon={<EditOutlined />}
+                    icon={<EditOutlined/>}
                     onClick={() => handleToolChange('pencil')}
                     key='pencil'
                 />
-                <Button 
+                <Button
                     type={selectedTool === 'eraser' ? 'primary' : 'default'}
                     icon={<Icon component={EraserOutlined}/>}
                     onClick={() => handleToolChange('eraser')}
                     key='eraser'
                 />
-                <Divider type='vertical' style={{height: 30}}/>
-                <Button 
+                <Divider type='vertical' style={{ height: 30 }}/>
+                <Button
                     type={'default'}
-                    icon={<EllipsisOutlined key="ellipsis" />}
+                    icon={<EllipsisOutlined key="ellipsis"/>}
                     key='ellipsis'
                 ></Button>
             </Flex>
-            
+
         </Card>
     );
 };

@@ -13,12 +13,12 @@ const items = (data) => [
         children: [
             {
                 key: "account",
-                icon: <UserOutlined />,
+                icon: <UserOutlined/>,
                 label: data.username,
             },
             {
                 key: "settings",
-                icon: <SettingOutlined />,
+                icon: <SettingOutlined/>,
                 label: "Настройки",
             }
         ]
@@ -30,7 +30,7 @@ const items = (data) => [
         children: [
             {
                 key: "all",
-                icon: <AppstoreOutlined />,
+                icon: <AppstoreOutlined/>,
                 label: "Мои доски",
             },
             // {
@@ -40,7 +40,7 @@ const items = (data) => [
             // },
             {
                 key: "shared",
-                icon: <LinkOutlined />,
+                icon: <LinkOutlined/>,
                 label: "Поделились со мной",
             },
         ]
@@ -52,7 +52,7 @@ const apiInstance = new UserApi();
 const AppMenu = () => {
     const [userData, setUserData] = useState(null);
 
-    const [messageApi, context] = message.useMessage(); 
+    const [messageApi, context] = message.useMessage();
 
     useEffect(() => {
         apiInstance.getSelf().then((data) => {
@@ -64,7 +64,7 @@ const AppMenu = () => {
                 content: error,
             })
         });
-    }, []);
+    }, [messageApi]);
 
     if (!userData) {
         return (

@@ -7,12 +7,14 @@ const Board = ({ className, style, gridStep = 100, boardId, ...props }) => {
 
     // Генерация вертикальных линий
     for (let x = gridStep; x < window.innerWidth; x += gridStep) {
-        lines.push(<line key={`v-${x}`} x1={x} y1={0} x2={x} y2={window.innerHeight} stroke="lightgray" strokeWidth="1" />);
+        lines.push(<line key={`v-${x}`} x1={x} y1={0} x2={x} y2={window.innerHeight} stroke="lightgray"
+                         strokeWidth="1"/>);
     }
 
     // Генерация горизонтальных линий
     for (let y = gridStep; y < window.innerHeight; y += gridStep) {
-        lines.push(<line key={`h-${y}`} x1={0} y1={y} x2={window.innerWidth} y2={y} stroke="lightgray" strokeWidth="1" />);
+        lines.push(<line key={`h-${y}`} x1={0} y1={y} x2={window.innerWidth} y2={y} stroke="lightgray"
+                         strokeWidth="1"/>);
     }
 
     // Определяем размеры шрифта и рассчитываем центр
@@ -29,7 +31,8 @@ const Board = ({ className, style, gridStep = 100, boardId, ...props }) => {
             style={{ ...style, backgroundColor: 'white', overflow: 'hidden' }}
         >
             {lines}
-            <text x={xCenter} y={yCenter - 50} fill="black" fontSize={fontSize} textAnchor="middle" dominantBaseline="middle">
+            <text x={xCenter} y={yCenter - 50} fill="black" fontSize={fontSize} textAnchor="middle"
+                  dominantBaseline="middle">
                 {text}
             </text>
         </svg>

@@ -41,7 +41,7 @@ const userAccessOptions = [
 
 const UserAvatar = ({ user, access, boardId, refreshData }) => {
     const [messageApi, contextHolder] = useMessage();
-    const [active, setActive] = useState(true);
+    const [active] = useState(true);
 
     const onChange = (newAccess) => {
         if (newAccess === 'delete') {
@@ -49,7 +49,7 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
                 'unshareRequest': {
                     userId: user.id,
                 }
-            }).then((data) => {                
+            }).then((data) => {
                 refreshData();
             }).catch((error) => {
                 messageApi.open({
@@ -89,14 +89,15 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
 
     return (
         <Flex align='center' gap="large">
-            { contextHolder }
-            <Avatar src={"https://api.dicebear.com/7.x/miniavs/svg?seed=" + user.id} />
+            {contextHolder}
+            <Avatar src={"https://api.dicebear.com/7.x/miniavs/svg?seed=" + user.id}/>
             <Flex className='w100p' align='center' justify='space-between'>
                 <Typography.Text>{user.username}</Typography.Text>
                 {
-                    access == 'owner' ?
-                    <Typography.Text type="secondary">{accesses[access]}</Typography.Text> :
-                    <Select options={userAccessOptions} defaultValue={access} style={{width: 140.47}} allowClear={false} onChange={onChange}/>
+                    access === 'owner' ?
+                        <Typography.Text type="secondary">{accesses[access]}</Typography.Text> :
+                        <Select options={userAccessOptions} defaultValue={access} style={{ width: 140.47 }}
+                                allowClear={false} onChange={onChange}/>
                 }
             </Flex>
         </Flex>
@@ -111,7 +112,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
     const [messageApi, contextHolder] = useMessage();
 
     const onNameChange = (name) => {
-        const newData = data; 
+        const newData = data;
         newData.name = name;
 
         updateData(newData);
@@ -147,12 +148,12 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
                 type: 'error',
                 content: "Пожалуйста, выберите пользователя",
             })
-            
+
             return;
         }
 
         boardApiInstance.share(data.id, {
-            'shareBoardDto': accessSettingsData, 
+            'shareBoardDto': accessSettingsData,
         }).then((data) => {
             refreshData();
 
@@ -172,13 +173,13 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
 
     return (
         <Flex className='w100p' justify='space-between'>
-            { contextHolder }
+            {contextHolder}
             <Modal
                 title={
-                <Flex>
-                    <LockOutlined style={{margin: "0 8px 0 0"}} key={1}/>
-                    <div key={2}>Настройки Доступа</div>
-                </Flex>
+                    <Flex>
+                        <LockOutlined style={{ margin: "0 8px 0 0" }} key={1}/>
+                        <div key={2}>Настройки Доступа</div>
+                    </Flex>
                 }
                 open={accessSettingsOpened}
                 onOk={share}
@@ -189,91 +190,94 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
                 ]}
             >
                 <Flex vertical gap='middle'>
-                <Divider style={{margin: "8px 0 0 0"}}/>
-                <Typography.Title level={5} style={{margin: 0}}>Пользователи, имеющие доступ</Typography.Title>
-                <Flex vertical gap="small">
-                    <UserAvatar user={data.ownerInfo} access={"owner"} key={data.ownerInfo.id}/>
-                    {
-                        data.sharedWith.map(
-                            (userData) => (
-                                <UserAvatar user={userData.userInfo} access={userData.access} boardId={data.id} refreshData={refreshData} key={userData.id}/>
+                    <Divider style={{ margin: "8px 0 0 0" }}/>
+                    <Typography.Title level={5} style={{ margin: 0 }}>Пользователи, имеющие доступ</Typography.Title>
+                    <Flex vertical gap="small">
+                        <UserAvatar user={data.ownerInfo} access={"owner"} key={data.ownerInfo.id}/>
+                        {
+                            data.sharedWith.map(
+                                (userData) => (
+                                    <UserAvatar user={userData.userInfo} access={userData.access} boardId={data.id}
+                                                refreshData={refreshData} key={userData.id}/>
+                                )
                             )
-                        )
-                    }
+                        }
+                    </Flex>
+                    <Divider style={{ margin: "8px 0 0 0" }}/>
+                    <Typography.Title level={5} style={{ margin: 0 }}>Добавить пользователя</Typography.Title>
+                    <Select
+                        className='w100p'
+                        showSearch
+                        value={searchValue}
+                        defaultActiveFirstOption={false}
+                        suffixIcon={null}
+                        filterOption={false}
+                        onSearch={searchUsers}
+                        onChange={(val) => setSearchValue(val)}
+                        onSelect={(id) => {
+                            accessSettingsData.userId = id;
+                            setAccessSettingsData(accessSettingsData);
+                        }}
+                        notFoundContent={null}
+                        placeholder="Выберите пользователя, которому хотите дать доступ"
+                        options={userList.map((d) => ({
+                            value: d.id,
+                            label: d.username,
+                        })).filter((d) => (d.value !== data.ownerInfo.id) &&
+                            !data.sharedWith.map((dd) => dd.userInfo.id).includes(d.value)
+                        )}//&& ))}
+                    />
+                    <Typography.Title level={5} style={{ margin: 0 }}>Уровень доступа</Typography.Title>
+                    <Radio.Group
+                        block
+                        options={[
+                            {
+                                label: "Чтение",
+                                value: "read",
+                            },
+                            {
+                                label: "Редактирование",
+                                value: "write",
+                            },
+                            {
+                                label: "Полный доступ",
+                                value: "admin",
+                            },
+                        ]}
+                        defaultValue={accessSettingsData.access}
+                        optionType="button"
+                        buttonStyle="solid"
+                        onChange={(e) => {
+                            accessSettingsData.access = e.target.value;
+                            setAccessSettingsData(accessSettingsData);
+                        }}
+                    />
+                    <div/>
                 </Flex>
-                <Divider style={{margin: "8px 0 0 0"}}/>
-                <Typography.Title level={5} style={{margin: 0}}>Добавить пользователя</Typography.Title>
-                <Select 
-                    className='w100p'
-                    showSearch
-                    value={searchValue}
-                    defaultActiveFirstOption={false}
-                    suffixIcon={null}   
-                    filterOption={false}
-                    onSearch={searchUsers}
-                    onChange={(val) => setSearchValue(val)}
-                    onSelect={(id) => {
-                        accessSettingsData.userId = id;
-                        setAccessSettingsData(accessSettingsData);
-                    }}
-                    notFoundContent={null}
-                    placeholder="Выберите пользователя, которому хотите дать доступ"
-                    options={userList.map((d) => ({
-                        value: d.id,
-                        label: d.username,
-                    })).filter((d) => (d.value !== data.ownerInfo.id) &&
-                        !data.sharedWith.map((dd) => dd.userInfo.id).includes(d.value)
-                    )}//&& ))}  
-                />
-                <Typography.Title level={5} style={{margin: 0}}>Уровень доступа</Typography.Title>
-                <Radio.Group
-                    block
-                    options={[
-                        {
-                            label: "Чтение",
-                            value: "read",
-                        },
-                        {
-                            label: "Редактирование",
-                            value: "write",
-                        },
-                        {
-                            label: "Полный доступ",
-                            value: "admin",
-                        },
-                    ]}
-                    defaultValue={accessSettingsData.access}
-                    optionType="button"
-                    buttonStyle="solid"
-                    onChange={(e) => {
-                        accessSettingsData.access = e.target.value;
-                        setAccessSettingsData(accessSettingsData);
-                    }}
-                />
-                <div />
-                </Flex>
-                
+
             </Modal>
             <Card size='small' className='shadow'>
                 <Flex gap="small" align='center'>
-                    <Typography.Title level={4} style={{margin: 0}} editable={{"onChange": (e) => onNameChange(e)}}>{data.name}</Typography.Title>
-                    <Divider type='vertical' style={{height: 30}}/>
-                    <Button 
-                        icon={<EllipsisOutlined />}
+                    <Typography.Title level={4} style={{ margin: 0 }}
+                                      editable={{ "onChange": (e) => onNameChange(e) }}>{data.name}</Typography.Title>
+                    <Divider type='vertical' style={{ height: 30 }}/>
+                    <Button
+                        icon={<EllipsisOutlined/>}
                         key='ellipsis'
                     ></Button>
-                    <Button icon={<UploadOutlined />}></Button>
+                    <Button icon={<UploadOutlined/>}></Button>
                 </Flex>
             </Card>
             <Card size='small' className='shadow'>
                 <Flex gap="small" align='center'>
                     <Typography.Link href='/app/home/my'>
-                        <Avatar src={"https://api.dicebear.com/7.x/miniavs/svg?seed=" + data.ownerInfo.id} shape='circle'/>
+                        <Avatar src={"https://api.dicebear.com/7.x/miniavs/svg?seed=" + data.ownerInfo.id}
+                                shape='circle'/>
                     </Typography.Link>
-                    <Divider type='vertical' style={{height: 30}}/>
+                    <Divider type='vertical' style={{ height: 30 }}/>
                     <Button
-                        type='primary'  
-                        icon={<LockOutlined />}
+                        type='primary'
+                        icon={<LockOutlined/>}
                         onClick={() => setAccessSettingsOpened(true)}
                     >
                         Настройки Доступа
