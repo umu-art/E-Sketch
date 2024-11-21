@@ -50,10 +50,7 @@ spec:
             - name: POSTGRES_PORT
               value: '5432'
             - name: POSTGRES_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: kasumi-secrets
-                  key: POSTGRES_DB
+              value: 'e-sketch'
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:

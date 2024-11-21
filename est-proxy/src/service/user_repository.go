@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
+	"net/url"
 )
 
 type UserRepository struct {
@@ -18,17 +19,17 @@ type UserRepository struct {
 func NewUserRepository() *UserRepository {
 	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		config.POSTGRES_USERNAME,
-		config.POSTGRES_PASSWORD,
+		url.QueryEscape(config.POSTGRES_PASSWORD),
 		config.POSTGRES_HOST,
 		config.POSTGRES_PORT,
 		config.POSTGRES_DATABASE)
 
 	pgxConfig, err := pgxpool.ParseConfig(repositoryAddress)
-	pgxConfig.MaxConns = 20
-
 	if err != nil {
 		log.Fatalf("Unable to parse config: %v", err)
 	}
+
+	pgxConfig.MaxConns = 20
 
 	db, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
 	if err != nil {
