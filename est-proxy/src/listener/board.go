@@ -14,27 +14,32 @@ import (
 
 type BoardListener struct {
 	boardApi    *estbackapi.BoardAPIService
-	authService *service.AuthService
+	userService *service.UserService
 }
 
-func NewBoardListener(boardApi *estbackapi.BoardAPIService, authService *service.AuthService) *BoardListener {
+func NewBoardListener(boardApi *estbackapi.BoardAPIService, userService *service.UserService) *BoardListener {
 	return &BoardListener{
 		boardApi:    boardApi,
-		authService: authService,
+		userService: userService,
 	}
 }
 
 func (b BoardListener) GetByUuid(ctx echo.Context) error {
-	userId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
+	}
+
 	board, err := b.getBoard(ctx, boardId)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Доска не найдена")
 	}
+
 	if b.checkAccess(userId, board) != nil {
 		return ctx.String(http.StatusForbidden, "Недостаточно прав")
 	}
@@ -43,9 +48,9 @@ func (b BoardListener) GetByUuid(ctx echo.Context) error {
 }
 
 func (b BoardListener) List(ctx echo.Context) error {
-	userId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	list, _, err := b.boardApi.ListByUserId(ctx.Request().Context(), userId.String()).Execute()
@@ -57,13 +62,13 @@ func (b BoardListener) List(ctx echo.Context) error {
 }
 
 func (b BoardListener) Create(ctx echo.Context) error {
-	userId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	var createRequest models.CreateRequest
-	err := ctx.Bind(&createRequest)
+	err = ctx.Bind(&createRequest)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
@@ -72,6 +77,7 @@ func (b BoardListener) Create(ctx echo.Context) error {
 	if !linkSharedMode.IsValid() {
 		return ctx.String(http.StatusBadRequest, "Некорректный link shared mode")
 	}
+
 	upsertBoardDto := estbackapi.UpsertBoardDto{
 		Name:           createRequest.Name,
 		Description:    &createRequest.Description,
@@ -80,26 +86,23 @@ func (b BoardListener) Create(ctx echo.Context) error {
 
 	boardDto, _, err := b.boardApi.Create(
 		ctx.Request().Context(), userId.String()).UpsertBoardDto(upsertBoardDto).Execute()
+
 	if err != nil {
-		return ctx.String(http.StatusConflict, "Не получилось создать доску")
+		return ctx.String(http.StatusInternalServerError, "Не получилось создать доску")
 	}
 
 	return ctx.JSON(http.StatusOK, b.mapToProxy(ctx, boardDto))
 }
 
 func (b BoardListener) Update(ctx echo.Context) error {
-	userId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
-	board, err := b.getBoard(ctx, boardId)
-	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Доска не найдена")
-	}
-	if b.checkAccess(userId, board) != nil {
-		return ctx.String(http.StatusForbidden, "Недостаточно прав")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
 	var updateRequest models.CreateRequest
@@ -112,6 +115,16 @@ func (b BoardListener) Update(ctx echo.Context) error {
 	if !linkSharedMode.IsValid() {
 		return ctx.String(http.StatusBadRequest, "Некорректный запрос: некорректный link shared mode")
 	}
+
+	board, err := b.getBoard(ctx, boardId)
+	if err != nil {
+		return ctx.String(http.StatusBadRequest, "Доска не найдена")
+	}
+
+	if b.checkAccess(userId, board) != nil {
+		return ctx.String(http.StatusForbidden, "Недостаточно прав")
+	}
+
 	upsertBoardDto := estbackapi.UpsertBoardDto{
 		Name:           updateRequest.Name,
 		Description:    &updateRequest.Description,
@@ -120,6 +133,7 @@ func (b BoardListener) Update(ctx echo.Context) error {
 
 	boardDto, _, err := b.boardApi.Update(
 		ctx.Request().Context(), boardId).UpsertBoardDto(upsertBoardDto).Execute()
+
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось обновить доску")
 	}
@@ -128,21 +142,27 @@ func (b BoardListener) Update(ctx echo.Context) error {
 }
 
 func (b BoardListener) DeleteBoard(ctx echo.Context) error {
-	userId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
+	}
+
 	board, err := b.getBoard(ctx, boardId)
 	if err == nil && b.checkAccess(userId, board) != nil {
 		return ctx.String(http.StatusForbidden, "Недостаточно прав")
 	}
+
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Доска не найдена")
 	}
 
 	_, err = b.boardApi.DeleteBoard(ctx.Request().Context(), boardId).Execute()
+
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось удалить доску")
 	}
@@ -151,18 +171,14 @@ func (b BoardListener) DeleteBoard(ctx echo.Context) error {
 }
 
 func (b BoardListener) Share(ctx echo.Context) error {
-	ownerId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	ownerId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
-	board, err := b.getBoard(ctx, boardId)
-	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Доска не найдена")
-	}
-	if board.OwnerInfo.Id != ownerId.String() {
-		return ctx.String(http.StatusForbidden, "Недостаточно прав")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
 	var shareBoardDto models.ShareBoardDto
@@ -171,13 +187,25 @@ func (b BoardListener) Share(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорректный запрос: %v", err))
 	}
 
+	board, err := b.getBoard(ctx, boardId)
+	if err != nil {
+		return ctx.String(http.StatusBadRequest, "Доска не найдена")
+	}
+
+	if board.OwnerInfo.Id != ownerId.String() {
+		return ctx.String(http.StatusForbidden, "Недостаточно прав")
+	}
+
 	backSharingDto := estbackapi.BackSharingDto{
 		UserId: shareBoardDto.UserId,
 		Access: estbackapi.ShareMode(shareBoardDto.Access),
 	}
 
-	_, err = b.boardApi.Share(ctx.Request().Context(),
-		boardId).BackSharingDto(backSharingDto).Execute()
+	_, err = b.boardApi.
+		Share(ctx.Request().Context(), boardId).
+		BackSharingDto(backSharingDto).
+		Execute()
+
 	if err != nil {
 		return ctx.String(http.StatusInternalServerError, "Не получилось выдать права доступа на доску")
 	}
@@ -186,16 +214,21 @@ func (b BoardListener) Share(ctx echo.Context) error {
 }
 
 func (b BoardListener) ChangeAccess(ctx echo.Context) error {
-	ownerId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	ownerId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
+	}
+
 	board, err := b.getBoard(ctx, boardId)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Доска не найдена")
 	}
+
 	if board.OwnerInfo.Id != ownerId.String() {
 		return ctx.String(http.StatusForbidden, "Недостаточно прав")
 	}
@@ -221,12 +254,16 @@ func (b BoardListener) ChangeAccess(ctx echo.Context) error {
 }
 
 func (b BoardListener) Unshare(ctx echo.Context) error {
-	ownerId, sessionStatus := b.authService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	ownerId, err := b.userService.GetSession(ctx)
+	if err != nil {
+		return err
 	}
 
 	boardId := ctx.QueryParam("boardId")
+	if _, err := uuid.Parse(boardId); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
+	}
+
 	board, err := b.getBoard(ctx, boardId)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Доска не найдена")
@@ -280,7 +317,7 @@ func (b BoardListener) getMappedUserInfo(ctx echo.Context, userIdStr string) mod
 	userInfo := models.UserDto{}
 	userId, err := uuid.Parse(userIdStr)
 	if err == nil {
-		user, _ := b.authService.GetUserById(ctx, &userId)
+		user, _ := b.userService.GetUserById(ctx, &userId)
 		if user != nil {
 			userInfo.Id = userIdStr
 			userInfo.Username = user.Username

@@ -93,9 +93,9 @@ func (r UserRepository) GetUserByID(id *uuid.UUID) *models.User {
 	var row pgx.Row
 
 	row = r.db.QueryRow(context.Background(),
-		"SELECT id, username, password_hash, email, avatar FROM users WHERE id = $1",
+		"SELECT id, username, email, avatar FROM users WHERE id = $1",
 		id)
-	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Avatar)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil
@@ -113,7 +113,7 @@ func (r UserRepository) UserExistsByUsernameOrEmail(username string, email strin
 
 	if err != nil {
 		log.Printf("Failed to count users: %v", err)
-		return false
+		return true
 	}
 
 	return count > 0

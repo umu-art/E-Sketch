@@ -36,8 +36,8 @@ spec:
                 secretKeyRef:
                   name: kasumi-secrets
                   key: POSTGRES_PASSWORD
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://apm-server.monitoring.svc.cluster.local:8200
+#            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+#              value: http://apm-server.monitoring.svc.cluster.local:8200
 
           resources:
             requests:

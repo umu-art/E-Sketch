@@ -23,10 +23,6 @@ runs:
     with:
       java-version: 21
       distribution: 'temurin'
-      cache: 'maven'
-      cache-dependency-path: |
-        est-mono/pom.xml
-        .github/workflows/actions/prepare_env/cache/pom.xml
 
   - name: Setup Go environment
     uses: actions/setup-go@v5.0.2
