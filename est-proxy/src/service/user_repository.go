@@ -48,7 +48,7 @@ func (r UserRepository) Release() {
 
 func (r UserRepository) Create(username string, email string, passwordHash string) *uuid.UUID {
 	_, err := r.db.Exec(context.Background(),
-		"INSERT INTO users (id, username, password_hash, email) VALUES ($1, $2, $3, $4)",
+		"INSERT INTO users (id, username, password_hash, email, avatar) VALUES ($1, $2, $3, $4, '')",
 		uuid.New(), username, passwordHash, email)
 	if err != nil {
 		log.Printf("Failed to create user: %v", err)
