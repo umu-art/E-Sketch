@@ -49,7 +49,7 @@ func ParseUserJWT(token *jwt.Token) *models.ParsedJWT {
 }
 
 func GetUserJWTCookie(ctx echo.Context) *jwt.Token {
-	tokenCookie, err := ctx.Cookie("jwt_token")
+	tokenCookie, err := ctx.Cookie(config.JWT_COOKIE_NAME)
 	if err != nil {
 		log.Printf("Failed to get cookie %v", err)
 		return nil
