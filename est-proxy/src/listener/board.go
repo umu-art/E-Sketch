@@ -5,7 +5,6 @@ import (
 	estbackapi "est_back_go"
 	"est_proxy_go/models"
 	"fmt"
-	"time"
 
 	"net/http"
 
@@ -14,19 +13,19 @@ import (
 )
 
 type BoardListener struct {
-	boardApi       *estbackapi.BoardAPIService
-	userRepository *service.UserRepository
+	boardApi    *estbackapi.BoardAPIService
+	authService *service.AuthService
 }
 
-func NewBoardListener(boardApi *estbackapi.BoardAPIService, userRepository *service.UserRepository) *BoardListener {
+func NewBoardListener(boardApi *estbackapi.BoardAPIService, authService *service.AuthService) *BoardListener {
 	return &BoardListener{
-		boardApi:       boardApi,
-		userRepository: userRepository,
+		boardApi:    boardApi,
+		authService: authService,
 	}
 }
 
 func (b BoardListener) GetByUuid(ctx echo.Context) error {
-	userId, sessionStatus := b.getSession(ctx)
+	userId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -44,7 +43,7 @@ func (b BoardListener) GetByUuid(ctx echo.Context) error {
 }
 
 func (b BoardListener) List(ctx echo.Context) error {
-	userId, sessionStatus := b.getSession(ctx)
+	userId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -54,11 +53,11 @@ func (b BoardListener) List(ctx echo.Context) error {
 		return ctx.String(http.StatusInternalServerError, "Не получилось составить список досок")
 	}
 
-	return ctx.JSON(http.StatusOK, b.mapManyToProxy(list))
+	return ctx.JSON(http.StatusOK, b.mapManyToProxy(ctx, list))
 }
 
 func (b BoardListener) Create(ctx echo.Context) error {
-	userId, sessionStatus := b.getSession(ctx)
+	userId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -85,11 +84,11 @@ func (b BoardListener) Create(ctx echo.Context) error {
 		return ctx.String(http.StatusConflict, "Не получилось создать доску")
 	}
 
-	return ctx.JSON(http.StatusOK, b.mapToProxy(boardDto))
+	return ctx.JSON(http.StatusOK, b.mapToProxy(ctx, boardDto))
 }
 
 func (b BoardListener) Update(ctx echo.Context) error {
-	userId, sessionStatus := b.getSession(ctx)
+	userId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -125,11 +124,11 @@ func (b BoardListener) Update(ctx echo.Context) error {
 		return ctx.String(http.StatusInternalServerError, "Не получилось обновить доску")
 	}
 
-	return ctx.JSON(http.StatusOK, b.mapToProxy(boardDto))
+	return ctx.JSON(http.StatusOK, b.mapToProxy(ctx, boardDto))
 }
 
 func (b BoardListener) DeleteBoard(ctx echo.Context) error {
-	userId, sessionStatus := b.getSession(ctx)
+	userId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -152,7 +151,7 @@ func (b BoardListener) DeleteBoard(ctx echo.Context) error {
 }
 
 func (b BoardListener) Share(ctx echo.Context) error {
-	ownerId, sessionStatus := b.getSession(ctx)
+	ownerId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -187,7 +186,7 @@ func (b BoardListener) Share(ctx echo.Context) error {
 }
 
 func (b BoardListener) ChangeAccess(ctx echo.Context) error {
-	ownerId, sessionStatus := b.getSession(ctx)
+	ownerId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -222,7 +221,7 @@ func (b BoardListener) ChangeAccess(ctx echo.Context) error {
 }
 
 func (b BoardListener) Unshare(ctx echo.Context) error {
-	ownerId, sessionStatus := b.getSession(ctx)
+	ownerId, sessionStatus := b.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -239,7 +238,7 @@ func (b BoardListener) Unshare(ctx echo.Context) error {
 	var unshareRequest models.UnshareRequest
 	err = ctx.Bind(&unshareRequest)
 	if err != nil {
-		return ctx.String(http.StatusBadRequest, "Некорректный запрос")
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
 	unshareBoardDto := estbackapi.UnshareBoardDto{
@@ -259,16 +258,16 @@ func (b BoardListener) Connect(ctx echo.Context) error {
 	return ctx.String(http.StatusInternalServerError, "В разработке")
 }
 
-func (b BoardListener) mapManyToProxy(list *estbackapi.BackBoardListDto) models.BoardListDto {
+func (b BoardListener) mapManyToProxy(ctx echo.Context, list *estbackapi.BackBoardListDto) models.BoardListDto {
 	mine := make([]models.BoardDto, 0)
 	shared := make([]models.BoardDto, 0)
 
 	for _, dto := range list.Mine {
-		mine = append(mine, b.mapToProxy(&dto))
+		mine = append(mine, b.mapToProxy(ctx, &dto))
 	}
 
 	for _, dto := range list.Shared {
-		shared = append(shared, b.mapToProxy(&dto))
+		shared = append(shared, b.mapToProxy(ctx, &dto))
 	}
 
 	return models.BoardListDto{
@@ -277,11 +276,11 @@ func (b BoardListener) mapManyToProxy(list *estbackapi.BackBoardListDto) models.
 	}
 }
 
-func (b BoardListener) getMappedUserInfo(userIdStr string) models.UserDto {
+func (b BoardListener) getMappedUserInfo(ctx echo.Context, userIdStr string) models.UserDto {
 	userInfo := models.UserDto{}
 	userId, err := uuid.Parse(userIdStr)
 	if err == nil {
-		user := b.userRepository.GetUserByID(&userId)
+		user, _ := b.authService.GetUserById(ctx, &userId)
 		if user != nil {
 			userInfo.Id = userIdStr
 			userInfo.Username = user.Username
@@ -291,12 +290,12 @@ func (b BoardListener) getMappedUserInfo(userIdStr string) models.UserDto {
 	return userInfo
 }
 
-func (b BoardListener) mapToProxy(dto *estbackapi.BackBoardDto) models.BoardDto {
+func (b BoardListener) mapToProxy(ctx echo.Context, dto *estbackapi.BackBoardDto) models.BoardDto {
 	sharedWith := make([]models.SharingDto, 0)
 
 	for _, sharedDto := range dto.SharedWith {
 		sharedWith = append(sharedWith, models.SharingDto{
-			UserInfo: b.getMappedUserInfo(sharedDto.UserId),
+			UserInfo: b.getMappedUserInfo(ctx, sharedDto.UserId),
 			Access:   string(sharedDto.Access),
 		})
 	}
@@ -305,29 +304,11 @@ func (b BoardListener) mapToProxy(dto *estbackapi.BackBoardDto) models.BoardDto 
 		Id:             dto.Id,
 		Name:           dto.Name,
 		Description:    dto.Description,
-		OwnerInfo:      b.getMappedUserInfo(dto.OwnerId),
+		OwnerInfo:      b.getMappedUserInfo(ctx, dto.OwnerId),
 		SharedWith:     sharedWith,
 		LinkSharedMode: string(dto.LinkSharedMode),
 		Preview:        "TODO",
 	}
-}
-
-func (b BoardListener) getSession(ctx echo.Context) (*uuid.UUID, error) {
-	session := service.GetAndParseUserJWTCookie(ctx)
-	if session == nil {
-		return nil, ctx.String(http.StatusUnauthorized, fmt.Sprintf("Отсутствует или некорректная сессия"))
-	}
-
-	if session.ExpirationTime.After(time.Now()) {
-		return nil, ctx.String(http.StatusUnauthorized, "Срок сессии истёк")
-	}
-
-	//TODO exists by id
-	if user := b.userRepository.GetUserByID(&session.UserID); user == nil {
-		return nil, ctx.String(http.StatusUnauthorized, "Пользователь не найден")
-	}
-
-	return &session.UserID, nil
 }
 
 func (b BoardListener) getBoard(ctx echo.Context, boardId string) (*models.BoardDto, error) {
@@ -335,7 +316,7 @@ func (b BoardListener) getBoard(ctx echo.Context, boardId string) (*models.Board
 	if err != nil {
 		return nil, err
 	}
-	board := b.mapToProxy(boardDto)
+	board := b.mapToProxy(ctx, boardDto)
 	return &board, nil
 }
 

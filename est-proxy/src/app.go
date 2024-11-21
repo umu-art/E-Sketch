@@ -29,9 +29,12 @@ func main() {
 	userRepository := service.NewUserRepository()
 	defer userRepository.Release()
 
+	//AuthService
+	authService := service.NewAuthService(userRepository)
+
 	// Хандлеры
-	boardListener := listener.NewBoardListener(backApi.BoardAPI, userRepository)
-	userListener := listener.NewUserListener(userRepository)
+	boardListener := listener.NewBoardListener(backApi.BoardAPI, authService)
+	userListener := listener.NewUserListener(authService)
 
 	// HTTP сервер
 	echoListener := http.NewListener(boardListener, userListener)
