@@ -22,6 +22,7 @@ const CreateBoardForm = () => {
             createRequest: {
                 name: values.name,
                 description: values.description,
+                linkSharedMode: 'none_by_link'
             },
         };
 
@@ -71,7 +72,7 @@ const CreateBoardForm = () => {
             >
                 <Input.TextArea placeholder='Введите описание доски...' autoSize/>
             </Form.Item>
-            <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+            <Button type="primary" htmlType="submit" style={{width: '100%'}}>
                 Создать
             </Button>
         </Form>
