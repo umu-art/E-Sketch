@@ -38,14 +38,14 @@ func NewUserRepository() *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Release() {
+func (r UserRepository) Release() {
 	if r.db != nil {
 		r.db.Close()
 		r.db = nil
 	}
 }
 
-func (r *UserRepository) Create(username string, email string, passwordHash string) *uuid.UUID {
+func (r UserRepository) Create(username string, email string, passwordHash string) *uuid.UUID {
 	_, err := r.db.Exec(context.Background(),
 		"INSERT INTO users (id, username, password_hash, email) VALUES ($1, $2, $3, $4)",
 		uuid.New(), username, passwordHash, email)
@@ -56,7 +56,7 @@ func (r *UserRepository) Create(username string, email string, passwordHash stri
 	return r.GetIDByEmail(email)
 }
 
-func (r *UserRepository) GetUserByEmail(email string) *models.User {
+func (r UserRepository) GetUserByEmail(email string) *models.User {
 	var user models.User
 	var row pgx.Row
 
@@ -72,7 +72,7 @@ func (r *UserRepository) GetUserByEmail(email string) *models.User {
 	return &user
 }
 
-func (r *UserRepository) GetIDByEmail(email string) *uuid.UUID {
+func (r UserRepository) GetIDByEmail(email string) *uuid.UUID {
 	var id uuid.UUID
 	var row pgx.Row
 
@@ -88,7 +88,7 @@ func (r *UserRepository) GetIDByEmail(email string) *uuid.UUID {
 	return &id
 }
 
-func (r *UserRepository) GetUserByID(id *uuid.UUID) *models.User {
+func (r UserRepository) GetUserByID(id *uuid.UUID) *models.User {
 	var user models.User
 	var row pgx.Row
 
@@ -104,11 +104,11 @@ func (r *UserRepository) GetUserByID(id *uuid.UUID) *models.User {
 	return &user
 }
 
-func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email string) bool {
+func (r UserRepository) UserExistsByUsernameOrEmail(username string, email string) bool {
 	var count int
 
 	err := r.db.QueryRow(context.Background(),
-		"SELECT COUNT(*) FROM users username = $1 OR email = $2",
+		"SELECT COUNT(*) FROM users WHERE username = $1 OR email = $2",
 		username, email).Scan(&count)
 
 	if err != nil {
@@ -119,8 +119,8 @@ func (r *UserRepository) UserExistsByUsernameOrEmail(username string, email stri
 	return count > 0
 }
 
-func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.User {
-	query := "SELECT id, username, password_hash, email, avatar FROM users WHERE username ILIKE '%' || $1 || '%'"
+func (r UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.PublicUser {
+	query := "SELECT id, username, avatar FROM users WHERE username ILIKE '%' || $1 || '%'"
 	rows, err := r.db.Query(ctx, query, username)
 	if err != nil {
 		log.Printf("Failed to search users: %v", err)
@@ -128,10 +128,10 @@ func (r *UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, usernam
 	}
 	defer rows.Close()
 
-	var users []models.User
+	var users []models.PublicUser
 	for rows.Next() {
-		var user models.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar); err != nil {
+		var user models.PublicUser
+		if err := rows.Scan(&user.ID, &user.Username, &user.Avatar); err != nil {
 			fmt.Printf("Failed to parse user, %v \n", err)
 			continue
 		}

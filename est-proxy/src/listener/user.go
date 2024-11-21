@@ -2,12 +2,9 @@ package listener
 
 import (
 	"est-proxy/src/config"
-	"est-proxy/src/models"
 	"est-proxy/src/service"
 	proxymodels "est_proxy_go/models"
 	"fmt"
-
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -15,33 +12,15 @@ import (
 )
 
 type UserListener struct {
-	userRepository *service.UserRepository
+	authService *service.AuthService
 }
 
-func NewUserListener(userRepository *service.UserRepository) *UserListener {
-	return &UserListener{userRepository: userRepository}
-}
-
-func (u UserListener) getSession(ctx echo.Context) (*uuid.UUID, error) {
-	session := service.GetAndParseUserJWTCookie(ctx)
-	if session == nil {
-		return nil, ctx.String(http.StatusUnauthorized, fmt.Sprintf("Отсутствует или некорректная сессия"))
-	}
-
-	if session.ExpirationTime.After(time.Now()) {
-		return nil, ctx.String(http.StatusUnauthorized, "Срок сессии истёк")
-	}
-
-	//TODO exists by id
-	if user := u.userRepository.GetUserByID(&session.UserID); user == nil {
-		return nil, ctx.String(http.StatusUnauthorized, "Пользователь не найден")
-	}
-
-	return &session.UserID, nil
+func NewUserListener(authService *service.AuthService) *UserListener {
+	return &UserListener{authService: authService}
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	_, sessionStatus := u.getSession(ctx)
+	_, sessionStatus := u.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -49,21 +28,21 @@ func (u UserListener) CheckSession(ctx echo.Context) error {
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	userId, sessionStatus := u.getSession(ctx)
+	userId, sessionStatus := u.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
 
-	user := u.userRepository.GetUserByID(userId)
-	if user == nil {
-		return ctx.String(http.StatusBadRequest, "Пользователь не найден")
+	user, authStatus := u.authService.GetUserById(ctx, userId)
+	if authStatus != nil {
+		return authStatus
 	}
 
-	return ctx.JSON(http.StatusOK, mapToProxyDto(user))
+	return ctx.JSON(http.StatusOK, *user)
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	_, sessionStatus := u.getSession(ctx)
+	_, sessionStatus := u.authService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -74,12 +53,12 @@ func (u UserListener) GetUserById(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
-	user := u.userRepository.GetUserByID(&userId)
-	if user == nil {
-		return ctx.String(http.StatusBadRequest, "Пользователь не найден")
+	user, authStatus := u.authService.GetUserById(ctx, &userId)
+	if authStatus != nil {
+		return authStatus
 	}
 
-	return ctx.JSON(http.StatusOK, mapToProxyDto(user))
+	return ctx.JSON(http.StatusOK, *user)
 }
 
 func (u UserListener) Login(ctx echo.Context) error {
@@ -88,18 +67,9 @@ func (u UserListener) Login(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	user := u.userRepository.GetUserByEmail(authDto.Email)
-	if user == nil {
-		return ctx.String(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
-	}
-
-	if authDto.PasswordHash != user.PasswordHash {
-		return ctx.String(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
-	}
-
-	token := service.GenerateUserJWTString(&user.ID)
-	if token == nil {
-		return ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
+	token, authStatus := u.authService.Login(ctx, &authDto)
+	if authStatus != nil {
+		return authStatus
 	}
 
 	cookie := new(http.Cookie)
@@ -116,19 +86,9 @@ func (u UserListener) Register(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	exists := u.userRepository.UserExistsByUsernameOrEmail(regDto.Username, regDto.Email)
-	if exists == false {
-		return ctx.String(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
-	}
-
-	userId := u.userRepository.Create(regDto.Username, regDto.Email, regDto.PasswordHash)
-	if userId == nil {
-		return ctx.String(http.StatusInternalServerError, "Не получилось создать аккаунт")
-	}
-
-	token := service.GenerateUserJWTString(userId)
-	if token == nil {
-		return ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
+	token, authStatus := u.authService.Register(ctx, &regDto)
+	if authStatus != nil {
+		return authStatus
 	}
 
 	cookie := new(http.Cookie)
@@ -141,26 +101,10 @@ func (u UserListener) Register(ctx echo.Context) error {
 
 func (u UserListener) Search(ctx echo.Context) error {
 	username := ctx.QueryParam("username")
-	users := u.userRepository.SearchByUsernameIgnoreCase(ctx.Request().Context(), username)
-	if users == nil {
-		return ctx.String(http.StatusInternalServerError, "Ошибка поиска")
+	users, authStatus := u.authService.Search(ctx, username)
+	if authStatus != nil {
+		return authStatus
 	}
 
-	return ctx.JSON(http.StatusOK, mapListToProxyDto(*users))
-}
-
-func mapToProxyDto(user *models.User) proxymodels.UserDto {
-	return proxymodels.UserDto{
-		Id:       user.ID.String(),
-		Username: user.Username,
-		Avatar:   user.Avatar,
-	}
-}
-
-func mapListToProxyDto(users []models.User) []proxymodels.UserDto {
-	var dtos []proxymodels.UserDto
-	for _, user := range users {
-		dtos = append(dtos, mapToProxyDto(&user))
-	}
-	return dtos
+	return ctx.JSON(http.StatusOK, *users)
 }
