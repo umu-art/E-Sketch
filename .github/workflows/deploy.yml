@@ -208,69 +208,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
 
-  test-mono:
-    needs: [ lint-api, build-api ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare and build Api
-        uses: ./.github/workflows/actions/prepare_env
-        with:
-          cacheTag: api-${{ hashFiles('api/') }}
-
-      - name: Install java api
-        working-directory: api/build/est-mono-api
-        run: mvn clean install
-
-      - name: Build with Maven
-        working-directory: ./est-mono
-        run: mvn -B test -T1C --file pom.xml
-
-
-  build-mono-image:
-    needs: [ test-mono ]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare and build Api
-        uses: ./.github/workflows/actions/prepare_env
-        with:
-          cacheTag: api-${{ hashFiles('api/') }}
-
-      - name: Install java api
-        working-directory: api/build/est-mono-api
-        run: mvn clean install
-
-      - name: Build with Maven
-        working-directory: ./est-mono
-        run: mvn clean package
-
-      - name: Build image
-        uses: ./.github/workflows/actions/build_image
-        with:
-          image: est-mono
-          actor: ${{ github.actor }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-
   kube-update:
-    needs: [ build-back-image, build-front-image, build-proxy-image, build-mono-image ]
+    needs: [ build-back-image, build-front-image, build-proxy-image ]
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        app: [ est-back, est-front, est-proxy, est-mono ]
+        app: [ est-back, est-front, est-proxy ]
 
     steps:
       - name: Set the Kubernetes context

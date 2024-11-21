@@ -12,15 +12,15 @@ import (
 )
 
 type UserListener struct {
-	authService *service.AuthService
+	userService *service.UserService
 }
 
-func NewUserListener(authService *service.AuthService) *UserListener {
-	return &UserListener{authService: authService}
+func NewUserListener(userService *service.UserService) *UserListener {
+	return &UserListener{userService: userService}
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	_, sessionStatus := u.authService.GetSession(ctx)
+	_, sessionStatus := u.userService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -28,12 +28,12 @@ func (u UserListener) CheckSession(ctx echo.Context) error {
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	userId, sessionStatus := u.authService.GetSession(ctx)
+	userId, sessionStatus := u.userService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
 
-	user, authStatus := u.authService.GetUserById(ctx, userId)
+	user, authStatus := u.userService.GetUserById(ctx, userId)
 	if authStatus != nil {
 		return authStatus
 	}
@@ -42,7 +42,7 @@ func (u UserListener) GetSelf(ctx echo.Context) error {
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	_, sessionStatus := u.authService.GetSession(ctx)
+	_, sessionStatus := u.userService.GetSession(ctx)
 	if sessionStatus != nil {
 		return sessionStatus
 	}
@@ -53,7 +53,7 @@ func (u UserListener) GetUserById(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
-	user, authStatus := u.authService.GetUserById(ctx, &userId)
+	user, authStatus := u.userService.GetUserById(ctx, &userId)
 	if authStatus != nil {
 		return authStatus
 	}
@@ -67,7 +67,7 @@ func (u UserListener) Login(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, authStatus := u.authService.Login(ctx, &authDto)
+	token, authStatus := u.userService.Login(ctx, &authDto)
 	if authStatus != nil {
 		return authStatus
 	}
@@ -86,7 +86,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, authStatus := u.authService.Register(ctx, &regDto)
+	token, authStatus := u.userService.Register(ctx, &regDto)
 	if authStatus != nil {
 		return authStatus
 	}
@@ -101,7 +101,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 
 func (u UserListener) Search(ctx echo.Context) error {
 	username := ctx.QueryParam("username")
-	users, authStatus := u.authService.Search(ctx, username)
+	users, authStatus := u.userService.Search(ctx, username)
 	if authStatus != nil {
 		return authStatus
 	}

@@ -24,7 +24,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: est-mono
+                name: est-proxy
                 port:
                   name: http
 
@@ -42,7 +42,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: est-mono
+                name: est-proxy
                 port:
                   name: http
 

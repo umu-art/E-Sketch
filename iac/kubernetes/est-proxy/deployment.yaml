@@ -35,6 +35,30 @@ spec:
           env:
             - name: EST_BACK_URL
               value: http://est-back.e-sketch.svc.cluster.local
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_HOST
+              value: postgres.databases.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: '5432'
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: POSTGRES_DB
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-token
+                  key: token
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-server.monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
