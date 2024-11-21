@@ -20,17 +20,18 @@ func NewUserListener(userService *service.UserService) *UserListener {
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	_, sessionStatus := u.userService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	_, err := u.userService.GetSession(ctx)
+	if err != nil {
+		return ctx.String(http.StatusUnauthorized, err.Error())
 	}
+
 	return ctx.String(http.StatusOK, "Сессия действительна")
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	userId, sessionStatus := u.userService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	userId, err := u.userService.GetSession(ctx)
+	if err != nil {
+		return ctx.String(http.StatusUnauthorized, err.Error())
 	}
 
 	user, authStatus := u.userService.GetUserById(ctx, userId)
@@ -42,9 +43,9 @@ func (u UserListener) GetSelf(ctx echo.Context) error {
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	_, sessionStatus := u.userService.GetSession(ctx)
-	if sessionStatus != nil {
-		return sessionStatus
+	_, err := u.userService.GetSession(ctx)
+	if err != nil {
+		return ctx.String(http.StatusUnauthorized, err.Error())
 	}
 
 	userIdStr := ctx.QueryParam("userId")

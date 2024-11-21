@@ -3,9 +3,8 @@ package service
 import (
 	"est-proxy/src/config"
 	"est-proxy/src/models"
-	"log"
-
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -32,12 +31,12 @@ func ParseUserJWT(token *jwt.Token) *models.ParsedJWT {
 			log.Printf("Failed to parse user id from claims: %v", claims)
 			return nil
 		}
-
-		expirationTimeUnix, ok := claims["exp"].(int64)
+		expirationTimeFloat, ok := claims["exp"].(float64)
 		if !ok {
 			log.Printf("Failed to parse expiration time from claims: %v", claims)
 			return nil
 		}
+		expirationTimeUnix := int64(expirationTimeFloat)
 		expirationTime := time.Unix(expirationTimeUnix, 0)
 
 		return &models.ParsedJWT{
@@ -60,7 +59,7 @@ func GetUserJWTCookie(ctx echo.Context) *jwt.Token {
 			log.Printf("Invalid signing method: %s", token.Header["alg"])
 			return nil, fmt.Errorf("неподдерживаемый алгоритм подписи")
 		}
-		return config.JWT_SECRET, nil
+		return []byte(config.JWT_SECRET), nil
 	})
 
 	if err != nil {

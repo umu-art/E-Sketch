@@ -21,8 +21,8 @@ func NewUserService(userRepository *UserRepository) *UserService {
 func (u UserService) GetSession(ctx echo.Context) (*uuid.UUID, error) {
 	session := GetAndParseUserJWTCookie(ctx)
 
-	if session == nil || session.ExpirationTime.After(time.Now()) {
-		return nil, ctx.String(http.StatusUnauthorized, fmt.Sprintf("Отсутствует или некорректная сессия"))
+	if session == nil || session.ExpirationTime.Before(time.Now()) {
+		return nil, fmt.Errorf("отсутствует или некорректная сессия")
 	}
 
 	return &session.UserID, nil
