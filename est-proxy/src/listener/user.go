@@ -76,6 +76,9 @@ func (u UserListener) Login(ctx echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = config.JWT_COOKIE_NAME
 	cookie.Value = *token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = true
 	ctx.SetCookie(cookie)
 
 	return ctx.String(http.StatusOK, "Вход в аккаунт выполнен успешно")
@@ -95,6 +98,9 @@ func (u UserListener) Register(ctx echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = config.JWT_COOKIE_NAME
 	cookie.Value = *token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = true
 	ctx.SetCookie(cookie)
 
 	return ctx.String(http.StatusOK, "Аккаунт успешно зарегистрирован")
