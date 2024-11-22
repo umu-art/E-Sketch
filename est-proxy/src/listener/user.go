@@ -20,43 +20,43 @@ func NewUserListener(userService *service.UserService) *UserListener {
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	_, err := u.userService.GetSession(ctx)
-	if err != nil {
-		return ctx.String(http.StatusUnauthorized, err.Error())
+	_, statusError := u.userService.GetSession(ctx)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	return ctx.String(http.StatusOK, "Сессия действительна")
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	userId, err := u.userService.GetSession(ctx)
-	if err != nil {
-		return ctx.String(http.StatusUnauthorized, err.Error())
+	userId, statusError := u.userService.GetSession(ctx)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
-	user, authStatus := u.userService.GetUserById(ctx, userId)
-	if authStatus != nil {
-		return authStatus
+	user, statusError := u.userService.GetUserById(userId)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	return ctx.JSON(http.StatusOK, *user)
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	_, err := u.userService.GetSession(ctx)
-	if err != nil {
-		return ctx.String(http.StatusUnauthorized, err.Error())
+	_, statusError := u.userService.GetSession(ctx)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
-	userIdStr := ctx.QueryParam("userId")
+	userIdStr := ctx.Param("userId")
 	userId, err := uuid.Parse(userIdStr)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
-	user, authStatus := u.userService.GetUserById(ctx, &userId)
-	if authStatus != nil {
-		return authStatus
+	user, statusError := u.userService.GetUserById(&userId)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	return ctx.JSON(http.StatusOK, *user)
@@ -68,9 +68,9 @@ func (u UserListener) Login(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, authStatus := u.userService.Login(ctx, &authDto)
-	if authStatus != nil {
-		return authStatus
+	token, statusError := u.userService.Login(&authDto)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	cookie := new(http.Cookie)
@@ -90,9 +90,9 @@ func (u UserListener) Register(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, authStatus := u.userService.Register(ctx, &regDto)
-	if authStatus != nil {
-		return authStatus
+	token, statusError := u.userService.Register(&regDto)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	cookie := new(http.Cookie)
@@ -107,10 +107,10 @@ func (u UserListener) Register(ctx echo.Context) error {
 }
 
 func (u UserListener) Search(ctx echo.Context) error {
-	username := ctx.QueryParam("username")
-	users, authStatus := u.userService.Search(ctx, username)
-	if authStatus != nil {
-		return authStatus
+	username := ctx.Param("username")
+	users, statusError := u.userService.Search(ctx, username)
+	if statusError != nil {
+		return statusError.Send(ctx)
 	}
 
 	return ctx.JSON(http.StatusOK, *users)
