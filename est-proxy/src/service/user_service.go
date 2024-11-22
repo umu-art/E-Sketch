@@ -2,8 +2,8 @@ package service
 
 import (
 	"est-proxy/src/models"
+	"est-proxy/src/models/errors"
 	proxymodels "est_proxy_go/models"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -18,66 +18,66 @@ func NewUserService(userRepository *UserRepository) *UserService {
 	return &UserService{userRepository: userRepository}
 }
 
-func (u UserService) GetSession(ctx echo.Context) (*uuid.UUID, error) {
+func (u UserService) GetSession(ctx echo.Context) (*uuid.UUID, *errors.StatusError) {
 	session := GetAndParseUserJWTCookie(ctx)
 
 	if session == nil || session.ExpirationTime.Before(time.Now()) {
-		return nil, fmt.Errorf("отсутствует или некорректная сессия")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
 
 	return &session.UserID, nil
 }
 
-func (u UserService) GetUserById(ctx echo.Context, userId *uuid.UUID) (*proxymodels.UserDto, error) {
+func (u UserService) GetUserById(userId *uuid.UUID) (*proxymodels.UserDto, *errors.StatusError) {
 	user := u.userRepository.GetUserByID(userId)
 	if user == nil {
-		return nil, ctx.String(http.StatusBadRequest, "Пользователь не найден")
+		return nil, errors.NewStatusError(http.StatusBadRequest, "Пользователь не найден")
 	}
 
 	return mapToProxyDto(user.Public()), nil
 }
 
-func (u UserService) Login(ctx echo.Context, authDto *proxymodels.AuthDto) (*string, error) {
+func (u UserService) Login(authDto *proxymodels.AuthDto) (*string, *errors.StatusError) {
 	user := u.userRepository.GetUserByEmail(authDto.Email)
 	if user == nil {
-		return nil, ctx.String(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
+		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
 	}
 
 	if authDto.PasswordHash != user.PasswordHash {
-		return nil, ctx.String(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
+		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
 	}
 
 	token := GenerateUserJWTString(&user.ID)
 	if token == nil {
-		return nil, ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")
 	}
 
 	return token, nil
 }
 
-func (u UserService) Register(ctx echo.Context, registerDto *proxymodels.RegisterDto) (*string, error) {
+func (u UserService) Register(registerDto *proxymodels.RegisterDto) (*string, *errors.StatusError) {
 	exists := u.userRepository.UserExistsByUsernameOrEmail(registerDto.Username, registerDto.Email)
 	if exists {
-		return nil, ctx.String(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
+		return nil, errors.NewStatusError(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
 	}
 
 	userId := u.userRepository.Create(registerDto.Username, registerDto.Email, registerDto.PasswordHash)
 	if userId == nil {
-		return nil, ctx.String(http.StatusInternalServerError, "Не получилось создать аккаунт")
+		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать аккаунт")
 	}
 
 	token := GenerateUserJWTString(userId)
 	if token == nil {
-		return nil, ctx.String(http.StatusUnauthorized, "Не получилось начать сессию")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")
 	}
 
 	return token, nil
 }
 
-func (u UserService) Search(ctx echo.Context, query string) (*[]proxymodels.UserDto, error) {
+func (u UserService) Search(ctx echo.Context, query string) (*[]proxymodels.UserDto, *errors.StatusError) {
 	users := u.userRepository.SearchByUsernameIgnoreCase(ctx.Request().Context(), query)
 	if users == nil {
-		return nil, ctx.String(http.StatusInternalServerError, "Ошибка поиска")
+		return nil, errors.NewStatusError(http.StatusInternalServerError, "Ошибка поиска")
 	}
 
 	return mapListToProxyDto(*users), nil
