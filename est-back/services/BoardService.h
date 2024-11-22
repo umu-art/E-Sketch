@@ -36,12 +36,14 @@ namespace est_back::service {
         return oss.str();
     }
 
-    osm::BackBoardDto rowToBoardDto(const drogon::orm::Row& row) {
+    osm::BackBoardDto rowToBoardDto(const drogon::orm::Row& row,
+                                    const std::vector<osm::BackSharingDto>& sharedWith = {}) {
         osm::BackBoardDto boardDto;
         boardDto.setId(row["id"].as<std::string>());
         boardDto.setName(row["name"].as<std::string>());
         boardDto.setDescription(row["description"].as<std::string>());
         boardDto.setOwnerId(row["owner_id"].as<std::string>());
+        boardDto.setSharedWith(sharedWith);
         osm::LinkShareMode linkShareMode;
         nlohmann::json j = toLower(row["link_shared_mode"].as<std::string>());
         osm::from_json(j, linkShareMode);
@@ -154,8 +156,22 @@ namespace est_back::service {
     osm::BackBoardDto getBoard(const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto res = clientPtr->execSqlSync("select * from board where id = $1;", boardId);
+        auto shareWithRes = clientPtr->execSqlSync(
+            "select board_id, user_id, sharing_mode "
+            "from board_sharing where board_id ='" +
+            boardId + "';");
+        std::vector<osm::BackSharingDto> shareWith;
+        for (const auto& row : shareWithRes) {
+            nlohmann::json sharingDtoJson = nlohmann::json::object();
+            sharingDtoJson["userId"] = row["user_id"].as<std::string>();
+            sharingDtoJson["access"] = toLower(row["sharing_mode"].as<std::string>());
+            osm::BackSharingDto sharingDto;
+            osm::from_json(sharingDtoJson, sharingDto);
+            shareWith.push_back(sharingDto);
+        }
         auto row = res.front();
-        osm::BackBoardDto boardDto = rowToBoardDto(row);
+        osm::BackBoardDto boardDto = rowToBoardDto(row, shareWith);
+
         return boardDto;
     }
 
@@ -201,7 +217,7 @@ namespace est_back::service {
                                toUpper(sharingDtoJson["access"].get<std::string>()), sharingDto.getUserId(), boardId);
     }
 
-    void unshareBoard(const osm::UnshareBoardDto unshareBoardDto, const std::string& boardId) {
+    void unshareBoard(const osm::UnshareBoardDto& unshareBoardDto, const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         clientPtr->execSqlSync("delete from board_sharing where user_id = $1 and board_id = $2;",
                                unshareBoardDto.getUserId(), boardId);
