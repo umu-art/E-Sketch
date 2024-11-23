@@ -26,10 +26,11 @@ func main() {
 	backApi := estbackapi.NewAPIClient(backApiConfig)
 
 	// PostgreSQL
-	userRepository := service.NewUserRepository()
-	defer userRepository.Release()
+	postgresService := service.NewPostgresService()
+	defer postgresService.Release()
 
 	// UserService
+	userRepository := service.NewUserRepository(postgresService)
 	userService := service.NewUserService(userRepository)
 
 	// Хандлеры

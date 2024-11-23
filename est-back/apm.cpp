@@ -57,9 +57,12 @@ void initApm() {
 
         std::map<std::string, opentelemetry::common::AttributeValue> attributes;
         attributes["service.name"] = "est-back";
-        attributes["service.version"] = "0.0.1";
-        attributes["deployment.environment"] = "production";
+        attributes["process.executable.name"] = "est-back";
+        attributes["service.version"] = "1.0.0";
+        attributes["http.server_name"] = "est-back";
+        attributes["http.scheme"] = "http";
         attributes["http.method"] = req->method();
+        attributes["http.request.method"] = req->method();
         attributes["http.url"] = req->path();
 
         spans[traceId] = tracer->StartSpan(req->path(), attributes, options);
