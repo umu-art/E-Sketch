@@ -1,0 +1,77 @@
+package service
+
+import (
+	"context"
+	"est-proxy/src/config"
+	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"go.elastic.co/apm/v2"
+	"log"
+	"net/url"
+)
+
+type PostgresService struct {
+	db *pgxpool.Pool
+}
+
+func NewPostgresService() *PostgresService {
+	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		config.POSTGRES_USERNAME,
+		url.QueryEscape(config.POSTGRES_PASSWORD),
+		config.POSTGRES_HOST,
+		config.POSTGRES_PORT,
+		config.POSTGRES_DATABASE)
+
+	pgxConfig, err := pgxpool.ParseConfig(repositoryAddress)
+	if err != nil {
+		log.Fatalf("Unable to parse config: %v", err)
+	}
+
+	pgxConfig.MaxConns = 20
+
+	db, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
+
+	return &PostgresService{db: db}
+}
+
+func (p PostgresService) Release() {
+	if p.db != nil {
+		p.db.Close()
+		p.db = nil
+	}
+}
+
+func (p PostgresService) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
+	span, _ := apm.StartSpan(ctx, "sql query", "service")
+	span.Context.SetLabel("query", sql)
+	defer span.End()
+
+	resp, err := p.db.Exec(ctx, sql, arguments...)
+	if err != nil {
+		log.Printf("failed execute sql query: %v", err)
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+func (p PostgresService) QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row {
+	span, _ := apm.StartSpan(ctx, "sql query", "service")
+	span.Context.SetLabel("query", sql)
+	defer span.End()
+
+	return p.db.QueryRow(ctx, sql, arguments...)
+}
+
+func (p PostgresService) Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error) {
+	span, _ := apm.StartSpan(ctx, "sql query", "service")
+	span.Context.SetLabel("query", sql)
+	defer span.End()
+
+	return p.db.Query(ctx, sql, arguments...)
+}
