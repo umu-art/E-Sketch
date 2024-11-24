@@ -17,6 +17,9 @@ func (t *TransportWithTraceparentHeaders) RoundTrip(req *http.Request) (*http.Re
 	ctx := req.Context()
 	traceContext := apm.TransactionFromContext(ctx).TraceContext()
 
+	span, _ := apm.StartSpan(ctx, "est-back: "+req.URL.Path, "service")
+	defer span.End()
+
 	// Set traceparent
 	traceparent := apmhttp.FormatTraceparentHeader(traceContext)
 

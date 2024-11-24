@@ -17,22 +17,22 @@ func NewUserRepository(postgresService *PostgresService) *UserRepository {
 	return &UserRepository{postgresService}
 }
 
-func (r UserRepository) Create(username string, email string, passwordHash string) *uuid.UUID {
-	_, err := r.postgresService.Exec(context.Background(),
+func (r UserRepository) Create(ctx context.Context, username string, email string, passwordHash string) *uuid.UUID {
+	_, err := r.postgresService.Exec(ctx,
 		"INSERT INTO users (id, username, password_hash, email, avatar) VALUES ($1, $2, $3, $4, '')",
 		uuid.New(), username, passwordHash, email)
 	if err != nil {
 		log.Printf("Failed to create user: %v", err)
 		return nil
 	}
-	return r.GetIDByEmail(email)
+	return r.GetIDByEmail(ctx, email)
 }
 
-func (r UserRepository) GetUserByEmail(email string) *models.User {
+func (r UserRepository) GetUserByEmail(ctx context.Context, email string) *models.User {
 	var user models.User
 	var row pgx.Row
 
-	row = r.postgresService.QueryRow(context.Background(),
+	row = r.postgresService.QueryRow(ctx,
 		"SELECT id, username, password_hash, email, avatar FROM users WHERE email = $1",
 		email)
 	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
@@ -44,11 +44,11 @@ func (r UserRepository) GetUserByEmail(email string) *models.User {
 	return &user
 }
 
-func (r UserRepository) GetIDByEmail(email string) *uuid.UUID {
+func (r UserRepository) GetIDByEmail(ctx context.Context, email string) *uuid.UUID {
 	var id uuid.UUID
 	var row pgx.Row
 
-	row = r.postgresService.QueryRow(context.Background(),
+	row = r.postgresService.QueryRow(ctx,
 		"SELECT id FROM users WHERE email = $1",
 		email)
 	err := row.Scan(&id)
@@ -60,11 +60,11 @@ func (r UserRepository) GetIDByEmail(email string) *uuid.UUID {
 	return &id
 }
 
-func (r UserRepository) GetUserByID(id *uuid.UUID) *models.User {
+func (r UserRepository) GetUserByID(ctx context.Context, id *uuid.UUID) *models.User {
 	var user models.User
 	var row pgx.Row
 
-	row = r.postgresService.QueryRow(context.Background(),
+	row = r.postgresService.QueryRow(ctx,
 		"SELECT id, username, email, avatar FROM users WHERE id = $1",
 		id)
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Avatar)
@@ -76,10 +76,10 @@ func (r UserRepository) GetUserByID(id *uuid.UUID) *models.User {
 	return &user
 }
 
-func (r UserRepository) UserExistsByUsernameOrEmail(username string, email string) bool {
+func (r UserRepository) UserExistsByUsernameOrEmail(ctx context.Context, username string, email string) bool {
 	var count int
 
-	err := r.postgresService.QueryRow(context.Background(),
+	err := r.postgresService.QueryRow(ctx,
 		"SELECT COUNT(*) FROM users WHERE username = $1 OR email = $2",
 		username, email).Scan(&count)
 

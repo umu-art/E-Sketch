@@ -34,7 +34,7 @@ func (u UserListener) GetSelf(ctx echo.Context) error {
 		return statusError.Send(ctx)
 	}
 
-	user, statusError := u.userService.GetUserById(userId)
+	user, statusError := u.userService.GetUserById(ctx.Request().Context(), userId)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -54,7 +54,7 @@ func (u UserListener) GetUserById(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
 
-	user, statusError := u.userService.GetUserById(&userId)
+	user, statusError := u.userService.GetUserById(ctx.Request().Context(), &userId)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -68,7 +68,7 @@ func (u UserListener) Login(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, statusError := u.userService.Login(&authDto)
+	token, statusError := u.userService.Login(ctx.Request().Context(), &authDto)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -90,7 +90,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, statusError := u.userService.Register(&regDto)
+	token, statusError := u.userService.Register(ctx.Request().Context(), &regDto)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -108,7 +108,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 
 func (u UserListener) Search(ctx echo.Context) error {
 	username := ctx.Param("username")
-	users, statusError := u.userService.Search(ctx, username)
+	users, statusError := u.userService.Search(ctx.Request().Context(), username)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}

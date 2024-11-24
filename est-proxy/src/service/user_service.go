@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"est-proxy/src/models"
 	"est-proxy/src/models/errors"
 	proxymodels "est_proxy_go/models"
@@ -28,8 +29,8 @@ func (u UserService) GetSession(ctx echo.Context) (*uuid.UUID, *errors.StatusErr
 	return &session.UserID, nil
 }
 
-func (u UserService) GetUserById(userId *uuid.UUID) (*proxymodels.UserDto, *errors.StatusError) {
-	user := u.userRepository.GetUserByID(userId)
+func (u UserService) GetUserById(ctx context.Context, userId *uuid.UUID) (*proxymodels.UserDto, *errors.StatusError) {
+	user := u.userRepository.GetUserByID(ctx, userId)
 	if user == nil {
 		return nil, errors.NewStatusError(http.StatusBadRequest, "Пользователь не найден")
 	}
@@ -37,8 +38,8 @@ func (u UserService) GetUserById(userId *uuid.UUID) (*proxymodels.UserDto, *erro
 	return mapToProxyDto(user.Public()), nil
 }
 
-func (u UserService) Login(authDto *proxymodels.AuthDto) (*string, *errors.StatusError) {
-	user := u.userRepository.GetUserByEmail(authDto.Email)
+func (u UserService) Login(ctx context.Context, authDto *proxymodels.AuthDto) (*string, *errors.StatusError) {
+	user := u.userRepository.GetUserByEmail(ctx, authDto.Email)
 	if user == nil {
 		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
 	}
@@ -55,13 +56,13 @@ func (u UserService) Login(authDto *proxymodels.AuthDto) (*string, *errors.Statu
 	return token, nil
 }
 
-func (u UserService) Register(registerDto *proxymodels.RegisterDto) (*string, *errors.StatusError) {
-	exists := u.userRepository.UserExistsByUsernameOrEmail(registerDto.Username, registerDto.Email)
+func (u UserService) Register(ctx context.Context, registerDto *proxymodels.RegisterDto) (*string, *errors.StatusError) {
+	exists := u.userRepository.UserExistsByUsernameOrEmail(ctx, registerDto.Username, registerDto.Email)
 	if exists {
 		return nil, errors.NewStatusError(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
 	}
 
-	userId := u.userRepository.Create(registerDto.Username, registerDto.Email, registerDto.PasswordHash)
+	userId := u.userRepository.Create(ctx, registerDto.Username, registerDto.Email, registerDto.PasswordHash)
 	if userId == nil {
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать аккаунт")
 	}
@@ -74,8 +75,8 @@ func (u UserService) Register(registerDto *proxymodels.RegisterDto) (*string, *e
 	return token, nil
 }
 
-func (u UserService) Search(ctx echo.Context, query string) (*[]proxymodels.UserDto, *errors.StatusError) {
-	users := u.userRepository.SearchByUsernameIgnoreCase(ctx.Request().Context(), query)
+func (u UserService) Search(ctx context.Context, query string) (*[]proxymodels.UserDto, *errors.StatusError) {
+	users := u.userRepository.SearchByUsernameIgnoreCase(ctx, query)
 	if users == nil {
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Ошибка поиска")
 	}
