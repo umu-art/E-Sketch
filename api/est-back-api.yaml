@@ -145,6 +145,67 @@ paths:
         200:
           description: Успеха
 
+  #################################### Figure ####################################
+  /back/figure/list/{boardId}:
+    get:
+      tags:
+        - figure
+      summary: Получение списка фигур
+      operationId: listByBoardId
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Список фигур
+          content:
+            application/octet-stream:
+              schema:
+                $ref: "#/components/schemas/FigureDto"
+
+  /back/figure/create/{boardId}:
+    post:
+      tags:
+        - figure
+      summary: Создание фигуры
+      operationId: createFigure
+      parameters:
+        - $ref: "#/components/parameters/BoardId"
+      responses:
+        200:
+          description: Новая фигура
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FigureIdDto"
+
+  /back/figure/{figureId}:
+    patch:
+      tags:
+        - figure
+      summary: Обновление фигуры
+      operationId: updateFigure
+      parameters:
+        - $ref: "#/components/parameters/FigureId"
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              $ref: "#/components/schemas/FigureDto"
+      responses:
+        200:
+          description: Успешное обновление
+    delete:
+      tags:
+        - figure
+      summary: Удаление фигуры
+      operationId: deleteFigure
+      parameters:
+        - $ref: "#/components/parameters/FigureId"
+      responses:
+        200:
+          description: Успешное удаление
+
+
 components:
   parameters:
     UserId:
@@ -158,6 +219,14 @@ components:
 
     BoardId:
       name: boardId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    FigureId:
+      name: figureId
       in: path
       required: true
       schema:
@@ -246,5 +315,21 @@ components:
         - userId
       properties:
         userId:
+          type: string
+          format: uuid
+
+    FigureDto:
+      required:
+        - data
+      properties:
+        data:
+          type: string
+          format: binary
+
+    FigureIdDto:
+      required:
+        - id
+      properties:
+        id:
           type: string
           format: uuid
