@@ -47,19 +47,19 @@ spec:
               memory: "100M"
               cpu: "100m"
 
-          readinessProbe:
-            httpGet:
-              path: /ping
-              port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
-
-          livenessProbe:
-            httpGet:
-              path: /ping
-              port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
+#          readinessProbe:
+#            httpGet:
+#              path: /ping
+#              port: 8080
+#            initialDelaySeconds: 20
+#            periodSeconds: 20
+#
+#          livenessProbe:
+#            httpGet:
+#              path: /ping
+#              port: 8080
+#            initialDelaySeconds: 20
+#            periodSeconds: 20
 
       imagePullSecrets:
         - name: github-container-registry
