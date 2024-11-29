@@ -10,3 +10,5 @@ est-proxy/build/
 iac/kubernetes/est-secret
 est-back/cmake-build-debug/
 */target
+**/dist/
+**/node_modules/

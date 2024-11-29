@@ -73,6 +73,9 @@ jobs:
         with:
           cacheTag: api-${{ hashFiles('api/') }}
 
+      - name: Build libs
+        uses: ./.github/workflows/actions/build_libs
+
       - name: Install deps
         run: cd ./est-front && npm install
 

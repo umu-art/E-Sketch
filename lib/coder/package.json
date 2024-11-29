@@ -1,0 +1,21 @@
+{
+  "name": "coder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "umu-art",
+  "license": "ISC",
+  "description": "Библиотека для кодирования / декодирования фигур в byte sting",
+  "dependencies": {
+    "figures": "file:../figures"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.4",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

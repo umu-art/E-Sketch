@@ -1,0 +1,20 @@
+name: "Build libs"
+description: "Сборка ts библиотек"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install figures
+      shell: bash
+      working-directory: ./lib/figures
+      run: npm install; npm run build
+
+    - name: Install coder
+      shell: bash
+      working-directory: ./lib/coder
+      run: npm install; npm run build
+
+    - name: Install paint
+      shell: bash
+      working-directory: ./lib/paint
+      run: npm install; npm run build

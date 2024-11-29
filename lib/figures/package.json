@@ -1,0 +1,19 @@
+{
+  "name": "figures",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "umu-art",
+  "license": "ISC",
+  "description": "Библиотека со всеми фигурами",
+  "devDependencies": {
+    "@types/node": "^22.9.4",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
