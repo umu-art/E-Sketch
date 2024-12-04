@@ -18,7 +18,7 @@ int main() {
     drogon::app().addDbClient(dbConfig);
 
     // Init Apm
-    initApm();
+    // initApm();
 
     // Start
     drogon::app().run();
