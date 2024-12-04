@@ -158,9 +158,9 @@ paths:
         200:
           description: Список фигур
           content:
-            application/octet-stream:
+            application/json:
               schema:
-                $ref: "#/components/schemas/FigureDto"
+                $ref: "#/components/schemas/FigureListDto"
 
   /back/figure/create/{boardId}:
     post:
@@ -188,7 +188,7 @@ paths:
         - $ref: "#/components/parameters/FigureId"
       requestBody:
         content:
-          application/octet-stream:
+          application/json:
             schema:
               $ref: "#/components/schemas/FigureDto"
       responses:
@@ -325,6 +325,15 @@ components:
         data:
           type: string
           format: binary
+
+    FigureListDto:
+      required:
+        - figures
+      properties:
+        figures:
+          type: array
+          items:
+            $ref: "#/components/schemas/FigureDto"
 
     FigureIdDto:
       required:
