@@ -14,7 +14,7 @@ namespace est_back::service {
 
     osm::FigureListDto getFigureListDto(const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto res = clientPtr->execSqlSync("select figure_data from figure where owner_id = $1;", boardId);
+        auto res = clientPtr->execSqlSync("select figure_data from figure where board_id = $1;", boardId);
         osm::FigureListDto figureListDto;
         std::vector<osm::FigureDto> figureList;
         for (const auto& row : res) {
