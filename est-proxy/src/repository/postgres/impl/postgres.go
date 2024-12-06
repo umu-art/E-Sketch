@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 	"net/url"
 )
 
-type PostgresService struct {
+type PostgresServiceImpl struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresService() *PostgresService {
+func NewPostgresServiceImpl() *PostgresServiceImpl {
 	repositoryAddress := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		config.POSTGRES_USERNAME,
 		url.QueryEscape(config.POSTGRES_PASSWORD),
@@ -36,17 +36,17 @@ func NewPostgresService() *PostgresService {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
 
-	return &PostgresService{db: db}
+	return &PostgresServiceImpl{db: db}
 }
 
-func (p PostgresService) Release() {
+func (p *PostgresServiceImpl) Release() {
 	if p.db != nil {
 		p.db.Close()
 		p.db = nil
 	}
 }
 
-func (p PostgresService) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
+func (p *PostgresServiceImpl) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
 	span, _ := apm.StartSpan(ctx, "sql query", "service")
 	span.Context.SetLabel("query", sql)
 	defer span.End()
@@ -60,7 +60,7 @@ func (p PostgresService) Exec(ctx context.Context, sql string, arguments ...any)
 	return resp, nil
 }
 
-func (p PostgresService) QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row {
+func (p *PostgresServiceImpl) QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row {
 	span, _ := apm.StartSpan(ctx, "sql query", "service")
 	span.Context.SetLabel("query", sql)
 	defer span.End()
@@ -68,7 +68,7 @@ func (p PostgresService) QueryRow(ctx context.Context, sql string, arguments ...
 	return p.db.QueryRow(ctx, sql, arguments...)
 }
 
-func (p PostgresService) Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error) {
+func (p *PostgresServiceImpl) Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error) {
 	span, _ := apm.StartSpan(ctx, "sql query", "service")
 	span.Context.SetLabel("query", sql)
 	defer span.End()

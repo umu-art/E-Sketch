@@ -19,3 +19,8 @@ const JWT_SIGNING_METHOD string = "HS256"
 const JWT_DURATION_TIME = time.Hour * 48
 
 const JWT_COOKIE_NAME string = "estu"
+
+var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
+	"/login",
+	"/register",
+}

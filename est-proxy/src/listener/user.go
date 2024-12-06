@@ -12,29 +12,29 @@ import (
 )
 
 type UserListener struct {
-	userService *service.UserService
+	userService service.UserService
 }
 
-func NewUserListener(userService *service.UserService) *UserListener {
+func NewUserListener(userService service.UserService) *UserListener {
 	return &UserListener{userService: userService}
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	_, statusError := u.userService.GetSession(ctx)
-	if statusError != nil {
-		return statusError.Send(ctx)
+	sessionUserId := service.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
 
 	return ctx.String(http.StatusOK, "Сессия действительна")
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	userId, statusError := u.userService.GetSession(ctx)
-	if statusError != nil {
-		return statusError.Send(ctx)
+	sessionUserId := service.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
 
-	user, statusError := u.userService.GetUserById(ctx.Request().Context(), userId)
+	user, statusError := u.userService.GetUserById(ctx.Request().Context(), sessionUserId)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -43,9 +43,9 @@ func (u UserListener) GetSelf(ctx echo.Context) error {
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	_, statusError := u.userService.GetSession(ctx)
-	if statusError != nil {
-		return statusError.Send(ctx)
+	sessionUserId := service.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
 
 	userIdStr := ctx.Param("userId")
@@ -107,6 +107,11 @@ func (u UserListener) Register(ctx echo.Context) error {
 }
 
 func (u UserListener) Search(ctx echo.Context) error {
+	sessionUserId := service.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
+	}
+
 	username := ctx.Param("username")
 	users, statusError := u.userService.Search(ctx.Request().Context(), username)
 	if statusError != nil {
