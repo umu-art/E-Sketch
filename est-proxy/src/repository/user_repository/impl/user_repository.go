@@ -1,23 +1,24 @@
-package service
+package impl
 
 import (
 	"context"
 	"est-proxy/src/models"
+	"est-proxy/src/repository/postgres"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"log"
 )
 
-type UserRepository struct {
-	postgresService *PostgresService
+type UserRepositoryImpl struct {
+	postgresService postgres.PostgresService
 }
 
-func NewUserRepository(postgresService *PostgresService) *UserRepository {
-	return &UserRepository{postgresService}
+func NewUserRepositoryImpl(postgresService postgres.PostgresService) *UserRepositoryImpl {
+	return &UserRepositoryImpl{postgresService}
 }
 
-func (r UserRepository) Create(ctx context.Context, username string, email string, passwordHash string) *uuid.UUID {
+func (r *UserRepositoryImpl) Create(ctx context.Context, username string, email string, passwordHash string) *uuid.UUID {
 	_, err := r.postgresService.Exec(ctx,
 		"INSERT INTO users (id, username, password_hash, email, avatar) VALUES ($1, $2, $3, $4, '')",
 		uuid.New(), username, passwordHash, email)
@@ -28,7 +29,7 @@ func (r UserRepository) Create(ctx context.Context, username string, email strin
 	return r.GetIDByEmail(ctx, email)
 }
 
-func (r UserRepository) GetUserByEmail(ctx context.Context, email string) *models.User {
+func (r *UserRepositoryImpl) GetUserByEmail(ctx context.Context, email string) *models.User {
 	var user models.User
 	var row pgx.Row
 
@@ -44,7 +45,7 @@ func (r UserRepository) GetUserByEmail(ctx context.Context, email string) *model
 	return &user
 }
 
-func (r UserRepository) GetIDByEmail(ctx context.Context, email string) *uuid.UUID {
+func (r *UserRepositoryImpl) GetIDByEmail(ctx context.Context, email string) *uuid.UUID {
 	var id uuid.UUID
 	var row pgx.Row
 
@@ -60,7 +61,7 @@ func (r UserRepository) GetIDByEmail(ctx context.Context, email string) *uuid.UU
 	return &id
 }
 
-func (r UserRepository) GetUserByID(ctx context.Context, id *uuid.UUID) *models.User {
+func (r *UserRepositoryImpl) GetUserByID(ctx context.Context, id *uuid.UUID) *models.User {
 	var user models.User
 	var row pgx.Row
 
@@ -76,7 +77,7 @@ func (r UserRepository) GetUserByID(ctx context.Context, id *uuid.UUID) *models.
 	return &user
 }
 
-func (r UserRepository) UserExistsByUsernameOrEmail(ctx context.Context, username string, email string) bool {
+func (r *UserRepositoryImpl) UserExistsByUsernameOrEmail(ctx context.Context, username string, email string) bool {
 	var count int
 
 	err := r.postgresService.QueryRow(ctx,
@@ -91,14 +92,43 @@ func (r UserRepository) UserExistsByUsernameOrEmail(ctx context.Context, usernam
 	return count > 0
 }
 
-func (r UserRepository) SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.PublicUser {
-	query := "SELECT id, username, avatar FROM users WHERE username ILIKE '%' || $1 || '%'"
-	rows, err := r.postgresService.Query(ctx, query, username)
+func (r *UserRepositoryImpl) SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.PublicUser {
+	rows, err := r.postgresService.Query(ctx,
+		"SELECT id, username, avatar FROM users WHERE username ILIKE '%' || $1 || '%'",
+		username)
+	defer rows.Close()
 	if err != nil {
 		log.Printf("Failed to search users: %v", err)
 		return nil
 	}
+
+	var users []models.PublicUser
+	for rows.Next() {
+		var user models.PublicUser
+		if err := rows.Scan(&user.ID, &user.Username, &user.Avatar); err != nil {
+			fmt.Printf("Failed to parse user, %v \n", err)
+			continue
+		}
+		users = append(users, user)
+	}
+
+	if rows.Err() != nil {
+		log.Printf("Failed to search users: %v", rows.Err())
+		return nil
+	}
+
+	return &users
+}
+
+func (r *UserRepositoryImpl) GetUserListByIds(ctx context.Context, ids []uuid.UUID) *[]models.PublicUser {
+	rows, err := r.postgresService.Query(ctx,
+		"SELECT id, username, avatar FROM users WHERE id = ANY($1)",
+		ids)
 	defer rows.Close()
+	if err != nil {
+		log.Printf("Failed to search users: %v", err)
+		return nil
+	}
 
 	var users []models.PublicUser
 	for rows.Next() {

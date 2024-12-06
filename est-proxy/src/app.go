@@ -4,6 +4,8 @@ import (
 	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
+	"est-proxy/src/repository/postgres"
+	"est-proxy/src/repository/user_repository"
 	"est-proxy/src/service"
 	estbackapi "est_back_go"
 	"log"
@@ -26,15 +28,18 @@ func main() {
 	backApi := estbackapi.NewAPIClient(backApiConfig)
 
 	// PostgreSQL
-	postgresService := service.NewPostgresService()
+	postgresService := postgres.NewPostgresService()
 	defer postgresService.Release()
 
 	// UserService
-	userRepository := service.NewUserRepository(postgresService)
+	userRepository := user_repository.NewUserRepository(postgresService)
 	userService := service.NewUserService(userRepository)
 
+	//BoardService
+	boardService := service.NewBoardService(backApi.BoardAPI, userRepository)
+
 	// Хандлеры
-	boardListener := listener.NewBoardListener(backApi.BoardAPI, userService)
+	boardListener := listener.NewBoardListener(boardService, userService)
 	userListener := listener.NewUserListener(userService)
 
 	// HTTP сервер

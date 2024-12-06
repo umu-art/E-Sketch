@@ -1,4 +1,4 @@
-package service
+package utils
 
 import (
 	"est-proxy/src/config"
@@ -70,11 +70,7 @@ func GetUserJWTCookie(ctx echo.Context) *jwt.Token {
 }
 
 func GetAndParseUserJWTCookie(ctx echo.Context) *models.ParsedJWT {
-	jwtToken := GetUserJWTCookie(ctx)
-	if jwtToken == nil {
-		return nil
-	}
-	return ParseUserJWT(jwtToken)
+	return ParseUserJWT(GetUserJWTCookie(ctx))
 }
 
 func GenerateUserJWT(userID *uuid.UUID) (*jwt.Token, error) {
