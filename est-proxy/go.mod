@@ -7,6 +7,7 @@ require (
 	est_proxy_go v0.0.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/labstack/echo/v4 v4.12.0
 	go.elastic.co/apm/module/apmechov4/v2 v2.6.2

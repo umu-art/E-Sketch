@@ -2,6 +2,7 @@ package http
 
 import (
 	"est-proxy/src/service"
+	"est-proxy/src/listener"
 	"est_proxy_go/handlers"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -10,17 +11,20 @@ import (
 )
 
 type Listener struct {
-	boardListener handlers.BoardAPI
-	userListener  handlers.UserAPI
+	boardListener  handlers.BoardAPI
+	userListener   handlers.UserAPI
+	figureListener *listener.WsFigureListener
 }
 
 func NewListener(
 	boardListener handlers.BoardAPI,
-	userListener handlers.UserAPI) *Listener {
+	userListener handlers.UserAPI,
+	figureListener *listener.WsFigureListener) *Listener {
 
 	return &Listener{
-		boardListener: boardListener,
-		userListener:  userListener,
+		boardListener:  boardListener,
+		userListener:   userListener,
+		figureListener: figureListener,
 	}
 }
 
@@ -34,6 +38,8 @@ func (h *Listener) Serve() {
 	e.Use(service.SessionMiddleware)
 
 	e.GET("/actuator", h.Actuator)
+
+	e.Any("/ws", h.figureListener.Listen)
 
 	handlers.RouteBoardAPI(e, h.boardListener)
 	handlers.RouteUserAPI(e, h.userListener)
