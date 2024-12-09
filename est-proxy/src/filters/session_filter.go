@@ -1,4 +1,4 @@
-package service
+package filters
 
 import (
 	"est-proxy/src/config"

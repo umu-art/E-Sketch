@@ -1,6 +1,7 @@
 package listener
 
 import (
+	"est-proxy/src/filters"
 	"est-proxy/src/service"
 	proxymodels "est_proxy_go/models"
 	"fmt"
@@ -13,18 +14,16 @@ import (
 
 type BoardListener struct {
 	boardService service.BoardService
-	userService  service.UserService
 }
 
-func NewBoardListener(boardService service.BoardService, userService service.UserService) *BoardListener {
+func NewBoardListener(boardService service.BoardService) *BoardListener {
 	return &BoardListener{
 		boardService: boardService,
-		userService:  userService,
 	}
 }
 
 func (b BoardListener) GetByUuid(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -43,7 +42,7 @@ func (b BoardListener) GetByUuid(ctx echo.Context) error {
 }
 
 func (b BoardListener) List(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -57,7 +56,7 @@ func (b BoardListener) List(ctx echo.Context) error {
 }
 
 func (b BoardListener) Create(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -77,7 +76,7 @@ func (b BoardListener) Create(ctx echo.Context) error {
 }
 
 func (b BoardListener) Update(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -101,7 +100,7 @@ func (b BoardListener) Update(ctx echo.Context) error {
 }
 
 func (b BoardListener) DeleteBoard(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -120,7 +119,7 @@ func (b BoardListener) DeleteBoard(ctx echo.Context) error {
 }
 
 func (b BoardListener) Share(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -145,7 +144,7 @@ func (b BoardListener) Share(ctx echo.Context) error {
 }
 
 func (b BoardListener) ChangeAccess(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -170,7 +169,7 @@ func (b BoardListener) ChangeAccess(ctx echo.Context) error {
 }
 
 func (b BoardListener) Unshare(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}

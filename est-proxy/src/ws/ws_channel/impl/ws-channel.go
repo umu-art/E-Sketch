@@ -1,19 +1,20 @@
-package ws
+package impl
 
 import (
+	"est-proxy/src/ws/ws_connection"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/gommon/log"
 	"net/http"
 )
 
-type Channel struct {
+type ChannelImpl struct {
 	upgrader    *websocket.Upgrader
 	connections *ConnectionsMap
 }
 
-func NewChannel() *Channel {
-	return &Channel{
+func NewChannelImpl() *ChannelImpl {
+	return &ChannelImpl{
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -25,11 +26,11 @@ func NewChannel() *Channel {
 	}
 }
 
-type HandlerFunc func(boardId uuid.UUID, message []byte, conn *Connection)
+type HandlerFunc func(boardId uuid.UUID, message []byte, conn ws_connection.Connection)
 
 type AuthFunc func(boardId uuid.UUID, userId uuid.UUID) bool
 
-func (channel *Channel) Listen(responseWriter http.ResponseWriter, request *http.Request, onMessage HandlerFunc) {
+func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *http.Request, onMessage HandlerFunc) {
 	ws, err := channel.upgrader.Upgrade(responseWriter, request, nil)
 	if err != nil {
 		log.Printf("Failed to upgrade connection: %v", err)
@@ -42,9 +43,13 @@ func (channel *Channel) Listen(responseWriter http.ResponseWriter, request *http
 		}
 	}(ws)
 
-	boardId := uuid.UUID{} // Pass in headers?
+	boardId, err := uuid.Parse(request.URL.Query().Get("boardId"))
+	if err != nil {
+		log.Printf("Failed to parse boardId: %v", err)
+		return
+	}
 
-	connection := NewConnection(ws)
+	connection := ws_connection.NewConnection(ws)
 	channel.connections.Save(boardId, connection)
 	defer channel.connections.Remove(boardId, connection)
 
@@ -58,6 +63,6 @@ func (channel *Channel) Listen(responseWriter http.ResponseWriter, request *http
 	}
 }
 
-func (channel *Channel) GetConnectionsForBoard(boardId uuid.UUID) []*Connection {
+func (channel *ChannelImpl) GetConnectionsForBoard(boardId uuid.UUID) []ws_connection.Connection {
 	return channel.connections.GetConnections(boardId)
 }
