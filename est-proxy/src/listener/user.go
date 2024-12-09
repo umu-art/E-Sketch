@@ -2,6 +2,7 @@ package listener
 
 import (
 	"est-proxy/src/config"
+	"est-proxy/src/filters"
 	"est-proxy/src/service"
 	proxymodels "est_proxy_go/models"
 	"fmt"
@@ -20,7 +21,7 @@ func NewUserListener(userService service.UserService) *UserListener {
 }
 
 func (u UserListener) CheckSession(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -29,7 +30,7 @@ func (u UserListener) CheckSession(ctx echo.Context) error {
 }
 
 func (u UserListener) GetSelf(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -43,7 +44,7 @@ func (u UserListener) GetSelf(ctx echo.Context) error {
 }
 
 func (u UserListener) GetUserById(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
@@ -107,7 +108,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 }
 
 func (u UserListener) Search(ctx echo.Context) error {
-	sessionUserId := service.GetSessionUserId(ctx)
+	sessionUserId := filters.GetSessionUserId(ctx)
 	if sessionUserId == nil {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}

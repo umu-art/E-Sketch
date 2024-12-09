@@ -1,7 +1,7 @@
 package http
 
 import (
-	"est-proxy/src/service"
+	"est-proxy/src/filters"
 	"est-proxy/src/listener"
 	"est_proxy_go/handlers"
 	"github.com/labstack/echo/v4"
@@ -35,7 +35,7 @@ func (h *Listener) Serve() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(apmechov4.Middleware())
-	e.Use(service.SessionMiddleware)
+	e.Use(filters.SessionMiddleware)
 
 	e.GET("/actuator", h.Actuator)
 

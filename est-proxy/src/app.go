@@ -7,7 +7,7 @@ import (
 	"est-proxy/src/repository/postgres"
 	"est-proxy/src/repository/user_repository"
 	"est-proxy/src/service"
-	"est-proxy/src/ws"
+	"est-proxy/src/ws/ws_channel"
 	estbackapi "est_back_go"
 	"log"
 	nethttp "net/http"
@@ -37,10 +37,13 @@ func main() {
 	//BoardService
 	boardService := service.NewBoardService(backApi.BoardAPI, userRepository)
 
+	//FigureService
+	figureService := service.NewWsFigureService(ws_channel.NewChannel())
+
 	// Хандлеры
-	boardListener := listener.NewBoardListener(boardService, userService)
+	boardListener := listener.NewBoardListener(boardService)
 	userListener := listener.NewUserListener(userService)
-	figureListener := listener.NewWsFigureListener(ws.NewChannel())
+	figureListener := listener.NewWsFigureListener(figureService)
 
 	// Проксирование запросов
 
