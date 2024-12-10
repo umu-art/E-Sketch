@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"est-proxy/src/ws/ws_connection"
+	"est-proxy/src/ws"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/gommon/log"
@@ -25,13 +25,8 @@ func NewChannelImpl() *ChannelImpl {
 		connections: NewConnectionsMap(),
 	}
 }
-
-type HandlerFunc func(boardId uuid.UUID, message []byte, conn ws_connection.Connection)
-
-type AuthFunc func(boardId uuid.UUID, userId uuid.UUID) bool
-
-func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *http.Request, onMessage HandlerFunc) {
-	ws, err := channel.upgrader.Upgrade(responseWriter, request, nil)
+func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *http.Request, onMessage ws.HandlerFunc) {
+	wsc, err := channel.upgrader.Upgrade(responseWriter, request, nil)
 	if err != nil {
 		log.Printf("Failed to upgrade connection: %v", err)
 	}
@@ -41,7 +36,7 @@ func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *
 		if err != nil {
 			log.Printf("Failed to close connection: %v", err)
 		}
-	}(ws)
+	}(wsc)
 
 	boardId, err := uuid.Parse(request.URL.Query().Get("boardId"))
 	if err != nil {
@@ -49,7 +44,7 @@ func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *
 		return
 	}
 
-	connection := ws_connection.NewConnection(ws)
+	connection := NewConnectionImpl(wsc)
 	channel.connections.Save(boardId, connection)
 	defer channel.connections.Remove(boardId, connection)
 
@@ -63,6 +58,6 @@ func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *
 	}
 }
 
-func (channel *ChannelImpl) GetConnectionsForBoard(boardId uuid.UUID) []ws_connection.Connection {
+func (channel *ChannelImpl) GetConnectionsForBoard(boardId uuid.UUID) []ws.Connection {
 	return channel.connections.GetConnections(boardId)
 }

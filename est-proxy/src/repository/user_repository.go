@@ -1,10 +1,8 @@
-package user_repository
+package repository
 
 import (
 	"context"
 	"est-proxy/src/models"
-	"est-proxy/src/repository/postgres"
-	"est-proxy/src/repository/user_repository/impl"
 	"github.com/google/uuid"
 )
 
@@ -16,8 +14,4 @@ type UserRepository interface {
 	UserExistsByUsernameOrEmail(ctx context.Context, username string, email string) bool
 	SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.PublicUser
 	GetUserListByIds(ctx context.Context, ids []uuid.UUID) *[]models.PublicUser
-}
-
-func NewUserRepository(postgresService postgres.PostgresService) UserRepository {
-	return impl.NewUserRepositoryImpl(postgresService)
 }

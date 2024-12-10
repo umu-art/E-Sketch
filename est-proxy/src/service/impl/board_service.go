@@ -5,10 +5,10 @@ import (
 	"est-proxy/src/errors"
 	"est-proxy/src/mapper"
 	"est-proxy/src/models"
-	"est-proxy/src/repository/user_repository"
+	"est-proxy/src/repository"
+	"est-proxy/src/utils"
 	estbackapi "est_back_go"
 	proxymodels "est_proxy_go/models"
-	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
@@ -16,10 +16,10 @@ import (
 
 type BoardServiceImpl struct {
 	boardApi       *estbackapi.BoardAPIService
-	userRepository user_repository.UserRepository
+	userRepository repository.UserRepository
 }
 
-func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, userRepository user_repository.UserRepository) *BoardServiceImpl {
+func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, userRepository repository.UserRepository) *BoardServiceImpl {
 	return &BoardServiceImpl{
 		boardApi:       boardApi,
 		userRepository: userRepository,
@@ -36,7 +36,7 @@ func (bs *BoardServiceImpl) GetByUuid(ctx context.Context, userId *uuid.UUID, bo
 		return nil, errors.NewStatusError(http.StatusBadRequest, "Доска не найдена")
 	}
 
-	if _, err := bs.getAccessLevel(userId, board); err != nil {
+	if utils.GetAccessLevel(userId, board) == utils.NONE {
 		return nil, errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
@@ -75,7 +75,7 @@ func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, board
 		return nil, errors.NewStatusError(http.StatusBadRequest, "Доска не найдена")
 	}
 
-	if accessLevel, err := bs.getAccessLevel(userId, board); err != nil || *accessLevel == estbackapi.READ {
+	if utils.GetAccessLevel(userId, board) != utils.ADMIN {
 		return nil, errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
@@ -99,7 +99,8 @@ func (bs *BoardServiceImpl) DeleteBoard(ctx context.Context, userId *uuid.UUID, 
 	if err != nil {
 		return errors.NewStatusError(http.StatusBadRequest, "Доска не найдена")
 	}
-	if accessLevel, err := bs.getAccessLevel(userId, board); err != nil || *accessLevel != estbackapi.ADMIN {
+
+	if utils.GetAccessLevel(userId, board) != utils.ADMIN {
 		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
@@ -191,35 +192,6 @@ func (bs *BoardServiceImpl) getBoard(ctx context.Context, boardId string) (*estb
 		return nil, err
 	}
 	return boardDto, nil
-}
-
-func (bs *BoardServiceImpl) getAccessLevel(userId *uuid.UUID, boardDto *estbackapi.BackBoardDto) (*estbackapi.ShareMode, error) {
-	var accessLevel estbackapi.ShareMode
-	isAccessed := false
-
-	if userId == nil || boardDto == nil {
-		return nil, fmt.Errorf("no userId or boardDto given")
-	}
-
-	userIdStr := userId.String()
-
-	if userIdStr == boardDto.OwnerId {
-		accessLevel = estbackapi.ADMIN
-		return &accessLevel, nil
-	}
-
-	for _, sharedInfo := range boardDto.SharedWith {
-		if userIdStr == sharedInfo.UserId {
-			isAccessed = true
-			accessLevel = sharedInfo.Access
-		}
-	}
-
-	if !isAccessed {
-		return nil, fmt.Errorf("no access level found")
-	}
-
-	return &accessLevel, nil
 }
 
 func (bs *BoardServiceImpl) getUsers(ctx context.Context, userIdStrs []string) []models.PublicUser {

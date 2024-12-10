@@ -4,7 +4,7 @@ import (
 	"context"
 	"est-proxy/src/errors"
 	"est-proxy/src/mapper"
-	"est-proxy/src/repository/user_repository"
+	"est-proxy/src/repository"
 	"est-proxy/src/utils"
 	proxymodels "est_proxy_go/models"
 	"github.com/google/uuid"
@@ -12,10 +12,10 @@ import (
 )
 
 type UserServiceImpl struct {
-	userRepository user_repository.UserRepository
+	userRepository repository.UserRepository
 }
 
-func NewUserServiceImpl(userRepository user_repository.UserRepository) *UserServiceImpl {
+func NewUserServiceImpl(userRepository repository.UserRepository) *UserServiceImpl {
 	return &UserServiceImpl{userRepository: userRepository}
 }
 

@@ -4,10 +4,11 @@ import (
 	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
-	"est-proxy/src/repository/postgres"
-	"est-proxy/src/repository/user_repository"
-	"est-proxy/src/service"
-	"est-proxy/src/ws/ws_channel"
+
+	repoimpl "est-proxy/src/repository/impl"
+	serviceimpl "est-proxy/src/service/impl"
+	wsimpl "est-proxy/src/ws/impl"
+
 	estbackapi "est_back_go"
 	"log"
 	nethttp "net/http"
@@ -26,19 +27,29 @@ func main() {
 	}
 	backApi := estbackapi.NewAPIClient(backApiConfig)
 
+	// RabbitMQ
+	rabbitService := repoimpl.NewRabbitRepositoryImpl()
+	defer rabbitService.Close()
+	figureTopic := rabbitService.GetTopic(config.RABBITMQ_TOPIC_EXCHANGE)
+
 	// PostgreSQL
-	postgresService := postgres.NewPostgresService()
+	postgresService := repoimpl.NewPostgresServiceImpl()
 	defer postgresService.Release()
 
 	// UserService
-	userRepository := user_repository.NewUserRepository(postgresService)
-	userService := service.NewUserService(userRepository)
+	userRepository := repoimpl.NewUserRepositoryImpl(postgresService)
+	userService := serviceimpl.NewUserServiceImpl(userRepository)
 
 	//BoardService
-	boardService := service.NewBoardService(backApi.BoardAPI, userRepository)
+	boardService := serviceimpl.NewBoardServiceImpl(backApi.BoardAPI, userRepository)
 
 	//FigureService
-	figureService := service.NewWsFigureService(ws_channel.NewChannel())
+	figureService := serviceimpl.NewWsFigureServiceImpl(
+		wsimpl.NewChannelImpl(),
+		backApi.FigureAPI,
+		backApi.BoardAPI,
+		figureTopic,
+	)
 
 	// Хандлеры
 	boardListener := listener.NewBoardListener(boardService)
