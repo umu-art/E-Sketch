@@ -23,7 +23,7 @@ func (l *WsFigureListener) Listen(ctx echo.Context) error {
 		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
 
-	boardId, err := uuid.Parse(ctx.Param("boardId"))
+	boardId, err := uuid.Parse(ctx.QueryParam("boardId"))
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
 	}
