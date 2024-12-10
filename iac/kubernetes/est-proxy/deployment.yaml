@@ -35,6 +35,7 @@ spec:
           env:
             - name: EST_BACK_URL
               value: http://est-back.e-sketch.svc.cluster.local
+
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -51,6 +52,22 @@ spec:
               value: '5432'
             - name: POSTGRES_DATABASE
               value: 'e-sketch'
+
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: RABBIT_USER
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: RABBIT_PASSWORD
+            - name: RABBITMQ_HOST
+              value: rabbit.databases.svc.cluster.local
+            - name: RABBITMQ_PORT
+              value: '5672'
+
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
