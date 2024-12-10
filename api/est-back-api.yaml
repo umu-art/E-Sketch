@@ -324,7 +324,6 @@ components:
       properties:
         data:
           type: string
-          format: binary
 
     FigureListDto:
       required:

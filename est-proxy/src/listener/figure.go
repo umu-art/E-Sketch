@@ -2,8 +2,11 @@ package listener
 
 import (
 	"est-proxy/src/service"
+	"est-proxy/src/service/impl"
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"log"
+	"net/http"
 )
 
 type WsFigureListener struct {
@@ -15,9 +18,20 @@ func NewWsFigureListener(figureService service.WsFigureService) *WsFigureListene
 }
 
 func (l *WsFigureListener) Listen(ctx echo.Context) error {
-	err := l.figureService.Listen(ctx.Response().Writer, ctx.Request())
-	if err != nil {
-		log.Printf("error listening on figure service: %v", err)
+	sessionUserId := impl.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		return ctx.String(http.StatusUnauthorized, "Отсутствует или некорректная сессия")
 	}
+
+	boardId, err := uuid.Parse(ctx.Param("boardId"))
+	if err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорретный запрос: %v", err))
+	}
+
+	statusError := l.figureService.Listen(ctx.Response().Writer, ctx.Request(), *sessionUserId, boardId)
+	if statusError != nil {
+		return statusError.Send(ctx)
+	}
+
 	return nil
 }

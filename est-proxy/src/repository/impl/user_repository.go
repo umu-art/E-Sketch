@@ -3,7 +3,7 @@ package impl
 import (
 	"context"
 	"est-proxy/src/models"
-	"est-proxy/src/repository/postgres"
+	"est-proxy/src/repository"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -11,10 +11,10 @@ import (
 )
 
 type UserRepositoryImpl struct {
-	postgresService postgres.PostgresService
+	postgresService repository.PostgresService
 }
 
-func NewUserRepositoryImpl(postgresService postgres.PostgresService) *UserRepositoryImpl {
+func NewUserRepositoryImpl(postgresService repository.PostgresService) *UserRepositoryImpl {
 	return &UserRepositoryImpl{postgresService}
 }
 
