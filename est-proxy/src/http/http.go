@@ -39,7 +39,7 @@ func (h *Listener) Serve() {
 
 	e.GET("/actuator", h.Actuator)
 
-	e.Any("/ws", h.figureListener.Listen)
+	e.Any("/proxy/ws", h.figureListener.Listen)
 
 	handlers.RouteBoardAPI(e, h.boardListener)
 	handlers.RouteUserAPI(e, h.userListener)
