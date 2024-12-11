@@ -29,7 +29,7 @@ const JWT_COOKIE_NAME string = "estu"
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",
 	"/register",
-	"/ws",
+	"/proxy/ws",
 	"/actuator",
 }
 

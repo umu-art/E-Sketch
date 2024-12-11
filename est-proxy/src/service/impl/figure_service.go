@@ -54,9 +54,9 @@ func NewWsFigureServiceImpl(
 }
 
 func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.Request, userId uuid.UUID, boardId uuid.UUID) *errors.StatusError {
-	if !l.checkAvailability(userId, boardId) {
-		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
-	}
+	//if !l.checkAvailability(userId, boardId) {
+	//	return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
+	//}
 
 	l.channel.Listen(writer, request,
 		func(boardId uuid.UUID, message []byte, conn ws.Connection) {

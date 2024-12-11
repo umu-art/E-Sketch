@@ -11,6 +11,7 @@ const Board = ({ className, style, boardId }) => {
   useEffect(() => {
     if (boardControllerRef.current)
       return;
+    const webSocket = new WebSocket("wss://" + window.location.host + "/proxy/ws");
 
     const boardElement = document.getElementById(boardId);
     boardControllerRef.current = new BoardController(boardElement);
