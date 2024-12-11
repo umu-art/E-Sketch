@@ -32,5 +32,3 @@ var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/proxy/ws",
 	"/actuator",
 }
-
-const UUID_STRING_LENGTH = 36
