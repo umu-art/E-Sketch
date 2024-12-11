@@ -12,6 +12,7 @@ const Board = ({ className, style, boardId }) => {
     if (boardControllerRef.current)
       return;
     const webSocket = new WebSocket("wss://" + window.location.host + "/proxy/ws");
+    console.log(webSocket);
 
     const boardElement = document.getElementById(boardId);
     boardControllerRef.current = new BoardController(boardElement);
