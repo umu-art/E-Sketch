@@ -31,9 +31,9 @@ const Board = ({ className, style, boardId }) => {
       console.log('Figure from server:', figure); // Чет получили
     });
 
-    webSocket.addEventListener('open', (event) => {
+    webSocket.addEventListener('open', () => {
       console.log("WebSocket connected");
-      webSocket.send(String.fromCharCode(1)); // Запрос на создание фигуры
+      webSocket.send(String.fromCharCode(0)); // Запрос на создание фигуры
     });
 
 
