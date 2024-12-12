@@ -60,6 +60,8 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 
 	l.channel.Listen(writer, request,
 		func(boardId uuid.UUID, message []byte, conn ws.Connection) {
+			log.Printf("Received ws message: %s", string(message))
+
 			messageType, rawFigure := l.parseMessage(message)
 
 			switch messageType {
