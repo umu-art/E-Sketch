@@ -1,7 +1,7 @@
 import { Board as BoardController } from 'paint/dist';
 import { Point } from 'figures/dist/point';
 import { FigureType, Line } from 'figures/dist';
-import { encode } from 'coder/dist';
+import { decode, encode } from 'coder/dist';
 
 const FPS = 60;
 
@@ -49,6 +49,15 @@ export function registerDrawListener(board: Element, boardController: BoardContr
       sendFigure(webSocket, currentFigure);
     }
   }, 1000 / FPS);
+
+  webSocket.addEventListener('message', (event) => {
+    if (event.data.length !== 36) {
+      let figure = decode(event.data);
+      if (figure.id !== currentFigure.id) {
+        boardController.upsertFigure(figure);
+      }
+    }
+  });
 }
 
 function requestFigureCreation(webSocket: WebSocket) {
