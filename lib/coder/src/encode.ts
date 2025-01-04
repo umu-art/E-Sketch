@@ -2,19 +2,17 @@ import { DefaultFigure } from 'figures/dist';
 import { Point } from 'figures/dist/point';
 
 /**
- * Encodes a figure object into a byte string representation.
+ * Encodes a figure object into a byte string.
  *
- * This function takes a DefaultFigure object and converts it into a string
- * where each character represents a byte. The encoding process includes:
+ * The encoding process includes:
  * 1. The figure type
- * 2. The figure ID
+ * 2. The figure id
  * 3. The encoded header
  * 4. All points of the figure
  *
  * @param figure - Any figure, extended from DefaultFigure.
  *
  * @returns A string where each character represents a byte of the encoded figure.
- *          The string includes the figure's type, ID, header, and all its points.
  */
 export function encode(figure: DefaultFigure): string {
   let res = '';
@@ -35,7 +33,7 @@ export function encode(figure: DefaultFigure): string {
 }
 
 /**
- * Encodes the header of a figure into a string representation.
+ * Encodes the header.
  *
  * @param header - An array of strings representing the header information of the figure.
  *
@@ -52,7 +50,7 @@ function encodeHeader(header: string[]) {
 
 
 /**
- * Encodes a point object into a string representation in binary format.
+ * Encodes a point object.
  *
  * @param point - The point object to be encoded.
  *

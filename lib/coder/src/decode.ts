@@ -2,12 +2,11 @@ import { Circle, DefaultFigure, FigureType, Line, Rectangle } from 'figures/dist
 import { Point } from 'figures/dist/point';
 
 /**
- * Decodes a byte string representation into a DefaultFigure object.
+ * Decodes a figure from byte-string.
  *
- * This function takes a string where each character represents a byte and
- * converts it back into a DefaultFigure object. The decoding process includes:
+ * The decoding process includes:
  * 1. Extracting the figure type
- * 2. Extracting the figure ID
+ * 2. Extracting the figure id
  * 3. Decoding the header
  * 4. Decoding all points of the figure
  *
@@ -30,7 +29,7 @@ export function decode(encodedString: string): DefaultFigure {
   while (index < encodedString.length) {
     const point = decodePoint(encodedString.slice(index));
     points.push(point);
-    index += 16; // 8 bytes for x + 8 bytes for y
+    index += 16;
   }
 
   switch (type) {
@@ -46,27 +45,20 @@ export function decode(encodedString: string): DefaultFigure {
 }
 
 /**
- * Extracts the ID from an encoded string representation of a figure.
- *
- * This function reads characters from the encoded string starting at the given index
- * until it encounters a null character (ASCII code 0). The extracted characters
- * form the ID of the figure.
+ * Extracts figure id.
  *
  * @param encodedString - The encoded string representation of a figure.
- * @param startIndex - The index in the encodedString where the ID starts.
+ * @param startIndex - The index in the encodedString where the id starts.
  *
- * @returns The extracted ID as a string.
+ * @returns The extracted id as a string.
  */
 function extractId(encodedString: string, startIndex: number): string {
-  let id = '';
-  while (encodedString.charCodeAt(startIndex) !== 0) {
-    id += encodedString[startIndex++];
-  }
-  return id;
+  const UUID_LENGTH = 36;
+  return encodedString.slice(startIndex, startIndex + UUID_LENGTH);
 }
 
 /**
- * Decodes the header from the encoded string representation.
+ * Decodes the header.
  *
  * @param encodedHeader - The encoded string representation of the header.
  *
@@ -80,7 +72,7 @@ function decodeHeader(encodedHeader: string): [string[], number] {
 }
 
 /**
- * Decodes a point from its binary string representation.
+ * Decodes a point from its binary string.
  *
  * @param encodedPoint - The encoded string representation of a point.
  *

@@ -1,11 +1,11 @@
 import { Board as BoardController } from 'paint/dist';
 import { Point } from 'figures/dist/point';
 import { FigureType, Line } from 'figures/dist';
-import { v4 } from 'uuid';
+import { encode } from 'coder/dist';
 
 const FPS = 60;
 
-export function registerDrawListener(board: Element, boardController: BoardController) {
+export function registerDrawListener(board: Element, boardController: BoardController, webSocket: WebSocket) {
   let drawing = {
     isDrawing: false,
     nowX: 0,
@@ -17,13 +17,23 @@ export function registerDrawListener(board: Element, boardController: BoardContr
   let currentFigure: Line;
 
   board.addEventListener('mousedown', () => {
-    drawing.isDrawing = true;
-    currentFigure = new Line(FigureType.LINE, v4(), [drawing.lineColor, drawing.lineWidth], []);
+    requestFigureCreation(webSocket);
+
+    const messageHandler = (event) => {
+      if (event.data.length === 36) { // Если получили uuid в ответ
+        currentFigure = new Line(FigureType.LINE, event.data, [drawing.lineColor, drawing.lineWidth], []);
+        drawing.isDrawing = true;
+        webSocket.removeEventListener('message', messageHandler);
+      }
+    };
+
+    webSocket.addEventListener('message', messageHandler);
   });
 
   board.addEventListener('mouseup', () => {
     drawing.isDrawing = false;
     boardController.upsertFigure(currentFigure);
+    sendFigure(webSocket, currentFigure);
   });
 
   board.addEventListener('mousemove', (event) => {
@@ -36,6 +46,15 @@ export function registerDrawListener(board: Element, boardController: BoardContr
     if (drawing.isDrawing) {
       currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
       boardController.upsertFigure(currentFigure);
+      sendFigure(webSocket, currentFigure);
     }
   }, 1000 / FPS);
+}
+
+function requestFigureCreation(webSocket: WebSocket) {
+  webSocket.send(String.fromCharCode(0)); // Запрос на создание фигуры
+}
+
+function sendFigure(webSocket: WebSocket, figure: Line) {
+  webSocket.send(String.fromCharCode(1) + encode(figure));
 }
