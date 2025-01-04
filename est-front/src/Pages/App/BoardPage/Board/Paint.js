@@ -53,7 +53,7 @@ export function registerDrawListener(board: Element, boardController: BoardContr
   webSocket.addEventListener('message', (event) => {
     if (event.data.length !== 36) {
       let figure = decode(event.data);
-      if (figure.id !== currentFigure.id) {
+      if (!currentFigure || figure.id !== currentFigure.id) {
         boardController.upsertFigure(figure);
       }
     }
