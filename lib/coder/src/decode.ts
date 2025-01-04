@@ -65,10 +65,10 @@ function extractId(encodedString: string, startIndex: number): string {
  * @returns A tuple containing the decoded header array and its length in the encoded string.
  */
 function decodeHeader(encodedHeader: string): [string[], number] {
-  const headerLength = encodedHeader.charCodeAt(0);
-  const headerString = encodedHeader.slice(1, headerLength + 1);
+  const headerEnd = encodedHeader.lastIndexOf('|');
+  const headerString = encodedHeader.slice(0, headerEnd);
   const header = headerString.split('|');
-  return [header, headerLength + 1];
+  return [header, headerEnd + 1];
 }
 
 /**
