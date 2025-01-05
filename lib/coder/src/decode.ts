@@ -65,10 +65,29 @@ function extractId(encodedString: string, startIndex: number): string {
  * @returns A tuple containing the decoded header array and its length in the encoded string.
  */
 function decodeHeader(encodedHeader: string): [string[], number] {
-  const headerEnd = encodedHeader.lastIndexOf('|');
-  const headerString = encodedHeader.slice(0, headerEnd);
+  const headerElemsCount = encodedHeader.charCodeAt(0);
+  const headerEnd = findHeaderEndIndex(encodedHeader, headerElemsCount);
+  const headerString = encodedHeader.slice(1, headerEnd);
   const header = headerString.split('|');
   return [header, headerEnd + 1];
+}
+
+/**
+ * Finds the end index of the header in the encoded string.
+ *
+ * @param encodedString - The encoded string containing the header.
+ * @param headerElemsCount - The number of elements in the header.
+ * @returns The index in the encoded string where the header ends.
+ */
+function findHeaderEndIndex(encodedString: string, headerElemsCount: number): number {
+  let result = 1;
+  while (headerElemsCount !== 0) {
+    if (encodedString.charAt(result) === '|') {
+      headerElemsCount--;
+    }
+    result++;
+  }
+  return result - 1;
 }
 
 /**

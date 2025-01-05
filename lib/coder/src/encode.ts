@@ -41,6 +41,7 @@ export function encode(figure: DefaultFigure): string {
  */
 function encodeHeader(header: string[]) {
   let res = '';
+  res += String.fromCharCode(header.length);
   res += header.join('|');
   res += '|';
   return res;
