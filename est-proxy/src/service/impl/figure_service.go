@@ -78,7 +78,7 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 					log.Printf("Failed to parse figureId: %v", err)
 					return
 				}
-				err = l.changeFigure(boardId, figureId, message)
+				err = l.changeFigure(boardId, figureId, rawFigure)
 				if err != nil {
 					log.Printf("Failed to change figure: %v", err)
 					return
