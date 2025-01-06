@@ -80,6 +80,7 @@ func (u UserListener) Login(ctx echo.Context) error {
 	cookie.Path = "/"
 	cookie.HttpOnly = true
 	cookie.Secure = true
+	cookie.SameSite = http.SameSiteNoneMode // for debug only; TODO: remove
 	ctx.SetCookie(cookie)
 
 	return ctx.String(http.StatusOK, "Вход в аккаунт выполнен успешно")
@@ -102,6 +103,7 @@ func (u UserListener) Register(ctx echo.Context) error {
 	cookie.Path = "/"
 	cookie.HttpOnly = true
 	cookie.Secure = true
+	cookie.SameSite = http.SameSiteNoneMode // for debug only; TODO: remove
 	ctx.SetCookie(cookie)
 
 	return ctx.String(http.StatusOK, "Аккаунт успешно зарегистрирован")
