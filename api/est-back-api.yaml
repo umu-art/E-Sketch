@@ -145,6 +145,23 @@ paths:
         200:
           description: Успеха
 
+  /back/board/recent/{userId}:
+    post:
+      tags:
+        - board
+      summary: Установить доску как недавнюю
+      operationId: markAsRecent
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardIdDto"
+      responses:
+        200:
+          description: Успеха
+
   #################################### Figure ####################################
   /back/figure/list/{boardId}:
     get:
@@ -264,12 +281,17 @@ components:
       required:
         - mine
         - shared
+        - recent
       properties:
         mine:
           type: array
           items:
             $ref: "#/components/schemas/BackBoardDto"
         shared:
+          type: array
+          items:
+            $ref: "#/components/schemas/BackBoardDto"
+        recent:
           type: array
           items:
             $ref: "#/components/schemas/BackBoardDto"
@@ -335,6 +357,14 @@ components:
             $ref: "#/components/schemas/FigureDto"
 
     FigureIdDto:
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    BoardIdDto:
       required:
         - id
       properties:

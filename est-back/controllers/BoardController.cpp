@@ -101,3 +101,16 @@ void BoardController::unshare(const HttpRequestPtr& req, Callback callback, std:
     resp->setBody("OK");
     callback(resp);
 }
+void BoardController::markAsRecent(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback,
+                                   std::string&& userId) {
+    auto body = req->getBody();
+    auto j = nlohmann::json::parse(body);
+    org::openapitools::server::model::BoardIdDto boardIdDto;
+    org::openapitools::server::model::from_json(j, boardIdDto);
+    est_back::service::markAsRecent(boardIdDto.getId(), userId);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_TEXT_PLAIN);
+    resp->setBody("OK");
+    callback(resp);
+}
