@@ -54,7 +54,7 @@ func (channel *ChannelImpl) Listen(responseWriter http.ResponseWriter, request *
 			log.Printf("Error reading message: %v", err)
 			break
 		}
-		onMessage(boardId, message, connection)
+		onMessage(message, connection)
 	}
 }
 

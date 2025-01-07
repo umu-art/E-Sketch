@@ -17,7 +17,8 @@ var RABBITMQ_USERNAME = os.Getenv("RABBITMQ_USERNAME")
 var RABBITMQ_PASSWORD = os.Getenv("RABBITMQ_PASSWORD")
 var RABBITMQ_HOST = os.Getenv("RABBITMQ_HOST")
 var RABBITMQ_PORT = os.Getenv("RABBITMQ_PORT")
-var RABBITMQ_TOPIC_EXCHANGE = "figure_change"
+var RABBITMQ_FIGURE_TOPIC_EXCHANGE = "figure_change"
+var RABBITMQ_MARKER_TOPIC_EXCHANGE = "marker_change"
 
 var JWT_SECRET = os.Getenv("JWT_SECRET")
 
@@ -29,6 +30,5 @@ const JWT_COOKIE_NAME string = "estu"
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",
 	"/register",
-	"/proxy/ws",
 	"/actuator",
 }

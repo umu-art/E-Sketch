@@ -10,4 +10,4 @@ type Channel interface {
 	GetConnectionsForBoard(boardId uuid.UUID) []Connection
 }
 
-type HandlerFunc func(boardId uuid.UUID, message []byte, conn Connection)
+type HandlerFunc func(message []byte, conn Connection)

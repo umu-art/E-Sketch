@@ -58,10 +58,10 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 	//	return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	//}
 
-	l.channel.Listen(writer, request,
-		func(boardId uuid.UUID, message []byte, conn ws.Connection) {
-			log.Printf("Received ws message: %s", string(message))
+	log.Printf("Got userId [%s] and board id [%s]", userId.String(), boardId.String())
 
+	l.channel.Listen(writer, request,
+		func(message []byte, conn ws.Connection) {
 			messageType, rawFigure := l.parseMessage(message)
 
 			switch messageType {

@@ -14,17 +14,20 @@ type Listener struct {
 	boardListener  handlers.BoardAPI
 	userListener   handlers.UserAPI
 	figureListener *listener.WsFigureListener
+	markerListener *listener.WsMarkerListener
 }
 
 func NewListener(
 	boardListener handlers.BoardAPI,
 	userListener handlers.UserAPI,
-	figureListener *listener.WsFigureListener) *Listener {
+	figureListener *listener.WsFigureListener,
+	markerListener *listener.WsMarkerListener) *Listener {
 
 	return &Listener{
 		boardListener:  boardListener,
 		userListener:   userListener,
 		figureListener: figureListener,
+		markerListener: markerListener,
 	}
 }
 
@@ -39,7 +42,8 @@ func (h *Listener) Serve() {
 
 	e.GET("/actuator", h.Actuator)
 
-	e.Any("/proxy/ws", h.figureListener.Listen)
+	e.Any("/proxy/figure/ws", h.figureListener.Listen)
+	e.Any("/proxy/marker/ws", h.markerListener.Listen)
 
 	handlers.RouteBoardAPI(e, h.boardListener)
 	handlers.RouteUserAPI(e, h.userListener)

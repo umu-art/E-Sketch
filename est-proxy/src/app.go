@@ -30,7 +30,8 @@ func main() {
 	// RabbitMQ
 	rabbitService := repoimpl.NewRabbitRepositoryImpl()
 	defer rabbitService.Close()
-	figureTopic := rabbitService.GetTopic(config.RABBITMQ_TOPIC_EXCHANGE)
+	figureTopic := rabbitService.GetTopic(config.RABBITMQ_FIGURE_TOPIC_EXCHANGE)
+	markerTopic := rabbitService.GetTopic(config.RABBITMQ_MARKER_TOPIC_EXCHANGE)
 
 	// PostgreSQL
 	postgresService := repoimpl.NewPostgresServiceImpl()
@@ -51,15 +52,27 @@ func main() {
 		figureTopic,
 	)
 
+	//MarkerService
+	markerService := serviceimpl.NewWsMarkerServiceImpl(
+		wsimpl.NewChannelImpl(),
+		backApi.BoardAPI,
+		userService,
+		markerTopic,
+	)
+
 	// Хандлеры
 	boardListener := listener.NewBoardListener(boardService)
 	userListener := listener.NewUserListener(userService)
 	figureListener := listener.NewWsFigureListener(figureService)
-
-	// Проксирование запросов
+	markerListener := listener.NewWsMarkerListener(markerService)
 
 	// HTTP сервер
-	echoListener := http.NewListener(boardListener, userListener, figureListener)
+	echoListener := http.NewListener(
+		boardListener,
+		userListener,
+		figureListener,
+		markerListener,
+	)
 
 	go echoListener.Serve()
 
