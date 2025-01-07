@@ -37,3 +37,14 @@ create table if not exists figure
     foreign key (board_id) references board (id)
 );
 
+create table if not exists recent_board
+(
+    id        uuid      not null primary key,
+    board_id  uuid      not null,
+    user_id  uuid      not null,
+    last_used timestamp not null,
+    foreign key (board_id) references board (id),
+    foreign key (user_id) references users (id),
+    unique (board_id, user_id)
+);
+

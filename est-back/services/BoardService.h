@@ -7,6 +7,7 @@
 #include "../../api/build/est-back-cpp/model/LinkShareMode.h"
 #include "../../api/build/est-back-cpp/model/UpsertBoardDto.h"
 #include "../../api/build/est-back-cpp/model/UnshareBoardDto.h"
+#include "../../api/build/est-back-cpp/model/BoardIdDto.h"
 namespace est_back::service {
     namespace osm = org::openapitools::server::model;
     std::string toUpper(const std::string& s) {
@@ -61,7 +62,7 @@ namespace est_back::service {
         osm::from_json(backSharingDtoJson, backSharingDto);
         mp[boardId].push_back(backSharingDto);
     }
-
+    std::vector<osm::BackBoardDto> getRecentBoards(const std::string& userId);
     osm::BackBoardListDto getBackBoardListDto(const std::string& userId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto res = clientPtr->execSqlSync(
@@ -117,6 +118,7 @@ namespace est_back::service {
         osm::BackBoardListDto backBoardListDto;
         backBoardListDto.setMine(mine);
         backBoardListDto.setShared(shared);
+        backBoardListDto.setRecent(getRecentBoards(userId));
         return backBoardListDto;
     }
 
@@ -221,6 +223,49 @@ namespace est_back::service {
         auto clientPtr = drogon::app().getDbClient("est-data");
         clientPtr->execSqlSync("delete from board_sharing where user_id = $1 and board_id = $2;",
                                unshareBoardDto.getUserId(), boardId);
+    }
+
+    void markAsRecent(const std::string& boardId, const std::string& userId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        std::string recentBoardId = drogon::utils::getUuid();
+        clientPtr->execSqlAsyncFuture(
+            "insert into recent_board("
+            "id, board_id, user_id, last_used) values($1, $2, $3, now()) "
+            "on conflict (board_id, user_id) do update set board_id = $2, user_id = $3, last_used = now();",
+            recentBoardId, boardId, userId);
+    }
+
+    std::vector<osm::BackBoardDto> getRecentBoards(const std::string& userId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        auto res = clientPtr->execSqlSync(
+            "select b.* from recent_board r "
+            "join board b on r.board_id = b.id "
+            "where r.user_id = $1 "
+            "order by r.last_used desc;",
+            userId);
+        std::vector<osm::BackBoardDto> recentBoards;
+        for (const auto& row : res) {
+            recentBoards.push_back(rowToBoardDto(row));
+        }
+        std::map<std::string, std::vector<osm::BackSharingDto>> sharedWith;
+        std::vector<std::string> boardIds;
+        for (const auto& board : recentBoards) {
+            boardIds.push_back(board.getId());
+        }
+        auto boardIdsStr = strVectorToString(boardIds);
+        if (!boardIdsStr.empty()) {
+            auto sharedWithRes = clientPtr->execSqlSync(
+                "select board_id, user_id, sharing_mode "
+                "from board_sharing where board_id in(" +
+                boardIdsStr + ");");
+            for (const auto& row : sharedWithRes) {
+                addBackSharingDtoToMap(sharedWith, row);
+            }
+        }
+        for (auto& board : recentBoards) {
+            board.setSharedWith(sharedWith[board.getId()]);
+        }
+        return recentBoards;
     }
 
 }  // namespace est_back::service
