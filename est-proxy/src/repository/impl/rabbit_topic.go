@@ -4,6 +4,7 @@ import (
 	"est-proxy/src/repository"
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
+	"log"
 )
 
 type TopicImpl struct {
@@ -64,6 +65,9 @@ func (topic *TopicImpl) Subscribe(callback repository.Callback) error {
 	go func() {
 		for msg := range consumer {
 			callback(msg.Body)
+			if err := msg.Ack(false); err != nil {
+				log.Printf("Error acknowledging message: %v", err)
+			}
 		}
 	}()
 
