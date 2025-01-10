@@ -26,6 +26,18 @@ void FigureController::createFigure(const HttpRequestPtr& req, std::function<voi
     callback(resp);
 }
 
+void FigureController::getFigure(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback,
+                                 std::string&& figureId) {
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    nlohmann::json j;
+    auto figureDto = est_back::service::getFigure(figureId);
+    org::openapitools::server::model::to_json(j, figureDto);
+    resp->setBody(j.dump());
+    callback(resp);
+}
+
 void FigureController::updateFigure(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback,
                                     std::string&& figureId) {
     auto body = req->getBody();
@@ -39,7 +51,6 @@ void FigureController::updateFigure(const HttpRequestPtr& req, std::function<voi
     resp->setBody("OK");
     callback(resp);
 }
-
 void FigureController::deleteFigure(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback,
                                     std::string&& figureId) {
     est_back::service::deleteFigure(figureId);

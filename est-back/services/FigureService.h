@@ -33,6 +33,12 @@ namespace est_back::service {
         return figureIdDto;
     }
 
+    osm::FigureDto getFigure(const std::string& figureId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        auto res = clientPtr->execSqlSync("select figure_data from figure where id = $1;", figureId);
+        return rowToFigureDto(res[0]);
+    }
+
     void updateFigure(const osm::FigureDto& figureDto, const std::string& figureId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto figureData = figureDto.getData();
