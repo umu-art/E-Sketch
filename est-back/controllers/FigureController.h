@@ -12,6 +12,7 @@ namespace est_back::controller {
         METHOD_LIST_BEGIN
         ADD_METHOD_TO(FigureController::listByBoardId, "/back/figure/list/{boardId}", Get);
         ADD_METHOD_TO(FigureController::createFigure, "/back/figure/create/{boardId}", Post);
+        ADD_METHOD_TO(FigureController::getFigure, "/back/figure/{figureId}", Get);
         ADD_METHOD_TO(FigureController::updateFigure, "/back/figure/{figureId}", Patch);
         ADD_METHOD_TO(FigureController::deleteFigure, "/back/figure/{figureId}", Delete);
         METHOD_LIST_END
@@ -19,6 +20,7 @@ namespace est_back::controller {
         using Callback = std::function<void(const HttpResponsePtr&)>&&;
         void listByBoardId(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
         void createFigure(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        void getFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
         void updateFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
         void deleteFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
     };

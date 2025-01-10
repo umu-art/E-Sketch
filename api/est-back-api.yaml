@@ -196,6 +196,20 @@ paths:
                 $ref: "#/components/schemas/FigureIdDto"
 
   /back/figure/{figureId}:
+    get:
+      tags:
+        - figure
+      summary: Получение фигуры по uuid(бинарные данные)
+      operationId: getFigure
+      parameters:
+        - $ref: "#/components/parameters/FigureId"
+      responses:
+        200:
+          description: Данные фигуры
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FigureDto"
     patch:
       tags:
         - figure
