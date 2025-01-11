@@ -42,7 +42,7 @@ namespace est_back::service {
     void updateFigure(const osm::FigureDto& figureDto, const std::string& figureId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto figureData = figureDto.getData();
-        clientPtr->execSqlSync("update figure set figure_data = $1 where id = $2;", figureData, figureId);
+        clientPtr->execSqlSync("update figure set figure_data = convert_to($1, 'utf8') where id = $2;", figureData, figureId);
     }
 
     void deleteFigure(const std::string& figureId) {
