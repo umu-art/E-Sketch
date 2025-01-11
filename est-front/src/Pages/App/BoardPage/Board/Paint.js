@@ -1,11 +1,13 @@
 import { Board as BoardController } from 'paint/dist';
 import { Point } from 'figures/dist/point';
 import { FigureType, Line } from 'figures/dist';
+import { changeFigure, createFigure, getAllFigures, onNewFigure, onUpdateFigure, updateFigure } from './SocketApi';
 import { decode, encode } from 'coder/dist';
+
 
 const FPS = 60;
 
-export function registerDrawListener(board: Element, boardController: BoardController, webSocket: WebSocket) {
+export function registerDrawListener(board: Element, boardController: BoardController) {
   let drawing = {
     isDrawing: false,
     nowX: 0,
@@ -15,25 +17,26 @@ export function registerDrawListener(board: Element, boardController: BoardContr
   };
 
   let currentFigure: Line;
+  let oldCurrentFigure: Line;
 
   board.addEventListener('mousedown', () => {
-    requestFigureCreation(webSocket);
-
-    const messageHandler = (event) => {
-      if (event.data.length === 36) { // Если получили uuid в ответ
-        currentFigure = new Line(FigureType.LINE, event.data, [drawing.lineColor, drawing.lineWidth], []);
-        drawing.isDrawing = true;
-        webSocket.removeEventListener('message', messageHandler);
-      }
-    };
-
-    webSocket.addEventListener('message', messageHandler);
+    createFigure((uuid) => {
+      currentFigure = new Line(FigureType.LINE, uuid, [drawing.lineColor, drawing.lineWidth], []);
+      oldCurrentFigure = null;
+      drawing.isDrawing = true;
+    });
   });
 
   board.addEventListener('mouseup', () => {
+    if (!currentFigure) {
+      return;
+    }
+
     drawing.isDrawing = false;
     boardController.upsertFigure(currentFigure);
-    sendFigure(webSocket, currentFigure);
+
+    triggerUpdateFigure(currentFigure, oldCurrentFigure);
+    oldCurrentFigure = cloneLine(currentFigure);
   });
 
   board.addEventListener('mousemove', (event) => {
@@ -46,24 +49,41 @@ export function registerDrawListener(board: Element, boardController: BoardContr
     if (drawing.isDrawing) {
       currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
       boardController.upsertFigure(currentFigure);
-      sendFigure(webSocket, currentFigure);
+
+      triggerUpdateFigure(currentFigure, oldCurrentFigure);
+      oldCurrentFigure = cloneLine(currentFigure);
     }
   }, 1000 / FPS);
 
-  webSocket.addEventListener('message', (event) => {
-    if (event.data.length !== 36) {
-      let figure = decode(event.data);
-      if (!currentFigure || figure.id !== currentFigure.id) {
-        boardController.upsertFigure(figure);
+  onNewFigure((figure) => {
+    if (!currentFigure || figure.id !== currentFigure.id) {
+      boardController.upsertFigure(figure);
+    }
+  });
+
+  onUpdateFigure((id, data) => {
+    if (!currentFigure || id !== currentFigure.id) {
+      const updatableFigure = boardController.figures.find((figure) => figure.id === id);
+      if (updatableFigure) {
+        const encoded = encode(updatableFigure);
+        const decoded = decode(encoded + data);
+        boardController.upsertFigure(decoded);
       }
     }
   });
+
+  getAllFigures();
 }
 
-function requestFigureCreation(webSocket: WebSocket) {
-  webSocket.send(String.fromCharCode(0)); // Запрос на создание фигуры
+function triggerUpdateFigure(newFigure, oldFigure) {
+  if (!oldFigure) {
+    changeFigure(newFigure);
+  } else {
+    updateFigure(newFigure, oldFigure);
+  }
 }
 
-function sendFigure(webSocket: WebSocket, figure: Line) {
-  webSocket.send(String.fromCharCode(1) + encode(figure));
+function cloneLine(line: Line): Line {
+  const newPoints = line.points.map((point) => new Point(point.x, point.y));
+  return new Line(line.type, line.id, [line.color, line.thickness], newPoints);
 }

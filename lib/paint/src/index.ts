@@ -17,6 +17,8 @@ export class Board {
   }
 
   public upsertFigure(figure: DefaultFigure): void {
+    this.figures = this.figures.filter(f => f.id !== figure.id);
+
     this.figures.push(figure);
     this.renderFigure(figure);
   }

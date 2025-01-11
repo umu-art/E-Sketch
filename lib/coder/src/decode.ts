@@ -97,7 +97,7 @@ function findHeaderEndIndex(encodedString: string, headerElemsCount: number): nu
  *
  * @returns A Point object with x and y coordinates.
  */
-function decodePoint(encodedPoint: string): Point {
+export function decodePoint(encodedPoint: string): Point {
   const x = binaryToFloat(encodedPoint.slice(0, 8));
   const y = binaryToFloat(encodedPoint.slice(8, 16));
   return new Point(x, y);

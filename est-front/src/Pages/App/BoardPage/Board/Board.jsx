@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Board as BoardController } from 'paint/dist';
 import { registerDrawListener } from './Paint';
+import { connectToFigures, connectToMarkers, figureWebSocket } from './SocketApi';
+import { registerMarkersListener } from './Markers';
 
 const Board = ({ className, style, boardId }) => {
   const width = '100vw';
@@ -15,12 +17,14 @@ const Board = ({ className, style, boardId }) => {
     const boardElement = document.getElementById(boardId);
     boardControllerRef.current = new BoardController(boardElement);
 
-    const webSocket = new WebSocket('wss://' + window.location.host + '/proxy/ws?boardId=' + boardId);
+    connectToFigures(boardId);
+    connectToMarkers(boardId);
 
-    webSocket.addEventListener('open', () => {
-      console.log('WebSocket connected');
-      registerDrawListener(boardElement, boardControllerRef.current, webSocket);
+    figureWebSocket.addEventListener('open', () => {
+      registerDrawListener(boardElement, boardControllerRef.current);
     });
+
+    registerMarkersListener(boardElement);
 
   }, [boardId]);
 

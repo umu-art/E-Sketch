@@ -55,7 +55,7 @@ function encodeHeader(header: string[]) {
  *
  * @returns A string containing the binary representation of the point's x and y coordinates.
  */
-function encodePoint(point: Point): string {
+export function encodePoint(point: Point): string {
   return floatToBinary(point.x) + floatToBinary(point.y);
 }
 
