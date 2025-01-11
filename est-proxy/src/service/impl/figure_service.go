@@ -20,6 +20,8 @@ const (
 	AddFigure    MessageType = 0
 	ChangeFigure MessageType = 1
 	DeleteFigure MessageType = 2
+	UpdateFigure MessageType = 3
+	GetFigures   MessageType = 4
 )
 
 type WsFigureServiceImpl struct {
@@ -54,9 +56,9 @@ func NewWsFigureServiceImpl(
 }
 
 func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.Request, userId uuid.UUID, boardId uuid.UUID) *errors.StatusError {
-	//if !l.checkAvailability(userId, boardId) {
-	//	return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
-	//}
+	if !l.checkAvailability(userId, boardId) {
+		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
+	}
 
 	log.Printf("Got userId [%s] and board id [%s]", userId.String(), boardId.String())
 
@@ -93,6 +95,25 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 				err = l.deleteFigure(boardId, figureId)
 				if err != nil {
 					log.Printf("Failed to delete figure: %v", err)
+					return
+				}
+				break
+			case UpdateFigure:
+				figureId, err := l.getFigureId(rawFigure)
+				if err != nil {
+					log.Printf("Failed to parse figureId: %v", err)
+					return
+				}
+				err = l.changeFigure(boardId, figureId, rawFigure[36:])
+				if err != nil {
+					log.Printf("Failed to change figure: %v", err)
+					return
+				}
+				break
+			case GetFigures:
+				err := l.getFigures(conn, &boardId)
+				if err != nil {
+					log.Printf("Failed to get board figures: %v", err)
 					return
 				}
 				break
@@ -154,6 +175,40 @@ func (l *WsFigureServiceImpl) changeFigure(boardId uuid.UUID, figureId uuid.UUID
 
 	l.notifyChangedFigure(boardId, rawFigure)
 
+	return nil
+}
+
+func (l *WsFigureServiceImpl) updateFigure(boardId uuid.UUID, figureId uuid.UUID, rawFigure []byte) error {
+	figureDto, _, err := l.figureApi.GetFigure(context.Background(), figureId.String()).Execute()
+	if err != nil {
+		return fmt.Errorf("error getting figure: %v", err)
+	}
+
+	newFigureDto := estbackapi.FigureDto{
+		Data: figureDto.Data + string(rawFigure),
+	}
+
+	_, err = l.figureApi.UpdateFigure(context.Background(), figureId.String()).FigureDto(newFigureDto).Execute()
+	if err != nil {
+		return fmt.Errorf("error back updating figure: %v", err)
+	}
+
+	l.notifyChangedFigure(boardId, []byte(fmt.Sprintf("+%s%s", figureId.String(), string(rawFigure))))
+
+	return nil
+}
+
+func (l *WsFigureServiceImpl) getFigures(conn ws.Connection, boardId *uuid.UUID) error {
+	figureListDto, _, err := l.figureApi.ListByBoardId(context.Background(), boardId.String()).Execute()
+	if err != nil {
+		return fmt.Errorf("error back getting figures: %v", err)
+	}
+	for _, figureDto := range figureListDto.Figures {
+		err = conn.WriteMessage([]byte(figureDto.Data))
+		if err != nil {
+			log.Printf("error writing message to connection: %v", err)
+		}
+	}
 	return nil
 }
 
