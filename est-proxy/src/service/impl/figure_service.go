@@ -60,8 +60,6 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
-	log.Printf("Got userId [%s] and board id [%s]", userId.String(), boardId.String())
-
 	l.channel.Listen(writer, request,
 		func(message []byte, conn ws.Connection) {
 			messageType, rawFigure := l.parseMessage(message)
@@ -104,7 +102,7 @@ func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.R
 					log.Printf("Failed to parse figureId: %v", err)
 					return
 				}
-				err = l.changeFigure(boardId, figureId, rawFigure[36:])
+				err = l.changeFigure(boardId, figureId, rawFigure)
 				if err != nil {
 					log.Printf("Failed to change figure: %v", err)
 					return
@@ -185,7 +183,7 @@ func (l *WsFigureServiceImpl) updateFigure(boardId uuid.UUID, figureId uuid.UUID
 	}
 
 	newFigureDto := estbackapi.FigureDto{
-		Data: figureDto.Data + string(rawFigure),
+		Data: figureDto.Data + string(rawFigure[37:]),
 	}
 
 	_, err = l.figureApi.UpdateFigure(context.Background(), figureId.String()).FigureDto(newFigureDto).Execute()
@@ -193,7 +191,7 @@ func (l *WsFigureServiceImpl) updateFigure(boardId uuid.UUID, figureId uuid.UUID
 		return fmt.Errorf("error back updating figure: %v", err)
 	}
 
-	l.notifyChangedFigure(boardId, []byte(fmt.Sprintf("+%s%s", figureId.String(), string(rawFigure))))
+	l.notifyChangedFigure(boardId, []byte("+"+string(rawFigure)))
 
 	return nil
 }
