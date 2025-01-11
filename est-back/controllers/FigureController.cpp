@@ -44,6 +44,7 @@ void FigureController::updateFigure(const HttpRequestPtr& req, std::function<voi
     nlohmann::json updFigureJson = nlohmann::json::parse(body);
     org::openapitools::server::model::FigureDto updFigureDto;
     org::openapitools::server::model::from_json(updFigureJson, updFigureDto);
+    cout << updFigureDto.getData().size() << ' ' << updFigureDto.getData() << endl;
     est_back::service::updateFigure(updFigureDto, figureId);
     auto resp = HttpResponse::newHttpResponse();
     resp->setStatusCode(k200OK);
