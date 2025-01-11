@@ -13,19 +13,19 @@ export function registerMarkersListener(board: Element) {
   });
 
   onMarkerUpdate((point, username) => {
-    if (markersMap['username']) {
-      document.body.removeChild(markersMap['username']);
+    if (markersMap[username]) {
+      document.body.removeChild(markersMap[username]);
     }
 
-    markersMap['username'] = document.createElement('p');
-    markersMap['username'].style.position = 'absolute';
-    markersMap['username'].style.left = `${point.x + 10}px`;
-    markersMap['username'].style.top = `${point.y + 10}px`;
-    markersMap['username'].style.fontSize = '12px';
-    markersMap['username'].style.color = 'black';
-    markersMap['username'].textContent = username;
-    markersMap['username'].style.backgroundColor = 'yellow';
-    markersMap['username'].style.zIndex = 1000;
-    document.body.appendChild(markersMap['username']);
+    markersMap[username] = document.createElement('p');
+    markersMap[username].style.position = 'absolute';
+    markersMap[username].style.left = `${point.x + 10}px`;
+    markersMap[username].style.top = `${point.y + 10}px`;
+    markersMap[username].style.fontSize = '12px';
+    markersMap[username].style.color = 'black';
+    markersMap[username].textContent = username;
+    markersMap[username].style.backgroundColor = 'yellow';
+    markersMap[username].style.zIndex = 1000;
+    document.body.appendChild(markersMap[username]);
   });
 }
