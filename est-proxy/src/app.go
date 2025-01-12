@@ -4,6 +4,7 @@ import (
 	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
+	"est-proxy/src/utils"
 
 	repoimpl "est-proxy/src/repository/impl"
 	serviceimpl "est-proxy/src/service/impl"
@@ -41,6 +42,9 @@ func main() {
 	userRepository := repoimpl.NewUserRepositoryImpl(postgresService)
 	userService := serviceimpl.NewUserServiceImpl(userRepository)
 
+	//FigureBuffer
+	figureBuffer := utils.NewFigureBuffer()
+
 	//BoardService
 	boardService := serviceimpl.NewBoardServiceImpl(backApi.BoardAPI, userRepository)
 
@@ -50,7 +54,9 @@ func main() {
 		backApi.FigureAPI,
 		backApi.BoardAPI,
 		figureTopic,
+		figureBuffer,
 	)
+	go figureBuffer.ServeFlush(figureService.UpdateFigure)
 
 	//MarkerService
 	markerService := serviceimpl.NewWsMarkerServiceImpl(
