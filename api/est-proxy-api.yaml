@@ -306,6 +306,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BoardDto"
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardDto"
 
     BoardDto:
       required:

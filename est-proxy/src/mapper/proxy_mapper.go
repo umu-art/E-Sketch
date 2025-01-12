@@ -32,10 +32,12 @@ func MapBackBoardToProxy(ctx context.Context, dto estbackapi.BackBoardDto, getUs
 func MapManyBoardsToProxy(ctx context.Context, list *estbackapi.BackBoardListDto, getUsersList func(context.Context, []string) []models.PublicUser) *proxymodels.BoardListDto {
 	mine := make([]proxymodels.BoardDto, 0)
 	shared := make([]proxymodels.BoardDto, 0)
+	recent := make([]proxymodels.BoardDto, 0)
 
 	boardDtos := make([]estbackapi.BackBoardDto, 0)
 	boardDtos = append(boardDtos, list.Mine...)
 	boardDtos = append(boardDtos, list.Shared...)
+	boardDtos = append(boardDtos, list.Recent...)
 
 	userDtos := getMappedBackBoardUserIds(ctx, boardDtos, getUsersList)
 
@@ -47,9 +49,14 @@ func MapManyBoardsToProxy(ctx context.Context, list *estbackapi.BackBoardListDto
 		shared = append(shared, *mapBackBoardDtoToProxy(dto, userDtos))
 	}
 
+	for _, dto := range list.Recent {
+		recent = append(recent, *mapBackBoardDtoToProxy(dto, userDtos))
+	}
+
 	return &proxymodels.BoardListDto{
 		Mine:   mine,
 		Shared: shared,
+		Recent: recent,
 	}
 }
 

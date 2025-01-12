@@ -40,6 +40,13 @@ func (bs *BoardServiceImpl) GetByUuid(ctx context.Context, userId *uuid.UUID, bo
 		return nil, errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
+	_, err = bs.boardApi.MarkAsRecent(ctx, userId.String()).BoardIdDto(estbackapi.BoardIdDto{
+		Id: boardId.String(),
+	}).Execute()
+	if err != nil {
+		log.Printf("Failed to mark board as recent: %v", err.Error())
+	}
+
 	return mapper.MapBackBoardToProxy(ctx, *board, bs.getUsers), nil
 }
 
