@@ -25,10 +25,11 @@ const (
 )
 
 type WsFigureServiceImpl struct {
-	channel   ws.Channel
-	figureApi *estbackapi.FigureAPIService
-	boardApi  *estbackapi.BoardAPIService
-	topic     repository.Topic
+	channel      ws.Channel
+	figureApi    *estbackapi.FigureAPIService
+	boardApi     *estbackapi.BoardAPIService
+	topic        repository.Topic
+	figureBuffer *utils.FigureBuffer
 }
 
 func NewWsFigureServiceImpl(
@@ -36,13 +37,15 @@ func NewWsFigureServiceImpl(
 	figureApi *estbackapi.FigureAPIService,
 	boardApi *estbackapi.BoardAPIService,
 	topic repository.Topic,
+	figureBuffer *utils.FigureBuffer,
 ) *WsFigureServiceImpl {
 
 	service := &WsFigureServiceImpl{
-		channel:   channel,
-		figureApi: figureApi,
-		boardApi:  boardApi,
-		topic:     topic,
+		channel:      channel,
+		figureApi:    figureApi,
+		boardApi:     boardApi,
+		topic:        topic,
+		figureBuffer: figureBuffer,
 	}
 
 	err := topic.Subscribe(func(message []byte) {
@@ -177,19 +180,7 @@ func (l *WsFigureServiceImpl) changeFigure(boardId uuid.UUID, figureId uuid.UUID
 }
 
 func (l *WsFigureServiceImpl) updateFigure(boardId uuid.UUID, figureId uuid.UUID, rawFigure []byte) error {
-	figureDto, _, err := l.figureApi.GetFigure(context.Background(), figureId.String()).Execute()
-	if err != nil {
-		return fmt.Errorf("error getting figure: %v", err)
-	}
-
-	newFigureDto := estbackapi.FigureDto{
-		Data: figureDto.Data + string(rawFigure[37:]),
-	}
-
-	_, err = l.figureApi.UpdateFigure(context.Background(), figureId.String()).FigureDto(newFigureDto).Execute()
-	if err != nil {
-		return fmt.Errorf("error back updating figure: %v", err)
-	}
+	l.figureBuffer.Add(figureId.String(), rawFigure[37:])
 
 	l.notifyChangedFigure(boardId, []byte("+"+string(rawFigure)))
 
@@ -208,6 +199,20 @@ func (l *WsFigureServiceImpl) getFigures(conn ws.Connection, boardId *uuid.UUID)
 		}
 	}
 	return nil
+}
+
+func (l *WsFigureServiceImpl) UpdateFigure(figureId string, figureData []byte) {
+	figureDto, _, err := l.figureApi.GetFigure(context.Background(), figureId).Execute()
+	if err != nil {
+		log.Printf("error getting figure: %v", err)
+	}
+
+	figureDto.Data += string(figureData)
+
+	_, err = l.figureApi.UpdateFigure(context.Background(), figureId).FigureDto(*figureDto).Execute()
+	if err != nil {
+		log.Printf("error updating figure: %v", err)
+	}
 }
 
 type FigureChangeMessage struct {
