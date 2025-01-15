@@ -33,7 +33,7 @@ spec:
               memory: "50M"
               cpu: "50m"
             limits:
-              memory: "100M"
+              memory: "50M"
               cpu: "100m"
 
           readinessProbe:
