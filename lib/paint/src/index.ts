@@ -5,7 +5,6 @@ export class Board {
   figures: DefaultFigure[];
 
   public constructor(svgObject: Element) {
-    console.log('Created new board instance for ', svgObject);
     this.svgElement = svgObject;
     this.figures = [];
     this.prepareBoard();
@@ -40,7 +39,7 @@ export class Board {
       this.svgElement.removeChild(figureElement);
     }
 
-    figureElement = figure.toSvg();
+    figureElement = figure.toSvg(this.svgElement.ownerDocument);
     this.svgElement.appendChild(figureElement);
   }
 }

@@ -5,6 +5,12 @@ inputs:
   image:
     description: 'Image name'
     required: true
+  actor:
+    description: 'github.actor'
+    required: true
+  token:
+    description: 'token'
+    required: true
 
 runs:
   using: "composite"
@@ -13,14 +19,14 @@ runs:
       uses: docker/login-action@v3.1.0
       with:
         registry: ghcr.io
-        username: umu-art
-        password: ${{ secrets.PACKAGES_TOKEN }}
+        username: ${{ inputs.actor }}
+        password: ${{ inputs.token }}
 
     - name: Extract metadata for ${{ inputs.image }}
       id: meta
       uses: docker/metadata-action@v5.5.1
       with:
-        images: ghcr.io/umu-art/${{ inputs.image }}
+        images: ghcr.io/${{ inputs.actor }}/${{ inputs.image }}
 
     - name: Build and push Docker image for ${{ inputs.image }}
       uses: docker/build-push-action@v5.3.0

@@ -18,7 +18,7 @@ export class Line extends DefaultFigure {
       .build();
   }
 
-  public toSvg(): SVGPathElement {
+  public toSvg(document: Document): SVGPathElement {
     let element = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     element.setAttribute('id', this.id);
     element.setAttribute('fill', 'none');

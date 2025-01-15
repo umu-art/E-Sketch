@@ -82,6 +82,28 @@ jobs:
       - name: Test front
         run: cd ./est-front && npm run test
 
+  test-preview:
+    needs: [ lint-api, build-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Build libs
+        uses: ./.github/workflows/actions/build_libs
+
+      - name: Install deps
+        run: cd ./est-preview && npm install
+
+      - name: Test preview
+        run: cd ./est-preview && npm run build
+
   test-proxy:
     needs: [ lint-api, build-api ]
     runs-on: ubuntu-latest

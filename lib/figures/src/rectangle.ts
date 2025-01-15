@@ -20,7 +20,7 @@ export class Rectangle extends DefaultFigure {
       .build();
   }
 
-  public toSvg(): SVGPathElement {
+  public toSvg(document: Document): SVGPathElement {
     // TODO: Implement SVG rectangle creation
     return document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   }

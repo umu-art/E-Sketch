@@ -23,7 +23,7 @@ export abstract class DefaultFigure {
 
   public abstract exportHeader(): FigureHeader;
 
-  public abstract toSvg(): SVGPathElement;
+  public abstract toSvg(document: Document): SVGPathElement;
 }
 
 export type FigureHeader = string[];

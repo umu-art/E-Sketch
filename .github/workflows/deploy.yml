@@ -100,6 +100,8 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-back
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
 
 
   test-front:
@@ -156,6 +158,66 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-front
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
+
+
+  test-preview:
+    needs: [ lint-api, build-api ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Build libs
+        uses: ./.github/workflows/actions/build_libs
+
+      - name: Install deps
+        run: cd ./est-preview && npm install
+
+      - name: Test preview
+        run: cd ./est-preview && npm run build
+
+
+  build-preview-image:
+    needs: [ test-preview ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Build libs
+        uses: ./.github/workflows/actions/build_libs
+
+      - name: Install deps
+        run: cd ./est-preview && npm install
+
+      - name: Build est-preview
+        run: cd ./est-preview && npm run build
+
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
+        with:
+          image: est-preview
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
 
 
   test-proxy:
@@ -206,15 +268,17 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-proxy
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
 
 
   kube-update:
-    needs: [ build-back-image, build-front-image, build-proxy-image ]
+    needs: [ build-back-image, build-front-image, build-preview-image, build-proxy-image ]
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        app: [ est-back, est-front, est-proxy ]
+        app: [ est-back, est-front, est-preview, est-proxy ]
 
     steps:
       - name: Set the Kubernetes context
