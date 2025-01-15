@@ -83,10 +83,10 @@ spec:
           resources:
             requests:
               memory: "50M"
-              cpu: "50m"
+              cpu: "200m"
             limits:
               memory: "100M"
-              cpu: "100m"
+              cpu: "500m"
 
           readinessProbe:
             httpGet:
