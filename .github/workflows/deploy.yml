@@ -100,8 +100,6 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-back
-          actor: ${{ github.actor }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   test-front:
@@ -158,8 +156,6 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-front
-          actor: ${{ github.actor }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   test-proxy:
@@ -210,8 +206,6 @@ jobs:
         uses: ./.github/workflows/actions/build_image
         with:
           image: est-proxy
-          actor: ${{ github.actor }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   kube-update:
