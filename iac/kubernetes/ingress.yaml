@@ -27,6 +27,13 @@ spec:
                 name: est-proxy
                 port:
                   name: http
+          - path: /preview
+            pathType: Prefix
+            backend:
+              service:
+                name: est-preview
+                port:
+                  name: http
 
     - host: xn----itbbt8ai9a.xn--p1ai
       http:
@@ -43,6 +50,13 @@ spec:
             backend:
               service:
                 name: est-proxy
+                port:
+                  name: http
+          - path: /preview
+            pathType: Prefix
+            backend:
+              service:
+                name: est-preview
                 port:
                   name: http
 
