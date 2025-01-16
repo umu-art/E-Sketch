@@ -40,14 +40,14 @@ spec:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 20
+            initialDelaySeconds: 10
             periodSeconds: 20
 
           livenessProbe:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 20
+            initialDelaySeconds: 10
             periodSeconds: 20
 
       imagePullSecrets:
