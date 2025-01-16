@@ -1,7 +1,7 @@
 name: est-proxy-test
 
 on:
-  workflow_call: { }
+  pull_request: { }
 
 jobs:
   test-proxy:

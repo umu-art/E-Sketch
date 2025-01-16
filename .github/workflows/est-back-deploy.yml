@@ -1,7 +1,11 @@
 name: est-back-deploy
 
 on:
-  workflow_call: { }
+  push:
+    branches: [ "master" ]
+
+env:
+  MODULE_NAME: est-back
 
 jobs:
   build-image:
@@ -24,22 +28,18 @@ jobs:
       - name: Build image
         uses: ./.github/workflows/actions/build_image
         with:
-          image: est-back
+          image: ${{ env.MODULE_NAME }}
           actor: umu-art
           token: ${{ secrets.PACKAGES_TOKEN }}
 
-  kube-update:
+  deploy:
     needs: [ build-image ]
     runs-on: ubuntu-latest
-
     steps:
-      - name: Set the Kubernetes context
-        uses: azure/k8s-set-context@v4
+      - name: Deploy
+        uses: ./.github/workflows/actions/deploy_to_stand
         with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBESECRET }}
-
-      - name: Deploy est-back
-        run: kubectl rollout restart deployment/est-back -n e-sketch
-
-
+          kubesecret: ${{ secrets.KUBESECRET }}
+          module-name: ${{ env.MODULE_NAME }}
+          argocd-server: ${{ secrets.ARGO_SERVER }}
+          argocd-token: ${{ secrets.ARGO_TOKEN }}
