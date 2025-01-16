@@ -233,17 +233,26 @@ paths:
         200:
           description: Успеха
 
-  /proxy/board/{boardId}/connect:
-    get:
+  #################################### GPT ####################################
+
+  /proxy/gpt/request:
+    post:
       tags:
-        - board
-      summary: Переход на websocket, вся работа с рисунками будет там
-      operationId: connect
-      parameters:
-        - $ref: "./est-back-api.yaml/#/components/parameters/BoardId"
+        - gpt
+      summary: Запрос с данными с доски
+      operationId: request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GPTRequestDto"
       responses:
-        101:
-          description: Переход на websocket
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GPTResponseDto"
 
 components:
   parameters:
@@ -359,3 +368,36 @@ components:
         access:
           $ref: "./est-back-api.yaml/#/components/schemas/ShareMode"
 
+    GPTRequestDto:
+      required:
+        - boardId
+        - prompt
+        - leftUp
+        - rightDown
+      properties:
+        boardId:
+          type: string
+          format: uuid
+        prompt:
+          type: string
+        leftUp:
+          $ref: "#/components/schemas/Point"
+        rightDown:
+          $ref: "#/components/schemas/Point"
+
+    Point:
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+
+    GPTResponseDto:
+      required:
+        - text
+      properties:
+        text:
+          type: string

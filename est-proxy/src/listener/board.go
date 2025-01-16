@@ -192,7 +192,3 @@ func (b BoardListener) Unshare(ctx echo.Context) error {
 
 	return ctx.String(http.StatusOK, "Права доступа на доску успешно изменены")
 }
-
-func (b BoardListener) Connect(ctx echo.Context) error {
-	return ctx.String(http.StatusInternalServerError, "В разработке")
-}

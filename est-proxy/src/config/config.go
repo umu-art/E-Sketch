@@ -6,6 +6,7 @@ import (
 )
 
 var EST_BACK_URL = os.Getenv("EST_BACK_URL")
+var EST_PREVIEW_URL = os.Getenv("EST_PREVIEW_URL")
 
 var POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
 var POSTGRES_USERNAME = os.Getenv("POSTGRES_USERNAME")
@@ -19,6 +20,9 @@ var RABBITMQ_HOST = os.Getenv("RABBITMQ_HOST")
 var RABBITMQ_PORT = os.Getenv("RABBITMQ_PORT")
 var RABBITMQ_FIGURE_TOPIC_EXCHANGE = "figure_change"
 var RABBITMQ_MARKER_TOPIC_EXCHANGE = "marker_change"
+
+var GPT_API_PATH = os.Getenv("GPT_API_PATH")
+var GPT_API_TOKEN = os.Getenv("GPT_API_TOKEN")
 
 var JWT_SECRET = os.Getenv("JWT_SECRET")
 

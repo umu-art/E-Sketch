@@ -1,6 +1,7 @@
 package main
 
 import (
+	"est-proxy/src/api"
 	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
@@ -24,9 +25,21 @@ func main() {
 		},
 	}
 	backApiConfig.HTTPClient = &nethttp.Client{
-		Transport: http.NewTransportWithTraceparentHeaders(),
+		Transport: http.NewTransportWithTraceparentHeaders("est-back"),
 	}
 	backApi := estbackapi.NewAPIClient(backApiConfig)
+
+	// Клиент для est-preview
+	previewApiClient := &nethttp.Client{
+		Transport: http.NewTransportWithTraceparentHeaders("est-preview"),
+	}
+	previewApi := api.NewPreviewApi(previewApiClient)
+
+	// Клиент для GPT
+	gptApiClient := &nethttp.Client{
+		Transport: http.NewTransportWithTraceparentHeaders("gpt"),
+	}
+	gptApi := api.NewGptApi(gptApiClient)
 
 	// RabbitMQ
 	rabbitService := repoimpl.NewRabbitRepositoryImpl()
@@ -66,11 +79,15 @@ func main() {
 		markerTopic,
 	)
 
+	//GptService
+	gptService := serviceimpl.NewGptServiceImpl(previewApi, gptApi)
+
 	// Хандлеры
 	boardListener := listener.NewBoardListener(boardService)
 	userListener := listener.NewUserListener(userService)
 	figureListener := listener.NewWsFigureListener(figureService)
 	markerListener := listener.NewWsMarkerListener(markerService)
+	gptListener := listener.NewGptListener(gptService)
 
 	// HTTP сервер
 	echoListener := http.NewListener(
@@ -78,6 +95,7 @@ func main() {
 		userListener,
 		figureListener,
 		markerListener,
+		gptListener,
 	)
 
 	go echoListener.Serve()

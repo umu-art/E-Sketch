@@ -42,9 +42,13 @@ export class AppController {
     @Query('boardId') boardId: string,
     @Query('width') width: number,
     @Query('height') height: number,
+    @Query('xLeft') xLeft: number,
+    @Query('yUp') yUp: number,
+    @Query('xRight') xRight: number,
+    @Query('yDown') yDown: number,
     @Res() res: Response,
   ) {
-    const jpegBuffer = await this.appService.getPreview(boardId, width, height);
+    const jpegBuffer = await this.appService.getPreviewPart(boardId, width, height, xLeft, yUp, xRight, yDown);
     res.contentType('image/jpeg');
     res.send(jpegBuffer);
   }

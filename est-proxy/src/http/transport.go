@@ -7,17 +7,18 @@ import (
 )
 
 type TransportWithTraceparentHeaders struct {
+	childName string
 }
 
-func NewTransportWithTraceparentHeaders() *TransportWithTraceparentHeaders {
-	return &TransportWithTraceparentHeaders{}
+func NewTransportWithTraceparentHeaders(childName string) *TransportWithTraceparentHeaders {
+	return &TransportWithTraceparentHeaders{childName}
 }
 
 func (t *TransportWithTraceparentHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	traceContext := apm.TransactionFromContext(ctx).TraceContext()
 
-	span, _ := apm.StartSpan(ctx, "est-back: "+req.URL.Path, "service")
+	span, _ := apm.StartSpan(ctx, t.childName+": "+req.URL.Path, "service")
 	defer span.End()
 
 	// Set traceparent

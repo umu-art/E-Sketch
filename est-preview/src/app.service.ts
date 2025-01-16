@@ -11,12 +11,20 @@ export class AppService {
   private readonly logger = new Logger(AppService.name);
 
   async getPreview(boardId: string, width: number, height: number): Promise<Buffer> {
+    return this.getPreviewPart(boardId, width, height, undefined, undefined, undefined, undefined);
+  }
+
+  async getPreviewPart(boardId: string,
+                       width: number, height: number,
+                       xLeft: number, yUp: number,
+                       xRight: number, yDown: number,
+  ): Promise<Buffer> {
     let startTime = Date.now();
 
     return getAllFigures(boardId)
       .then(figures => {
         this.logger.log(`Fetched figures in ${Date.now() - startTime}ms`);
-        return this.createSvgWithFigures(figures, width, height);
+        return this.createSvgWithFigures(figures, width, height, xLeft, yUp, xRight, yDown);
       })
       .then(svg => {
         this.logger.log(`Created SVG in ${Date.now() - startTime}ms`);
@@ -28,17 +36,27 @@ export class AppService {
       });
   }
 
-  private async createSvgWithFigures(figures: DefaultFigure[], width: number, height: number): Promise<SVGElement> {
+  private async createSvgWithFigures(figures: DefaultFigure[],
+                                     width: number, height: number,
+                                     xLeft: number, yUp: number,
+                                     xRight: number, yDown: number,
+  ): Promise<SVGElement> {
+
     const dom = new JSDOM.JSDOM('<!DOCTYPE html><html><body></body></html>');
     const document = dom.window.document;
 
-    const leftUp = this.getLeftUpPoint(figures);
-    const rightDown = this.getRightDownPoint(figures);
 
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgElement.setAttribute('width', `${width}`);
     svgElement.setAttribute('height', `${height}`);
-    svgElement.setAttribute('viewBox', `${leftUp.x}, ${leftUp.y}, ${rightDown.x - leftUp.x}, ${rightDown.y - leftUp.y}`);
+
+    if (xLeft && yUp && xRight && yDown) {
+      svgElement.setAttribute('viewBox', `${xLeft}, ${yUp}, ${xRight - xLeft}, ${yDown - yUp}`);
+    } else {
+      const leftUp = this.getLeftUpPoint(figures);
+      const rightDown = this.getRightDownPoint(figures);
+      svgElement.setAttribute('viewBox', `${leftUp.x}, ${leftUp.y}, ${rightDown.x - leftUp.x}, ${rightDown.y - leftUp.y}`);
+    }
 
     const board = new Board(svgElement);
 

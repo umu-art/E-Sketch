@@ -15,19 +15,22 @@ type Listener struct {
 	userListener   handlers.UserAPI
 	figureListener *listener.WsFigureListener
 	markerListener *listener.WsMarkerListener
+	gptListener    *listener.GptListener
 }
 
 func NewListener(
 	boardListener handlers.BoardAPI,
 	userListener handlers.UserAPI,
 	figureListener *listener.WsFigureListener,
-	markerListener *listener.WsMarkerListener) *Listener {
+	markerListener *listener.WsMarkerListener,
+	gptListener *listener.GptListener) *Listener {
 
 	return &Listener{
 		boardListener:  boardListener,
 		userListener:   userListener,
 		figureListener: figureListener,
 		markerListener: markerListener,
+		gptListener:    gptListener,
 	}
 }
 
@@ -47,6 +50,7 @@ func (h *Listener) Serve() {
 
 	handlers.RouteBoardAPI(e, h.boardListener)
 	handlers.RouteUserAPI(e, h.userListener)
+	handlers.RouteGptAPI(e, h.gptListener)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
