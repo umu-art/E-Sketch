@@ -121,7 +121,7 @@ func toPayload(prompt string, image []byte) Payload {
 	}
 
 	return Payload{
-		Model: "gpt-4-vision-preview",
+		Model: "o1",
 		Messages: []Message{
 			{
 				Role:    "user",
