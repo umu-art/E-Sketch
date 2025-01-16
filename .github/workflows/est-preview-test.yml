@@ -1,0 +1,27 @@
+name: est-preview-test
+
+on:
+  workflow_call: { }
+
+jobs:
+  test-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Build libs
+        uses: ./.github/workflows/actions/build_libs
+
+      - name: Install deps
+        working-directory: ./est-preview
+        run: npm install
+
+      - name: Test preview
+        working-directory: ./est-preview
+        run: npm run build

@@ -1,0 +1,45 @@
+name: est-back-deploy
+
+on:
+  workflow_call: { }
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
+        with:
+          image: est-back
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
+
+  kube-update:
+    needs: [ build-image ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set the Kubernetes context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBESECRET }}
+
+      - name: Deploy est-back
+        run: kubectl rollout restart deployment/est-back -n e-sketch
+
+

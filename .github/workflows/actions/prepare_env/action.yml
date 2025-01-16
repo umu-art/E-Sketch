@@ -9,45 +9,45 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Set up Node.js 21
-    uses: actions/setup-node@v4.0.4
-    with:
-      node-version: 21
-      cache: 'npm'
-      cache-dependency-path: |
-        est-front/package-lock.json
-        .github/workflows/actions/prepare_env/cache/go.sum
+    - name: Set up Node.js 21
+      uses: actions/setup-node@v4.0.4
+      with:
+        node-version: 21
+        cache: 'npm'
+        cache-dependency-path: |
+          est-front/package-lock.json
+          .github/workflows/actions/prepare_env/cache/go.sum
 
-  - name: Set up JDK 21
-    uses: actions/setup-java@v4
-    with:
-      java-version: 21
-      distribution: 'temurin'
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: 21
+        distribution: 'temurin'
 
-  - name: Setup Go environment
-    uses: actions/setup-go@v5.0.2
-    with:
-      go-version: 1.23.0
-      cache: true
-      cache-dependency-path: |
-        est-proxy/go.sum
-        .github/workflows/actions/prepare_env/cache/go.sum
+    - name: Setup Go environment
+      uses: actions/setup-go@v5.0.2
+      with:
+        go-version: 1.23.0
+        cache: true
+        cache-dependency-path: |
+          est-proxy/go.sum
+          .github/workflows/actions/prepare_env/cache/go.sum
 
-  - name: Restore api cache
-    id: api-cache-restore
-    uses: actions/cache/restore@v4
-    with:
-      path: api/build
-      key: ${{ inputs.cacheTag }}
+    - name: Restore api cache
+      id: api-cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: api/build
+        key: ${{ inputs.cacheTag }}
 
-  - name: Build API
-    if: steps.api-cache-restore.outputs.cache-hit != 'true'
-    shell: bash
-    run: cd ./api && chmod +x ./build.sh && ./build.sh
+    - name: Build API
+      if: steps.api-cache-restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: cd ./api && chmod +x ./build.sh && ./build.sh
 
-  - name: Save api cache
-    if: steps.api-cache-restore.outputs.cache-hit != 'true'
-    uses: actions/cache/save@v4
-    with:
-      path: api/build
-      key: ${{ inputs.cacheTag }}
+    - name: Save api cache
+      if: steps.api-cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: api/build
+        key: ${{ inputs.cacheTag }}

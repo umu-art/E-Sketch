@@ -1,0 +1,24 @@
+name: est-proxy-test
+
+on:
+  workflow_call: { }
+
+jobs:
+  test-proxy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Install deps
+        working-directory: ./est-proxy
+        run: go mod tidy
+
+      - name: Test proxy
+        working-directory: ./est-proxy
+        run: go test -json ./...

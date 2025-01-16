@@ -1,0 +1,44 @@
+name: est-back-test
+
+on:
+  workflow_call: { }
+
+jobs:
+  lint-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: 'file'  # Use .clang-format config file
+          tidy-checks: '-*' # disable clang-tidy
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          files-changed-only: false
+
+      - name: Fail
+        if: steps.linter.outputs.checks-failed > 0
+        continue-on-error: false
+        run: exit 1
+
+  test-back:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Run tests in docker
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: .
+          file: ./iac/images/est-back/Dockerfile
+          push: false

@@ -1,0 +1,38 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+
+  ### Deploy modules: ###
+
+  est-back-deploy:
+    uses: ./.github/workflows/est-back-deploy.yml
+
+  est-proxy-deploy:
+    uses: ./.github/workflows/est-proxy-deploy.yml
+
+  est-preview-deploy:
+    uses: ./.github/workflows/est-preview-deploy.yml
+
+  est-front-deploy:
+    uses: ./.github/workflows/est-front-deploy.yml
+
+  ### Sync argocd: ###
+
+  argo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: clowdhaus/argo-cd-action/@main
+        with:
+          version: 2.6.7
+          options: --server ${{ ARGO_SERVER }} --grpc-web --auth-token ${{ secrets.ARGO_TOKEN }}
+          command: app sync e-sketch --prune --timeout 300
+
+      - uses: clowdhaus/argo-cd-action/@main
+        with:
+          version: 2.6.7
+          options: --server ${{ ARGO_SERVER }} --grpc-web --auth-token ${{ secrets.ARGO_TOKEN }}
+          command: app wait e-sketch --health --timeout 300
