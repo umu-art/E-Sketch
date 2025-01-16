@@ -71,7 +71,7 @@ spec:
               value: '5672'
 
             - name: GPT_API_PATH
-              value: https://api.openai.com/v1/chat/completions
+              value: https://api.proxyapi.ru/openai/v1/chat/completions
             - name: GPT_API_TOKEN
               valueFrom:
                 secretKeyRef:
