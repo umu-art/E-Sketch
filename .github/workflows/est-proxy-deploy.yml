@@ -1,0 +1,57 @@
+name: est-proxy-deploy
+
+on:
+  push:
+    branches:
+      - "master"
+    paths:
+      - 'api/**'
+      - 'est-proxy/**'
+
+env:
+  MODULE_NAME: est-proxy
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare and build Api
+        uses: ./.github/workflows/actions/prepare_env
+        with:
+          cacheTag: api-${{ hashFiles('api/') }}
+
+      - name: Install deps
+        working-directory: ./${{ env.MODULE_NAME }}
+        run: go mod tidy
+
+      - name: Build ${{ env.MODULE_NAME }}
+        working-directory: ./${{ env.MODULE_NAME }}
+        run: CGO_ENABLED=0 GOOS=linux go build -o ./build/app ./src
+
+      - name: Build image
+        uses: ./.github/workflows/actions/build_image
+        with:
+          image: ${{ env.MODULE_NAME }}
+          actor: umu-art
+          token: ${{ secrets.PACKAGES_TOKEN }}
+
+  deploy:
+    needs: [ build-image ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        uses: ./.github/workflows/actions/deploy_to_stand
+        with:
+          kubesecret: ${{ secrets.KUBESECRET }}
+          module-name: ${{ env.MODULE_NAME }}
+          argocd-server: ${{ secrets.ARGO_SERVER }}
+          argocd-token: ${{ secrets.ARGO_TOKEN }}
