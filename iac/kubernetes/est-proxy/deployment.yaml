@@ -35,6 +35,8 @@ spec:
           env:
             - name: EST_BACK_URL
               value: http://est-back.e-sketch.svc.cluster.local
+            - name: EST_PREVIEW_URL
+              value: http://est-preview.e-sketch.svc.cluster.local
 
             - name: POSTGRES_USERNAME
               valueFrom:
@@ -67,6 +69,14 @@ spec:
               value: rabbit.databases.svc.cluster.local
             - name: RABBITMQ_PORT
               value: '5672'
+
+            - name: GPT_API_PATH
+              value: https://api.openai.com/v1/chat/completions
+            - name: GPT_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: GPT_API_TOKEN
 
             - name: JWT_SECRET
               valueFrom:
