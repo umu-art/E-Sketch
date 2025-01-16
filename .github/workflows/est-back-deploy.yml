@@ -2,7 +2,11 @@ name: est-back-deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
+    paths:
+      - 'api/**'
+      - 'est-back/**'
 
 env:
   MODULE_NAME: est-back

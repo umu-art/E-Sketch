@@ -2,7 +2,12 @@ name: est-front-deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
+    paths:
+      - 'api/**'
+      - 'lib/**'
+      - 'est-front/**'
 
 env:
   MODULE_NAME: est-front

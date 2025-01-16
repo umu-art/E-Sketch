@@ -1,7 +1,9 @@
 name: est-api-test
 
 on:
-  pull_request: { }
+  pull_request:
+    paths:
+      - 'api/**'
 
 jobs:
   lint-api:

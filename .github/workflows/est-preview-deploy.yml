@@ -2,7 +2,12 @@ name: est-preview-deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
+    paths:
+      - 'api/**'
+      - 'lib/**'
+      - 'est-preview/**'
 
 env:
   MODULE_NAME: est-preview

@@ -1,7 +1,11 @@
 name: est-front-test
 
 on:
-  pull_request: { }
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'lib/**'
+      - 'est-front/**'
 
 jobs:
   test-front:

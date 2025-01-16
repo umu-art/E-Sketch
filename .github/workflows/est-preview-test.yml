@@ -1,7 +1,11 @@
 name: est-preview-test
 
 on:
-  pull_request: { }
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'lib/**'
+      - 'est-preview/**'
 
 jobs:
   test-preview:

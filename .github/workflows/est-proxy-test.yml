@@ -1,7 +1,10 @@
 name: est-proxy-test
 
 on:
-  pull_request: { }
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'est-proxy/**'
 
 jobs:
   test-proxy:

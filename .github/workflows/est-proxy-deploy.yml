@@ -2,7 +2,11 @@ name: est-proxy-deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
+    paths:
+      - 'api/**'
+      - 'est-proxy/**'
 
 env:
   MODULE_NAME: est-proxy

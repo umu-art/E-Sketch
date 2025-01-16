@@ -1,7 +1,10 @@
 name: est-back-test
 
 on:
-  pull_request: { }
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'est-back/**'
 
 jobs:
   lint-cpp:
