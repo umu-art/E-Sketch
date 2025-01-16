@@ -37,6 +37,18 @@ export class AppController {
     res.send(jpegBuffer);
   }
 
+  @Get('/internal/preview')
+  async getPreviewInternal(
+    @Query('boardId') boardId: string,
+    @Query('width') width: number,
+    @Query('height') height: number,
+    @Res() res: Response,
+  ) {
+    const jpegBuffer = await this.appService.getPreview(boardId, width, height);
+    res.contentType('image/jpeg');
+    res.send(jpegBuffer);
+  }
+
   private async checkToken(boardId: string, token: string) {
     let isValidToken = false;
 

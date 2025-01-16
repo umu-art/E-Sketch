@@ -64,7 +64,7 @@ export class AppService {
   private async convertSvgToJpeg(svgElement: SVGElement): Promise<Buffer> {
     return sharp(Buffer.from(svgElement.outerHTML))
       .flatten({ background: { r: 255, g: 255, b: 255 } })
-      .jpeg({ quality: 80 })
+      .jpeg({ quality: 90 })
       .toBuffer();
   }
 }
