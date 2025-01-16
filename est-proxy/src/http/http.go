@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"go.elastic.co/apm/module/apmechov4/v2"
 	"net/http"
+	"strings"
 )
 
 type Listener struct {
@@ -38,9 +39,22 @@ func (h *Listener) Serve() {
 
 	e := echo.New()
 
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(apmechov4.Middleware())
+
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Skipper: func(c echo.Context) bool {
+			return strings.Contains(c.Path(), "/actuator")
+		},
+	}))
+
+	e.Use(apmechov4.Middleware(
+		apmechov4.WithRequestIgnorer(
+			func(req *http.Request) bool {
+				return strings.Contains(req.URL.Path, "/actuator")
+			},
+		),
+	))
+
 	e.Use(impl.SessionMiddleware)
 
 	e.GET("/actuator", h.Actuator)
