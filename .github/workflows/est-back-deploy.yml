@@ -40,6 +40,9 @@ jobs:
     needs: [ build-image ]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy
         uses: ./.github/workflows/actions/deploy_to_stand
         with:

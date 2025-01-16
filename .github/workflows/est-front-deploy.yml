@@ -37,7 +37,7 @@ jobs:
         working-directory: ./${{ env.MODULE_NAME }}
         run: npm install
 
-      - name: Build ${{ env.MODULE_NAME }}
+      - name: Build module
         working-directory: ./${{ env.MODULE_NAME }}
         run: npm run build
 
@@ -52,6 +52,9 @@ jobs:
     needs: [ build-image ]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy
         uses: ./.github/workflows/actions/deploy_to_stand
         with:
