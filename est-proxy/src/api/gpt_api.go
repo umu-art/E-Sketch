@@ -95,7 +95,7 @@ func (g GptApi) Request(
 	if err != nil {
 		return "", errors.NewStatusError(http.StatusInternalServerError, "Failed to read response body")
 	}
-	log.Printf("GPT API response: %s\n", string(body))
+	println("GPT API response: %s\n", string(body))
 
 	var response Response
 	err = json.Unmarshal(body, &response)
