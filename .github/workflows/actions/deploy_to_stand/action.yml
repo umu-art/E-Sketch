@@ -32,11 +32,11 @@ runs:
       with:
         version: 2.6.7
         options: --server ${{ inputs.argocd-server }} --grpc-web --auth-token ${{ inputs.argocd-token }}
-        command: app sync e-sketch --resource :Deployment:${{ inputs.module-name }} --prune --timeout 300
+        command: app sync e-sketch --resource apps:Deployment:${{ inputs.module-name }} --prune --timeout 300
 
     - uses: clowdhaus/argo-cd-action/@main
       with:
         version: 2.6.7
         options: --server ${{ inputs.argocd-server }} --grpc-web --auth-token ${{ inputs.argocd-token }}
-        command: app wait e-sketch --resource :Deployment:${{ inputs.module-name }} --health --timeout 300
+        command: app wait e-sketch --resource apps:Deployment:${{ inputs.module-name }} --health --timeout 300
 

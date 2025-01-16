@@ -8,7 +8,7 @@ if [[ " $* " == *" --help "* ]]; then
   echo "  --force         Перед началом сборки удалить папку build"
   echo "  --skip-js-build Пропустить сборку клиента est-proxy JS API"
   echo "  --skip-go-build Пропустить сборку сервера est-proxy Go API и клиента est-back Go API"
-  echo "Нужны установленные Java и wget!"
+  echo "Нужны установленные Java и wget"
   exit 0
 fi
 
