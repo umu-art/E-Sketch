@@ -81,8 +81,8 @@ async function imitateUserFrFrFr(board, authCookie) {
     figureWebSocket.onopen = resolve;
   });
 
-  let u = setInterval(() => {
-    markerWebSocket.send(encodePoint(new Point(Math.random() * 1000, Math.random() * 1000)));
+  let u = setInterval(async () => {
+    await safeSend(markerWebSocket, encodePoint(new Point(Math.random() * 1000, Math.random() * 1000)));
   }, 1000 / 60);
 
   for (let i = 0; i < 30; i++) {
@@ -97,7 +97,7 @@ async function imitateUserFrFrFr(board, authCookie) {
 
 async function createFigure(figureWebSocket) {
   try {
-    let figureId = await new Promise((resolve, _) => {
+    let figureId = await new Promise(async (resolve, _) => {
       const messageHandler = (event) => {
         if (event.data.length === 36) {
           figureWebSocket.removeEventListener('message', messageHandler);
@@ -106,12 +106,12 @@ async function createFigure(figureWebSocket) {
       };
 
       figureWebSocket.addEventListener('message', messageHandler);
-      figureWebSocket.send(String.fromCharCode(0));
+      await safeSend(figureWebSocket, String.fromCharCode(0));
     });
 
     let figure = new Line(FigureType.LINE, figureId, ['blue', '3'], []);
 
-    figureWebSocket.send(String.fromCharCode(1) + encode(figure));
+    await safeSend(figureWebSocket, String.fromCharCode(1) + encode(figure));
     await sleep(1000 / 60);
 
     for (let i = 0; i < 120; i++) {
@@ -120,7 +120,7 @@ async function createFigure(figureWebSocket) {
       const newFigureEncoded = encode(figure);
       const newFigurePart = newFigureEncoded.slice(oldFigureEncoded.length);
 
-      figureWebSocket.send(String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart);
+      await safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart);
       await sleep(1000 / 60);
     }
   } catch (e) {
@@ -132,5 +132,14 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function safeSend(webSocket, message) {
+  if (webSocket.readyState !== WebSocket.OPEN) {
+    await new Promise((resolve, _) => {
+      webSocket.onopen = resolve;
+    });
+  }
+  webSocket.send(message);
+}
+
 main()
-  .catch(console.error);
+  .catch(e => console.log(e));
