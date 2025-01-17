@@ -2,6 +2,7 @@
   "name": "est-test",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node src/main.js"
   },
@@ -13,7 +14,8 @@
     "coder": "file:../lib/coder",
     "est_proxy_api": "file:../api/build/est-proxy-js",
     "figures": "file:../lib/figures",
-    "paint": "file:../lib/paint"
+    "paint": "file:../lib/paint",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.7"
