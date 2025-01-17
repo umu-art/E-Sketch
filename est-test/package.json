@@ -1,0 +1,21 @@
+{
+  "name": "est-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "coder": "file:../lib/coder",
+    "est_proxy_api": "file:../api/build/est-proxy-js",
+    "figures": "file:../lib/figures",
+    "paint": "file:../lib/paint"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7"
+  }
+}
