@@ -73,6 +73,14 @@ async function imitateUserFrFrFr(board, authCookie) {
     },
   });
 
+  figureWebSocket.addEventListener('close', () => {
+    console.log('WebSocket disconnected from figures');
+  });
+
+  markerWebSocket.addEventListener('close', () => {
+    console.log('WebSocket disconnected from markers');
+  });
+
   await new Promise((resolve, _) => {
     markerWebSocket.onopen = resolve;
   });
@@ -86,6 +94,10 @@ async function imitateUserFrFrFr(board, authCookie) {
   }, 1000 / 60);
 
   for (let i = 0; i < 30; i++) {
+    await new Promise((resolve, _) => {
+      figureWebSocket.onopen = resolve;
+    });
+
     await createFigure(figureWebSocket);
   }
 
