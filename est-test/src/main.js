@@ -1,19 +1,27 @@
 import { BoardApi, UserApi } from 'est_proxy_api';
 import { FigureType, Line, Point } from 'figures/dist/index.js';
-import { encode } from 'coder/dist/index.js';
+import { encode, encodePoint } from 'coder/dist/index.js';
 import { WebSocket } from 'ws';
 
 let userApi = new UserApi();
 let boardApi = new BoardApi();
 
-const MAX_BOARD_COUNT = 4;
-const MAX_USER_COUNT = 4;
+const MAX_BOARD_COUNT = 16;
+const MAX_USER_COUNT = 16;
 
 async function main() {
+  const email = process.env.EST_TEST_EMAIL || 'est-test@mail.ru';
+  const passwordHash = process.env.EST_TEST_PASSWORD_HASH;
+
+  if (!passwordHash) {
+    console.error('EST_TEST_PASSWORD_HASH environment variable is not set');
+    process.exit(1);
+  }
+
   let authCookie = await userApi.loginWithHttpInfo({
     authDto: {
-      email: 'est-test@mail.ru',
-      passwordHash: '123',
+      email: email,
+      passwordHash: passwordHash,
     },
   }).then(resp => {
     return resp.response.headers['set-cookie'][0]
@@ -25,8 +33,8 @@ async function main() {
     Cookie: authCookie,
   };
 
-  for (let boardCount = 1; boardCount < MAX_BOARD_COUNT; boardCount++) {
-    for (let userCount = 1; userCount < MAX_USER_COUNT; userCount++) {
+  for (let boardCount = 1; boardCount <= MAX_BOARD_COUNT; boardCount *= 2) {
+    for (let userCount = 1; userCount <= MAX_USER_COUNT; userCount *= 2) {
       console.log('Starting with ' + boardCount + ' boards and ' + userCount + ' users');
       await Promise.all(Array(boardCount).fill(null).map((_, i) => {
         return boardApi.create({
@@ -66,12 +74,22 @@ async function imitateUserFrFrFr(board, authCookie) {
   });
 
   await new Promise((resolve, _) => {
+    markerWebSocket.onopen = resolve;
+  });
+
+  await new Promise((resolve, _) => {
     figureWebSocket.onopen = resolve;
   });
+
+  let u = setInterval(() => {
+    markerWebSocket.send(encodePoint(new Point(Math.random() * 1000, Math.random() * 1000)));
+  }, 1000 / 60);
 
   for (let i = 0; i < 30; i++) {
     await createFigure(figureWebSocket);
   }
+
+  clearInterval(u);
 
   figureWebSocket.close();
   markerWebSocket.close();
