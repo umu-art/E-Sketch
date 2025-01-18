@@ -45,7 +45,6 @@ async function main() {
           },
         }).then(board => imitateBoardFrFrFr(board, userCount));
       }));
-      console.log('Finished with ' + boardCount + ' boards and ' + userCount + ' users');
     }
   }
 }
@@ -63,8 +62,6 @@ async function imitateBoardFrFrFr(board, usersCount) {
 async function imitateUserFrFrFr(board) {
   let markerWebSocket = await connect('wss://e-sketch.ru/proxy/marker/ws?boardId=' + board.id);
   let figureWebSocket = await connect('wss://e-sketch.ru/proxy/figure/ws?boardId=' + board.id);
-
-  console.log('connected to ' + board.id);
 
   for (let i = 0; i < 30; i++) {
     await createFigure(figureWebSocket, markerWebSocket);
@@ -150,7 +147,6 @@ async function tryConnect(addr) {
 
     webSocket.addEventListener('open', () => {
       webSocket.addEventListener('close', () => {
-        console.log('WebSocket disconnected from ' + addr);
       });
       resolve(webSocket);
     });
