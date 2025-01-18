@@ -30,12 +30,10 @@ func (g GptServiceImpl) Request(
 		return models.GptResponseDto{}, err
 	}
 
-	prompt := "Что на изображении?"
-
-	gptResponse, statusError := g.gptApi.Request(prompt, image, request.Context())
+	gptResponse, statusError := g.gptApi.Request(requestDto.Prompt, image, request.Context())
 
 	if statusError != nil {
-		return models.GptResponseDto{}, err
+		return models.GptResponseDto{}, statusError
 	}
 
 	return models.GptResponseDto{
