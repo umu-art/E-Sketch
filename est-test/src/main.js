@@ -18,7 +18,7 @@ async function main() {
     process.exit(1);
   }
 
-  let authCookie = await userApi.loginWithHttpInfo({
+  global.authCookie = await userApi.loginWithHttpInfo({
     authDto: {
       email: email,
       passwordHash: passwordHash,
@@ -43,73 +43,40 @@ async function main() {
             description: 'This is a test board',
             linkSharedMode: 'none_by_link',
           },
-        }).then(board => imitateBoardFrFrFr(board, userCount, authCookie));
+        }).then(board => imitateBoardFrFrFr(board, userCount));
       }));
       console.log('Finished with ' + boardCount + ' boards and ' + userCount + ' users');
     }
   }
 }
 
-async function imitateBoardFrFrFr(board, usersCount, authCookie) {
+async function imitateBoardFrFrFr(board, usersCount) {
   const startTime = new Date().getTime();
 
   await Promise.all(Array(usersCount).fill(null)
     .map((_) => imitateUserFrFrFr(board, authCookie)));
 
   const endTime = new Date().getTime();
-  console.log('Board ' + board.id + ' with ' + usersCount + ' users imitated in ' + (endTime - startTime) + ' ms');
+  console.log('#!! Board ' + board.id + ' with ' + usersCount + ' users imitated in ' + (endTime - startTime) + ' ms !!#');
 }
 
-async function imitateUserFrFrFr(board, authCookie) {
-  let markerWebSocket = new WebSocket('wss://e-sketch.ru/proxy/marker/ws?boardId=' + board.id, {
-    headers: {
-      Cookie: authCookie,
-    },
-  });
+async function imitateUserFrFrFr(board) {
+  let markerWebSocket = await connect('wss://e-sketch.ru/proxy/marker/ws?boardId=' + board.id);
+  let figureWebSocket = await connect('wss://e-sketch.ru/proxy/figure/ws?boardId=' + board.id);
 
-  let figureWebSocket = new WebSocket('wss://e-sketch.ru/proxy/figure/ws?boardId=' + board.id, {
-    headers: {
-      Cookie: authCookie,
-    },
-  });
-
-  figureWebSocket.addEventListener('close', () => {
-    console.log('WebSocket disconnected from figures');
-  });
-
-  markerWebSocket.addEventListener('close', () => {
-    console.log('WebSocket disconnected from markers');
-  });
-
-  await new Promise((resolve, _) => {
-    markerWebSocket.onopen = resolve;
-  });
-
-  await new Promise((resolve, _) => {
-    figureWebSocket.onopen = resolve;
-  });
-
-  let u = setInterval(async () => {
-    await safeSend(markerWebSocket, encodePoint(new Point(Math.random() * 1000, Math.random() * 1000)));
-  }, 1000 / 60);
+  console.log('connected to ' + board.id);
 
   for (let i = 0; i < 30; i++) {
-    await new Promise((resolve, _) => {
-      figureWebSocket.onopen = resolve;
-    });
-
-    await createFigure(figureWebSocket);
+    await createFigure(figureWebSocket, markerWebSocket);
   }
-
-  clearInterval(u);
 
   figureWebSocket.close();
   markerWebSocket.close();
 }
 
-async function createFigure(figureWebSocket) {
+async function createFigure(figureWebSocket, markerWebSocket) {
   try {
-    let figureId = await new Promise(async (resolve, _) => {
+    let figureId = await new Promise((resolve, _) => {
       const messageHandler = (event) => {
         if (event.data.length === 36) {
           figureWebSocket.removeEventListener('message', messageHandler);
@@ -118,10 +85,10 @@ async function createFigure(figureWebSocket) {
       };
 
       figureWebSocket.addEventListener('message', messageHandler);
-      await safeSend(figureWebSocket, String.fromCharCode(0));
+      figureWebSocket.send(String.fromCharCode(0));
     });
 
-    let figure = new Line(FigureType.LINE, figureId, ['blue', '3'], []);
+    let figure = new Line(FigureType.LINE, figureId, ['blue', 3], []);
 
     await safeSend(figureWebSocket, String.fromCharCode(1) + encode(figure));
     await sleep(1000 / 60);
@@ -132,8 +99,11 @@ async function createFigure(figureWebSocket) {
       const newFigureEncoded = encode(figure);
       const newFigurePart = newFigureEncoded.slice(oldFigureEncoded.length);
 
-      await safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart);
-      await sleep(1000 / 60);
+      await Promise.all([
+        safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart),
+        safeSend(markerWebSocket, encodePoint(new Point(Math.random() * 1000, Math.random() * 1000))),
+        sleep(1000 / 60),
+      ]);
     }
   } catch (e) {
     console.log(e);
@@ -146,11 +116,53 @@ function sleep(ms) {
 
 async function safeSend(webSocket, message) {
   if (webSocket.readyState !== WebSocket.OPEN) {
-    await new Promise((resolve, _) => {
-      webSocket.onopen = resolve;
-    });
+    console.log('reopening');
+    webSocket = connect(webSocket.url);
   }
   webSocket.send(message);
+}
+
+async function connect(addr) {
+  const maxRetries = 5;
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      let webSocket = await tryConnect(addr);
+      if (webSocket) {
+        return webSocket;
+      }
+    } catch (error) {
+      console.log(`Connection attempt ${i + 1} failed: ${error.message}`);
+      if (i === maxRetries - 1) {
+        throw new Error('Unable to connect to WebSocket server after multiple attempts');
+      }
+    }
+  }
+}
+
+async function tryConnect(addr) {
+  return new Promise((resolve, reject) => {
+    let webSocket = new WebSocket(addr, {
+      headers: {
+        Cookie: authCookie,
+      },
+    });
+
+    webSocket.addEventListener('open', () => {
+      webSocket.addEventListener('close', () => {
+        console.log('WebSocket disconnected from ' + addr);
+      });
+      resolve(webSocket);
+    });
+
+    webSocket.addEventListener('error', (error) => {
+      if (error.error && error.error.code === 'ETIMEDOUT') {
+        reject(new Error('Connection timed out'));
+      } else {
+        reject(error);
+      }
+    });
+  });
 }
 
 main()
