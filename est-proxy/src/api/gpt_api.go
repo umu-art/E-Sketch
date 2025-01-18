@@ -23,7 +23,7 @@ func NewGptApi(httpClient *http.Client) *GptApi {
 type Payload struct {
 	Model     string    `json:"model"`
 	Messages  []Message `json:"messages"`
-	MaxTokens int       `json:"max_tokens"`
+	MaxTokens int       `json:"max_tokens,omitempty"`
 }
 
 type Message struct {
@@ -87,19 +87,21 @@ func (g GptApi) Request(
 		}
 	}(resp.Body)
 
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.NewStatusError(resp.StatusCode, "Failed to request response from GPT API")
-	}
-
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("GPT API response: %s\n", string(body))
 		return "", errors.NewStatusError(http.StatusInternalServerError, "Failed to read response body")
 	}
-	println("GPT API response: %s\n", string(body))
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("GPT API response: %s\n", string(body))
+		return "", errors.NewStatusError(resp.StatusCode, "Failed to request response from GPT API")
+	}
 
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
+		log.Printf("GPT API response: %s\n", string(body))
 		return "", errors.NewStatusError(http.StatusInternalServerError, "Failed to unmarshal response body")
 	}
 
@@ -121,13 +123,12 @@ func toPayload(prompt string, image []byte) Payload {
 	}
 
 	return Payload{
-		Model: "o1",
+		Model: "gpt-4o",
 		Messages: []Message{
 			{
 				Role:    "user",
 				Content: []ContentObject{preContent, imageContent},
 			},
 		},
-		MaxTokens: 300,
 	}
 }
