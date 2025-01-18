@@ -96,11 +96,18 @@ async function createFigure(figureWebSocket, markerWebSocket) {
       const newFigureEncoded = encode(figure);
       const newFigurePart = newFigureEncoded.slice(oldFigureEncoded.length);
 
-      await Promise.all([
-        safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart),
-        safeSend(markerWebSocket, encodePoint(new Point(Math.random() * 1000, Math.random() * 1000))),
-        sleep(1000 / 60),
-      ]);
+      if (i % 2 === 0) {
+        await Promise.all([
+          safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart),
+          safeSend(markerWebSocket, encodePoint(new Point(Math.random() * 1000, Math.random() * 1000))),
+          sleep(1000 / 60),
+        ]);
+      } else {
+        await Promise.all([
+          safeSend(figureWebSocket, String.fromCharCode(3) + String.fromCharCode(figure.type) + figure.id + newFigurePart),
+          sleep(1000 / 60),
+        ]);
+      }
     }
   } catch (e) {
     console.log(e);
