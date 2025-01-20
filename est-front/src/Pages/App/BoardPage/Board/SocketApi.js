@@ -58,7 +58,7 @@ export function changeFigure(figure) {
 }
 
 export function deleteFigure(figureId) {
-  figureWebSocket.send(String.fromCharCode(2) + figureId);
+  figureWebSocket.send(String.fromCharCode(2) + String.fromCharCode(0) + figureId);
 }
 
 export function updateFigure(newFigure, oldFigure) {
