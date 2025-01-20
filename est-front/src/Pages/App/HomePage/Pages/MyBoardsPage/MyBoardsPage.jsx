@@ -17,6 +17,7 @@ apiInstance.apiClient.basePath = Config.back_url
 
 const MyBoardsPage = () => {
     const [boards, setBoards] = useState(null);
+    const [recentBoards, setRecentBoards] = useState(null);
 
     const [createBoardModalOpen, setCreateBoardModalOpen] = useState(false);
 
@@ -26,6 +27,7 @@ const MyBoardsPage = () => {
     useEffect(() => {
         apiInstance.list().then((data) => {
             setBoards(data.mine);
+            setRecentBoards(data.recent);
         }).catch((error) => {
             navigate("/auth/signin");
             console.log(error);
@@ -53,16 +55,43 @@ const MyBoardsPage = () => {
             >
                 <CreateBoardForm/>
             </Modal>
+
+            {
+                recentBoards === null || recentBoards === undefined || recentBoards.length === 0 || (boards === null || boards.length <= 4) ? null :
+                <>
+                <Flex className="w100p" align='left' justify='space-between'>
+                    <Typography.Title style={{ margin: 0 }}>
+                        Недавние
+                    </Typography.Title>
+                </Flex>
+
+                <Divider></Divider>
+
+                <Flex className='w100p' align='left' vertical>
+                    <Flex wrap gap="large" style={{ width: 'auto' }}>
+                        {
+                            recentBoards === null ?
+                                <LoadingOutlined/>
+                                :
+                                recentBoards.map(
+                                    (board, i) =>
+                                        <BoardCard data={board} key={i}/>
+                                )
+                        }
+                    </Flex>
+                </Flex>
+                <Divider></Divider>
+                </>
+            }
             <Flex className="w100p" align='center' justify='space-between'>
                 <Typography.Title style={{ margin: 0 }}>
                     Мои доски
                 </Typography.Title>
-                <Button icon={<PlusOutlined/>} type='primary' onClick={() => setCreateBoardModalOpen(true)}>Новая
-                    доска</Button>
+                <Button icon={<PlusOutlined/>} type='primary' onClick={() => setCreateBoardModalOpen(true)}>Новая доска</Button>
             </Flex>
 
             <Divider></Divider>
-            <Flex className='w100p' align='center' vertical>
+            <Flex className='w100p' align='left' vertical>
                 <Flex wrap gap="large" style={{ width: 'auto' }}>
                     {
                         boards === null ?

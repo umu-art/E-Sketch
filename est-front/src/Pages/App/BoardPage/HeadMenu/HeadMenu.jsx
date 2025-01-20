@@ -5,6 +5,8 @@ import { EllipsisOutlined, LockOutlined, UploadOutlined } from '@ant-design/icon
 import { BoardApi, UserApi } from 'est_proxy_api';
 import useMessage from 'antd/es/message/useMessage';
 
+import classes from './HeadMenu.module.css';
+
 const boardApiInstance = new BoardApi();
 const userApiInstance = new UserApi();
 
@@ -172,7 +174,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
   };
 
   return (
-    <Flex className="w100p" justify="space-between" style={{ zIndex: 10 }}>
+    <Flex className={`w100p ${classes.top}`} justify="space-between" style={{ zIndex: 15 }}>
       {contextHolder}
       <Modal
         title={
@@ -186,7 +188,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
         onCancel={handleCancel}
         footer={[
           <Button type="default" onClick={handleCancel} key="cancel">Отмена</Button>,
-          <Button type="primary" onClick={share} key="share    ">Поделиться</Button>,
+          <Button type="primary" onClick={share} key="share">Поделиться</Button>,
         ]}
       >
         <Flex vertical gap="middle">

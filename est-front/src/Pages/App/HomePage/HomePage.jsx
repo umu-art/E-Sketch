@@ -6,6 +6,7 @@ import { Flex } from 'antd';
 
 import Menu from './Menu/Menu.jsx';
 import MyBoardsPage from './Pages/MyBoardsPage/MyBoardsPage.jsx';
+import SharedBoardsPage from './Pages/SharedBoardsPage/SharedBoardsPage.jsx';
 
 
 const HomePage = () => {
@@ -15,9 +16,10 @@ const HomePage = () => {
                 <Menu/>
             </Flex>
             <Routes>
-                <Route path='my' element={<MyBoardsPage/>}/>
-                <Route path='*' element={<Navigate to="my"/>}/>
-                <Route path='' element={<Navigate to="my"/>}/>
+                <Route path='my' element={<MyBoardsPage />}/>
+                <Route path='shared' element={<SharedBoardsPage />}/>
+                <Route path='*' element={<Navigate to="my" />}/>
+                <Route path='' element={<Navigate to="my" />}/>
             </Routes>
         </Flex>
     );

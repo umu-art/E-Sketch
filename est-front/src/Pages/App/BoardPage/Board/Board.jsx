@@ -1,14 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Board as BoardController } from 'paint/dist';
 import { registerDrawListener } from './Paint';
 import { connectToFigures, connectToMarkers, figureWebSocket } from './SocketApi';
 import { registerMarkersListener } from './Markers';
 
-const Board = ({ className, style, boardId }) => {
-  const width = '100vw';
-  const height = '100vh';
+import pencilIcon from './pencil.svg';
+import eraserIcon from './eraser.svg';
 
+const toolsIcons = {
+  "pencil": pencilIcon,
+  "eraser": eraserIcon,
+}
+
+const Board = ({ className, style, boardId, currentTool }) => {
   const boardControllerRef = useRef(null);
+  const [cursor, setCursor] = useState(currentTool);
+
+  useEffect(() => {
+    setCursor(currentTool);
+  }, [currentTool]);
 
   useEffect(() => {
     if (boardControllerRef.current)
@@ -30,10 +40,8 @@ const Board = ({ className, style, boardId }) => {
 
   return (<svg
     id={boardId}
-    width={width}
-    height={height}
-    className={className}
-    style={{ ...style, backgroundColor: 'white', overflow: 'hidden', zIndex: 5 }}
+    className={`${className} board`}
+    style={{ ...style, backgroundColor: 'white', overflow: 'hidden', zIndex: 5, cursor: `url(${toolsIcons[cursor]}), auto` }}
   ></svg>);
 };
 

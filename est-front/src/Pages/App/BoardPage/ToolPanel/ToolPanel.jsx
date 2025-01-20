@@ -13,7 +13,7 @@ const ToolPanel = ({ onToolChange }) => {
   };
 
   return (
-    <Card size="small" className="shadow" style={{ zIndex: 10 }}>
+    <Card size="small" className="shadow" style={{ zIndex: 15 }}>
       <Flex gap="small" align="center">
         <Button
           type={selectedTool === 'pencil' ? 'primary' : 'default'}

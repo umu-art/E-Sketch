@@ -16,7 +16,7 @@ const BoardCard = (
     const [data, setData] = useState(boardData.data)
     const navigate = useNavigate();
     const [updateBoardModalOpen, setUpdateBoardModalOpen] = useState(false)
-
+    
     if (!data) {
         return (
             <Card
@@ -32,11 +32,11 @@ const BoardCard = (
                            preview={false}
                     />
                 }
-                actions={[
+                actions={boardData.editable !== false ? [
                     <SettingOutlined key="setting"/>,
                     <EditOutlined key="edit" onClick={() => setUpdateBoardModalOpen(true)}/>,
                     <EllipsisOutlined key="ellipsis"/>,
-                ]}
+                ] : []}
             >
                 <Meta/>
             </Card>
@@ -59,11 +59,11 @@ const BoardCard = (
                        onClick={() => navigate('/app/board/' + data.id)}
                 />
             }
-            actions={[
+            actions={(boardData.editable !== false ? [
                 <SettingOutlined key="setting"/>,
                 <EditOutlined key="edit" onClick={() => setUpdateBoardModalOpen(true)}/>,
                 <EllipsisOutlined key="ellipsis"/>,
-            ]}
+            ] : [])}
         >
             <Modal
                 centered
