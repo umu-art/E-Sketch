@@ -1,0 +1,7 @@
+.top {
+    pointer-events: none;
+}
+
+.top > * {
+    pointer-events: auto;
+}

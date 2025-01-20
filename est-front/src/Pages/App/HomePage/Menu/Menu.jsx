@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { AppstoreOutlined, LinkOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { UserApi } from 'est_proxy_api';
+import { Link } from 'react-router-dom';
 
 
 const items = (data) => [
@@ -30,17 +31,12 @@ const items = (data) => [
         children: [
             {
                 key: "all",
-                icon: <AppstoreOutlined/>,
+                icon: <Link to="my"><AppstoreOutlined/></Link>,
                 label: "Мои доски",
             },
-            // {
-            //     key: "recent",
-            //     icon: <ClockCircleOutlined />,
-            //     label: "Недавние",
-            // },
             {
                 key: "shared",
-                icon: <LinkOutlined/>,
+                icon: <Link to="shared"><LinkOutlined /></Link>,
                 label: "Поделились со мной",
             },
         ]
