@@ -114,3 +114,15 @@ void BoardController::markAsRecent(const HttpRequestPtr& req, std::function<void
     resp->setBody("OK");
     callback(resp);
 }
+void BoardController::recentsByMinute(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback,
+                                      uint32_t minutes) {
+    org::openapitools::server::model::RecentBoardIdListDto recentBoardIdListDto =
+        est_back::service::getRecentsByMinute(minutes);
+    nlohmann::json j;
+    org::openapitools::server::model::to_json(j, recentBoardIdListDto);
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(j.dump());
+    callback(resp);
+}

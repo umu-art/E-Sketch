@@ -162,6 +162,23 @@ paths:
         200:
           description: Успеха
 
+  /back/board/recents:
+    get:
+      tags:
+        - board
+      summary: Получение список всех досок, по которым была активность за последние n минут
+      operationId: recentsByMinute
+      parameters:
+        - $ref: "#/components/parameters/Minutes"
+      responses:
+        200:
+          description: Успеха
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecentBoardIdListDto"
+
+
   #################################### Figure ####################################
   /back/figure/list/{boardId}:
     get:
@@ -263,6 +280,14 @@ components:
       schema:
         type: string
         format: uuid
+
+    Minutes:
+      in: query
+      name: minutes
+      required: true
+      description: Минуты
+      schema:
+        type: integer
 
   schemas:
     BackBoardDto:
@@ -385,3 +410,12 @@ components:
         id:
           type: string
           format: uuid
+
+    RecentBoardIdListDto:
+      required:
+        - boards
+      properties:
+        boards:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardIdDto"

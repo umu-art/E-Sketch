@@ -8,6 +8,7 @@
 #include "../../api/build/est-back-cpp/model/UpsertBoardDto.h"
 #include "../../api/build/est-back-cpp/model/UnshareBoardDto.h"
 #include "../../api/build/est-back-cpp/model/BoardIdDto.h"
+#include "../../api/build/est-back-cpp/model/RecentBoardIdListDto.h"
 namespace est_back::service {
     namespace osm = org::openapitools::server::model;
     std::string toUpper(const std::string& s) {
@@ -266,6 +267,26 @@ namespace est_back::service {
             board.setSharedWith(sharedWith[board.getId()]);
         }
         return recentBoards;
+    }
+
+    osm::RecentBoardIdListDto getRecentsByMinute(uint32_t minutes) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        std::string minStr = "'" + std::to_string(minutes) + " minutes';";
+        auto res = clientPtr
+                       ->execSqlAsyncFuture(
+                           "select distinct board_id from recent_board "
+                           "where last_used >= now() - interval " +
+                           minStr)
+                       .get();
+        std::vector<osm::BoardIdDto> recentsBoardId;
+        for (const auto& row : res) {
+            osm::BoardIdDto boardIdDto;
+            boardIdDto.setId(row["board_id"].as<std::string>());
+            recentsBoardId.push_back(boardIdDto);
+        }
+        osm::RecentBoardIdListDto recentBoardIdListDto;
+        recentBoardIdListDto.setBoards(recentsBoardId);
+        return recentBoardIdListDto;
     }
 
 }  // namespace est_back::service
