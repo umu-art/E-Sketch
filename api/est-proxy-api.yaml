@@ -90,6 +90,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserDto"
 
+  /proxy/user/logout:
+    post:
+      tags:
+        - user
+      summary: Выйти из сессии
+      operationId: logout
+      responses:
+        200:
+          description: Успешно
+
   /proxy/user/{userId}:
     get:
       tags:

@@ -6,6 +6,8 @@ import (
 	"est-proxy/src/service/impl"
 	proxymodels "est_proxy_go/models"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -84,6 +86,26 @@ func (u UserListener) Login(ctx echo.Context) error {
 	ctx.SetCookie(cookie)
 
 	return ctx.String(http.StatusOK, "Вход в аккаунт выполнен успешно")
+}
+
+func (u UserListener) Logout(ctx echo.Context) error {
+	sessionUserId := impl.GetSessionUserId(ctx)
+	if sessionUserId == nil {
+		log.Printf("Tried to logout from session without session")
+		return ctx.JSON(http.StatusOK, "Выход из аккаунта выполнен успешно")
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = config.JWT_COOKIE_NAME
+	cookie.Value = ""
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	cookie.Expires = time.Unix(0, 0)
+	cookie.SameSite = http.SameSiteNoneMode // for debug only; TODO: remove
+	ctx.SetCookie(cookie)
+
+	return ctx.JSON(http.StatusOK, "Выход из аккаунта выполнен успешно")
 }
 
 func (u UserListener) Register(ctx echo.Context) error {
