@@ -9,9 +9,16 @@ const FPS = 60;
 export const BASE_OFFSET_X = 0;
 export const BASE_OFFSET_Y = 20;
 
+export const DrawingStates = {
+  IDLE: 'idle',
+  CREATING: 'creating',
+  DRAWING: 'drawing',
+};
+
+
 export const drawing = {
-  tool: "pencil",
-  isDrawing: false,
+  tool: 'pencil',
+  state: DrawingStates.IDLE,
   nowX: 0,
   nowY: 0,
   lineColor: 'red',
@@ -26,7 +33,7 @@ export function registerDrawListener(board, boardController) {
   let oldCurrentFigure;
   let isMoving = false;
 
-  let isMouseDown = false;  
+  let isMouseDown = false;
 
   d3.select('.board')
     .on('mousedown', function(event) {
@@ -44,11 +51,11 @@ export function registerDrawListener(board, boardController) {
         return;
 
       if (drawing.tool !== 'eraser' || !isMouseDown)
-        return; 
+        return;
 
       const pathId = d3.select(target).attr('id');
-      
-      boardController.removeFigure(pathId); 
+
+      boardController.removeFigure(pathId);
       deleteFigure(pathId);
     });
 
@@ -69,15 +76,16 @@ export function registerDrawListener(board, boardController) {
     e.preventDefault();
 
     if (e.button === 0 && drawing.tool === 'pencil') {
-      createFigure((uuid) => {
-        currentFigure = new Line(FigureType.LINE, uuid, [drawing.lineColor, drawing.lineWidth], []);
+      drawing.state = DrawingStates.CREATING;
+      currentFigure = new Line(FigureType.LINE, 'waiting', [drawing.lineColor, drawing.lineWidth], []);
+      oldCurrentFigure = null;
 
-        oldCurrentFigure = null;
-        drawing.isDrawing = true;
+      createFigure((uuid) => {
+        currentFigure.id = uuid;
+        drawing.state = DrawingStates.DRAWING;
       });
     } else if (e.button === 0 && drawing.tool === 'eraser') {
-    }
-    else if (e.button === 2) {
+    } else if (e.button === 2) {
       isMoving = true;
 
       drawing.startX = e.clientX;
@@ -85,20 +93,34 @@ export function registerDrawListener(board, boardController) {
     }
   }
 
+  function finishDrawing() {
+    drawing.state = DrawingStates.IDLE;
+    boardController.upsertFigure(currentFigure);
+
+    triggerUpdateFigure(currentFigure, oldCurrentFigure);
+    oldCurrentFigure = cloneLine(currentFigure);
+  }
+
+  function waitForDrawingState() {
+    if (drawing.state === DrawingStates.DRAWING) {
+      finishDrawing();
+    } else {
+      setTimeout(waitForDrawingState, 50);
+    }
+  }
+
   function handleMouseUp(e) {
     e.preventDefault();
 
     if (e.button === 0 && drawing.tool === 'pencil') {
-      if (!currentFigure) {
-        return;
+      switch (drawing.state) {
+        case DrawingStates.CREATING:
+          waitForDrawingState();
+          break;
+        case DrawingStates.DRAWING:
+          finishDrawing();
+          break;
       }
-
-      drawing.isDrawing = false;
-      
-      boardController.upsertFigure(currentFigure);
-      
-      triggerUpdateFigure(currentFigure, oldCurrentFigure);
-      oldCurrentFigure = cloneLine(currentFigure);
     } else if (e.button === 2) {
       isMoving = false;
     }
@@ -128,7 +150,7 @@ export function registerDrawListener(board, boardController) {
 
   function handleWheel(event) {
     event.preventDefault();
-    
+
     const scaleChange = event.deltaY < 0 ? 1.1 : 0.9;
 
     const rect = board.getBoundingClientRect();
@@ -145,16 +167,19 @@ export function registerDrawListener(board, boardController) {
 
     drawing.offsetX = -(drawing.nowX - cursorX / scaleChange);
     drawing.offsetY = -(drawing.nowY - cursorY / scaleChange);
-    
+
     board.setAttribute('viewBox', `${-drawing.offsetX} ${-drawing.offsetY} ${newWidth} ${newHeight}`);
   }
 
   function updateDrawing() {
-    if (drawing.isDrawing) {
-      currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
-      
-      boardController.upsertFigure(currentFigure);
-      
+    if (drawing.state === DrawingStates.IDLE) {
+      return;
+    }
+
+    currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
+    boardController.upsertFigure(currentFigure);
+
+    if (drawing.state === DrawingStates.DRAWING) {
       triggerUpdateFigure(currentFigure, oldCurrentFigure);
       oldCurrentFigure = cloneLine(currentFigure);
     }
@@ -169,11 +194,11 @@ export function registerDrawListener(board, boardController) {
   function handleUpdateFigure(id, data) {
     if (!currentFigure || id !== currentFigure.id) {
       const updatableFigure = boardController.figures.find((figure) => figure.id === id);
-      
+
       if (updatableFigure) {
         const encoded = encode(updatableFigure);
         const decoded = decode(encoded + data);
-        
+
         boardController.upsertFigure(decoded);
       }
     }
@@ -190,6 +215,6 @@ function triggerUpdateFigure(newFigure, oldFigure) {
 
 function cloneLine(line) {
   const newPoints = line.points.map((point) => new Point(point.x, point.y));
-  
+
   return new Line(line.type, line.id, [line.color, line.thickness], newPoints);
 }
