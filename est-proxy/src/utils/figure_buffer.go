@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"est-proxy/src/config"
 	"github.com/dustinxie/lockfree"
 	"log"
 	"time"
@@ -34,9 +35,19 @@ func (fb *FigureBuffer) Add(figureId string, newData []byte) {
 	})
 }
 
+func (fb *FigureBuffer) Remove(figureId string) bool {
+	_, flag := fb.data.Get(figureId)
+	if flag == false {
+		return false
+	}
+	log.Printf("Deleted figure %s from buffer", figureId) //for debug TODO: remove this
+	fb.data.Del(figureId)
+	return true
+}
+
 func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 	for {
-		time.Sleep(3 * time.Second)
+		time.Sleep(config.BUFFERED_FIGURE_LIVE_TIME)
 
 		if fb.bufferedFigures.Len() == 0 {
 			continue
@@ -48,13 +59,12 @@ func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 			figureId := fb.bufferedFigures.Deque().(string)
 			figureData, figureExists := fb.data.Get(figureId)
 			if !figureExists {
-				log.Printf("Figure %s not found in buffer", figureId)
+				log.Printf("Figure %s not found in buffer", figureId) //for debug TODO: remove this
 				continue
 			}
-			if time.Now().Sub(figureData.(figureUpdateData).time) > 3*time.Second {
+			if time.Now().Sub(figureData.(figureUpdateData).time) > config.BUFFERED_FIGURE_LIVE_TIME {
 				callback(figureId, figureData.(figureUpdateData).data)
 				fb.data.Del(figureId)
-				log.Printf("%s has been removed from the buffer", figureId)
 			} else {
 				inWorkFigures.Enque(figureId)
 			}

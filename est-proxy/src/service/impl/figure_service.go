@@ -154,6 +154,9 @@ func (l *WsFigureServiceImpl) addFigure(conn ws.Connection, boardId *uuid.UUID) 
 }
 
 func (l *WsFigureServiceImpl) deleteFigure(boardId uuid.UUID, figureId uuid.UUID) error {
+	if l.figureBuffer.Remove(figureId.String()) {
+		return nil
+	}
 	_, err := l.figureApi.DeleteFigure(context.Background(), figureId.String()).Execute()
 	if err != nil {
 		return fmt.Errorf("error back deleting figure: %v", err)
@@ -204,14 +207,14 @@ func (l *WsFigureServiceImpl) getFigures(conn ws.Connection, boardId *uuid.UUID)
 func (l *WsFigureServiceImpl) UpdateFigure(figureId string, figureData []byte) {
 	figureDto, _, err := l.figureApi.GetFigure(context.Background(), figureId).Execute()
 	if err != nil {
-		log.Printf("error getting figure: %v", err)
+		log.Printf("Error getting figure: %v", err)
 	}
 
 	figureDto.Data += string(figureData)
 
 	_, err = l.figureApi.UpdateFigure(context.Background(), figureId).FigureDto(*figureDto).Execute()
 	if err != nil {
-		log.Printf("error updating figure: %v", err)
+		log.Printf("Error updating figure: %v", err)
 	}
 }
 
