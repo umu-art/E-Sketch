@@ -54,7 +54,8 @@ create table if not exists board_sharing
     board_id     uuid      not null,
     sharing_mode varchar(16),
     foreign key (user_id) references users (id),
-    foreign key (board_id) references board (id)
+    foreign key (board_id) references board (id),
+    unique (board_id, user_id)
 );
 
 create trigger update_board_sharing_timestamp
