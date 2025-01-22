@@ -35,7 +35,6 @@ const Board = ({ className, style, boardId, currentTool }) => {
     });
 
     registerMarkersListener(boardElement);
-
   }, [boardId]);
 
   return (<svg
