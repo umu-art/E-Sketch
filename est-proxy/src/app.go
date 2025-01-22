@@ -59,7 +59,7 @@ func main() {
 	figureBuffer := utils.NewFigureBuffer()
 
 	//BoardService
-	boardService := serviceimpl.NewBoardServiceImpl(backApi.BoardAPI, userRepository)
+	boardService := serviceimpl.NewBoardServiceImpl(backApi.BoardAPI, previewApi, userRepository)
 
 	//FigureService
 	figureService := serviceimpl.NewWsFigureServiceImpl(
