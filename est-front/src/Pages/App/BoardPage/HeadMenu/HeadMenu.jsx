@@ -171,6 +171,8 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
         content: error.response ? error.response.text : 'Что-то пошло не так ;(',
       });
     });
+
+    setAccessSettingsData(defaultAccessSettingsData);
   };
 
   return (
