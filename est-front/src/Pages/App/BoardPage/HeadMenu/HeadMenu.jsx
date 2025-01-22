@@ -85,7 +85,7 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
 
   if (!active) {
     return (
-      <div key={user.id}></div>
+      <div></div>
     );
   }
 
@@ -195,12 +195,17 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
           <Divider style={{ margin: '8px 0 0 0' }} />
           <Typography.Title level={5} style={{ margin: 0 }}>Пользователи, имеющие доступ</Typography.Title>
           <Flex vertical gap="small">
-            <UserAvatar user={data.ownerInfo} access={'owner'} key={data.ownerInfo.id} />
+            <div key={"owner-" + data.ownerInfo.id}>
+              <UserAvatar user={data.ownerInfo} access={'owner'} />
+            </div>
             {
               data.sharedWith.map(
                 (userData) => (
-                  <UserAvatar user={userData.userInfo} access={userData.access} boardId={data.id}
-                              refreshData={refreshData} key={userData.id} />
+                  <div key={userData.userInfo.id}>
+                    <UserAvatar user={userData.userInfo} access={userData.access} boardId={data.id}
+                              refreshData={refreshData} />
+                  </div>
+                  
                 ),
               )
             }
@@ -218,7 +223,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
             onChange={(val) => setSearchValue(val)}
             onSelect={(id) => {
               accessSettingsData.userId = id;
-              setAccessSettingsData(accessSettingsData);
+              setAccessSettingsData({...accessSettingsData});
             }}
             notFoundContent={null}
             placeholder="Выберите пользователя, которому хотите дать доступ"
@@ -251,7 +256,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
             buttonStyle="solid"
             onChange={(e) => {
               accessSettingsData.access = e.target.value;
-              setAccessSettingsData(accessSettingsData);
+              setAccessSettingsData({...accessSettingsData});
             }}
           />
           <div />

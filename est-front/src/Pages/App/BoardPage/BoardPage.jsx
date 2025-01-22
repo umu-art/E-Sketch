@@ -8,7 +8,6 @@ import LoadingPage from '../../LoadingPage/LoadingPage';
 import HeadMenu from './HeadMenu/HeadMenu';
 
 import { drawing } from './Board/Paint';
-import ErrorPage from '../../ErrorPages/ErrorPage';
 
 const apiInstance = new BoardApi();
 
@@ -16,7 +15,6 @@ const BoardPage = () => {
   const { boardId } = useParams();
   const [data, setData] = useState(null);
   const [tool, setTool] = useState(drawing.tool);
-  const [err, setErr] = useState(null);
 
   const navigate = useNavigate();
 
@@ -29,28 +27,19 @@ const BoardPage = () => {
   };
 
   const refreshBoardData = () => {
-    if (!data && !err) {
       apiInstance.getByUuid(boardId).then((data) => {
         setData(data);
+        console.log(data);
       }).catch((error) => {
-        if (error.code === 401) {
-          navigate('/auth/signin');
-        } else {
-          setErr(error);
-        }
+        navigate('/app/home/my');
       });
-    }
   };
 
   useEffect(() => {
-    refreshBoardData();
+    if (!data) {
+      refreshBoardData();
+    }
   });
-
-  if (err) {
-    return (
-      <ErrorPage status={err.status === 400 ? 404 : err.status} />
-    );
-  }
 
   if (!data) {
     return (
