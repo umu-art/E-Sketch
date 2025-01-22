@@ -31,6 +31,8 @@ const JWT_DURATION_TIME = time.Hour * 48
 
 const JWT_COOKIE_NAME string = "estu"
 
+const BUFFERED_FIGURE_LIVE_TIME time.Duration = 500 * time.Millisecond
+
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",
 	"/register",
