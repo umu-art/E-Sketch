@@ -154,20 +154,23 @@ func (l *WsFigureServiceImpl) addFigure(conn ws.Connection, boardId *uuid.UUID) 
 }
 
 func (l *WsFigureServiceImpl) deleteFigure(boardId uuid.UUID, figureId uuid.UUID) error {
+	l.notifyChangedFigure(boardId, []byte("-"+figureId.String()))
+
 	if l.figureBuffer.Remove(figureId.String()) {
 		return nil
 	}
+
 	_, err := l.figureApi.DeleteFigure(context.Background(), figureId.String()).Execute()
 	if err != nil {
 		return fmt.Errorf("error back deleting figure: %v", err)
 	}
 
-	l.notifyChangedFigure(boardId, []byte("-"+figureId.String()))
-
 	return nil
 }
 
 func (l *WsFigureServiceImpl) changeFigure(boardId uuid.UUID, figureId uuid.UUID, rawFigure []byte) error {
+	l.notifyChangedFigure(boardId, rawFigure)
+
 	figureDto := estbackapi.FigureDto{
 		Data: string(rawFigure),
 	}
@@ -177,15 +180,13 @@ func (l *WsFigureServiceImpl) changeFigure(boardId uuid.UUID, figureId uuid.UUID
 		return fmt.Errorf("error back updating figure: %v", err)
 	}
 
-	l.notifyChangedFigure(boardId, rawFigure)
-
 	return nil
 }
 
 func (l *WsFigureServiceImpl) updateFigure(boardId uuid.UUID, figureId uuid.UUID, rawFigure []byte) error {
-	l.figureBuffer.Add(figureId.String(), rawFigure[37:])
-
 	l.notifyChangedFigure(boardId, []byte("+"+string(rawFigure)))
+
+	l.figureBuffer.Add(figureId.String(), rawFigure[37:])
 
 	return nil
 }
