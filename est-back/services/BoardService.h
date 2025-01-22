@@ -207,9 +207,12 @@ namespace est_back::service {
         auto clientPtr = drogon::app().getDbClient("est-data");
         auto sharingDtoJson = nlohmann::json::object();
         osm::to_json(sharingDtoJson, sharingDto);
-        clientPtr->execSqlSync("insert into board_sharing(id, board_id, user_id, sharing_mode) values($1, $2, $3, $4);",
-                               drogon::utils::getUuid(), boardId, sharingDto.getUserId(),
-                               toUpper(sharingDtoJson["access"].get<std::string>()));
+        clientPtr->execSqlSync(
+            "INSERT INTO board_sharing(id, board_id, user_id, sharing_mode) "
+            "VALUES($1, $2, $3, $4) "
+            "ON CONFLICT (board_id, user_id) DO NOTHING;",
+            drogon::utils::getUuid(), boardId, sharingDto.getUserId(),
+            toUpper(sharingDtoJson["access"].get<std::string>()));
     }
 
     void updateShare(const osm::BackSharingDto& sharingDto, const std::string& boardId) {
