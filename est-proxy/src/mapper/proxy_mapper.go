@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"context"
 	"est-proxy/src/models"
 	estbackapi "est_back_go"
 	proxymodels "est_proxy_go/models"
@@ -24,12 +23,20 @@ func MapUserListToProxy(users []models.PublicUser) *[]proxymodels.UserDto {
 	return &dtos
 }
 
-func MapBackBoardToProxy(ctx context.Context, dto estbackapi.BackBoardDto, getUsersList func(context.Context, []string) []models.PublicUser) *proxymodels.BoardDto {
-	userDtos := getMappedBackBoardUserIds(ctx, []estbackapi.BackBoardDto{dto}, getUsersList)
-	return mapBackBoardDtoToProxy(dto, userDtos)
+func MapBackBoardToProxy(
+	dto estbackapi.BackBoardDto,
+	getUsersList GetUsersFunc,
+	getPreviewToken GetPreviewTokenFunc) *proxymodels.BoardDto {
+
+	userDtos := getMappedBackBoardUserIds([]estbackapi.BackBoardDto{dto}, getUsersList)
+	return mapBackBoardDtoToProxy(dto, userDtos, getPreviewToken)
 }
 
-func MapManyBoardsToProxy(ctx context.Context, list *estbackapi.BackBoardListDto, getUsersList func(context.Context, []string) []models.PublicUser) *proxymodels.BoardListDto {
+func MapManyBoardsToProxy(
+	list *estbackapi.BackBoardListDto,
+	getUsersList GetUsersFunc,
+	getPreviewToken GetPreviewTokenFunc) *proxymodels.BoardListDto {
+
 	mine := make([]proxymodels.BoardDto, 0)
 	shared := make([]proxymodels.BoardDto, 0)
 	recent := make([]proxymodels.BoardDto, 0)
@@ -39,18 +46,18 @@ func MapManyBoardsToProxy(ctx context.Context, list *estbackapi.BackBoardListDto
 	boardDtos = append(boardDtos, list.Shared...)
 	boardDtos = append(boardDtos, list.Recent...)
 
-	userDtos := getMappedBackBoardUserIds(ctx, boardDtos, getUsersList)
+	userDtos := getMappedBackBoardUserIds(boardDtos, getUsersList)
 
 	for _, dto := range list.Mine {
-		mine = append(mine, *mapBackBoardDtoToProxy(dto, userDtos))
+		mine = append(mine, *mapBackBoardDtoToProxy(dto, userDtos, getPreviewToken))
 	}
 
 	for _, dto := range list.Shared {
-		shared = append(shared, *mapBackBoardDtoToProxy(dto, userDtos))
+		shared = append(shared, *mapBackBoardDtoToProxy(dto, userDtos, getPreviewToken))
 	}
 
 	for _, dto := range list.Recent {
-		recent = append(recent, *mapBackBoardDtoToProxy(dto, userDtos))
+		recent = append(recent, *mapBackBoardDtoToProxy(dto, userDtos, getPreviewToken))
 	}
 
 	return &proxymodels.BoardListDto{
@@ -60,7 +67,10 @@ func MapManyBoardsToProxy(ctx context.Context, list *estbackapi.BackBoardListDto
 	}
 }
 
-func getMappedBackBoardUserIds(ctx context.Context, boards []estbackapi.BackBoardDto, getUsersList func(context.Context, []string) []models.PublicUser) map[string]models.PublicUser {
+func getMappedBackBoardUserIds(
+	boards []estbackapi.BackBoardDto,
+	getUsersList GetUsersFunc) map[string]models.PublicUser {
+
 	userIds := make([]string, 0)
 	for _, board := range boards {
 		userIds = append(userIds, board.OwnerId)
@@ -69,7 +79,7 @@ func getMappedBackBoardUserIds(ctx context.Context, boards []estbackapi.BackBoar
 		}
 	}
 
-	users := getUsersList(ctx, userIds)
+	users := getUsersList(userIds)
 
 	mappedUsers := make(map[string]models.PublicUser)
 	for _, user := range users {
@@ -79,7 +89,11 @@ func getMappedBackBoardUserIds(ctx context.Context, boards []estbackapi.BackBoar
 	return mappedUsers
 }
 
-func mapBackBoardDtoToProxy(dto estbackapi.BackBoardDto, userDtos map[string]models.PublicUser) *proxymodels.BoardDto {
+func mapBackBoardDtoToProxy(
+	dto estbackapi.BackBoardDto,
+	userDtos map[string]models.PublicUser,
+	getPreviewToken GetPreviewTokenFunc) *proxymodels.BoardDto {
+
 	sharedWith := make([]proxymodels.SharingDto, 0)
 
 	for _, sharedDto := range dto.SharedWith {
@@ -101,6 +115,9 @@ func mapBackBoardDtoToProxy(dto estbackapi.BackBoardDto, userDtos map[string]mod
 		OwnerInfo:      *MapUserToProxy(userDtos[dto.OwnerId]),
 		SharedWith:     sharedWith,
 		LinkSharedMode: string(dto.LinkSharedMode),
-		Preview:        "TODO",
+		Preview:        getPreviewToken(dto.Id),
 	}
 }
+
+type GetUsersFunc func([]string) []models.PublicUser
+type GetPreviewTokenFunc func(string) string

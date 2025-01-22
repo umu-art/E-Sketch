@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"est-proxy/src/api"
 	"est-proxy/src/errors"
 	"est-proxy/src/mapper"
 	"est-proxy/src/models"
@@ -16,12 +17,14 @@ import (
 
 type BoardServiceImpl struct {
 	boardApi       *estbackapi.BoardAPIService
+	previewApi     *api.PreviewApi
 	userRepository repository.UserRepository
 }
 
-func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, userRepository repository.UserRepository) *BoardServiceImpl {
+func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, previewApi *api.PreviewApi, userRepository repository.UserRepository) *BoardServiceImpl {
 	return &BoardServiceImpl{
 		boardApi:       boardApi,
+		previewApi:     previewApi,
 		userRepository: userRepository,
 	}
 }
@@ -47,7 +50,7 @@ func (bs *BoardServiceImpl) GetByUuid(ctx context.Context, userId *uuid.UUID, bo
 		log.Printf("Failed to mark board as recent: %v", err.Error())
 	}
 
-	return mapper.MapBackBoardToProxy(ctx, *board, bs.getUsers), nil
+	return mapper.MapBackBoardToProxy(*board, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) List(ctx context.Context, userId *uuid.UUID) (*proxymodels.BoardListDto, *errors.StatusError) {
@@ -57,7 +60,7 @@ func (bs *BoardServiceImpl) List(ctx context.Context, userId *uuid.UUID) (*proxy
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось составить список досок")
 	}
 
-	return mapper.MapManyBoardsToProxy(ctx, list, bs.getUsers), nil
+	return mapper.MapManyBoardsToProxy(list, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) Create(ctx context.Context, userId *uuid.UUID, createRequest *proxymodels.CreateRequest) (*proxymodels.BoardDto, *errors.StatusError) {
@@ -73,7 +76,7 @@ func (bs *BoardServiceImpl) Create(ctx context.Context, userId *uuid.UUID, creat
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать доску")
 	}
 
-	return mapper.MapBackBoardToProxy(ctx, *boardDto, bs.getUsers), nil
+	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, boardId *uuid.UUID, updateRequest *proxymodels.CreateRequest) (*proxymodels.BoardDto, *errors.StatusError) {
@@ -98,7 +101,7 @@ func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, board
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось обновить доску")
 	}
 
-	return mapper.MapBackBoardToProxy(ctx, *boardDto, bs.getUsers), nil
+	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) DeleteBoard(ctx context.Context, userId *uuid.UUID, boardId *uuid.UUID) *errors.StatusError {
@@ -201,14 +204,27 @@ func (bs *BoardServiceImpl) getBoard(ctx context.Context, boardId string) (*estb
 	return boardDto, nil
 }
 
-func (bs *BoardServiceImpl) getUsers(ctx context.Context, userIdStrs []string) []models.PublicUser {
-	userIds := make([]uuid.UUID, len(userIdStrs))
-	for i, userIdStr := range userIdStrs {
-		userId, err := uuid.Parse(userIdStr)
-		if err != nil {
-			log.Printf("Failed to parse user id from userIdStr \"%s\": %v", userIdStr, err)
+func (bs *BoardServiceImpl) getUsersFunc(ctx context.Context) func([]string) []models.PublicUser {
+	return func(userIdStrs []string) []models.PublicUser {
+		userIds := make([]uuid.UUID, len(userIdStrs))
+		for i, userIdStr := range userIdStrs {
+			userId, err := uuid.Parse(userIdStr)
+			if err != nil {
+				log.Printf("Failed to parse user id from userIdStr \"%s\": %v", userIdStr, err)
+			}
+			userIds[i] = userId
 		}
-		userIds[i] = userId
+		return *bs.userRepository.GetUserListByIds(ctx, userIds)
 	}
-	return *bs.userRepository.GetUserListByIds(ctx, userIds)
+}
+
+func (bs *BoardServiceImpl) getPreviewTokenFunc(ctx context.Context) func(boardId string) string {
+	return func(boardId string) string {
+		res, err := bs.previewApi.GetToken(boardId, ctx)
+		if err != nil {
+			log.Printf("Failed to get token: %s", err.GetMessage())
+			return ""
+		}
+		return res
+	}
 }
