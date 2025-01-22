@@ -88,7 +88,7 @@ export function registerDrawListener(board, boardController) {
   function handleMouseUp(e) {
     e.preventDefault();
 
-    if (e.button === 0) {
+    if (e.button === 0 && drawing.tool === 'pencil') {
       if (!currentFigure) {
         return;
       }
