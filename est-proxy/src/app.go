@@ -44,6 +44,7 @@ func main() {
 	// RabbitMQ
 	rabbitService := repoimpl.NewRabbitRepositoryImpl()
 	defer rabbitService.Close()
+	go rabbitService.Refresh()
 	figureTopic := rabbitService.GetTopic(config.RABBITMQ_FIGURE_TOPIC_EXCHANGE)
 	markerTopic := rabbitService.GetTopic(config.RABBITMQ_MARKER_TOPIC_EXCHANGE)
 

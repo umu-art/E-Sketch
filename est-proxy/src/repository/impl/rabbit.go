@@ -7,6 +7,7 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	"log"
 	"net/url"
+	"time"
 )
 
 type RabbitRepositoryImpl struct {
@@ -15,26 +16,11 @@ type RabbitRepositoryImpl struct {
 }
 
 func NewRabbitRepositoryImpl() *RabbitRepositoryImpl {
-	repositoryAddress := fmt.Sprintf("amqp://%s:%s@%s:%s/",
-		config.RABBITMQ_USERNAME,
-		url.QueryEscape(config.RABBITMQ_PASSWORD),
-		config.RABBITMQ_HOST,
-		config.RABBITMQ_PORT)
-
-	conn, err := amqp091.Dial(repositoryAddress)
-	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+	var rabbitRepo RabbitRepositoryImpl
+	if err := rabbitRepo.connect(); err != nil {
+		log.Fatalf("%v", err)
 	}
-
-	channel, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Failed to open channel: %v", err)
-	}
-
-	return &RabbitRepositoryImpl{
-		conn:    conn,
-		channel: channel,
-	}
+	return &rabbitRepo
 }
 
 func (r *RabbitRepositoryImpl) Close() {
@@ -46,6 +32,23 @@ func (r *RabbitRepositoryImpl) Close() {
 	err = r.conn.Close()
 	if err != nil {
 		log.Printf("Failed to close connection: %v", err)
+	}
+}
+
+func (r *RabbitRepositoryImpl) Refresh() {
+	for {
+		<-r.conn.NotifyClose(make(chan *amqp091.Error))
+		failedAttempts := 0
+		for {
+			time.Sleep(5 * time.Second)
+			if err := r.connect(); err == nil {
+				break
+			}
+
+			if failedAttempts++; failedAttempts > 5 {
+				log.Fatalf("Failed to reconnect to RabbitMQ")
+			}
+		}
 	}
 }
 
@@ -67,4 +70,26 @@ func (r *RabbitRepositoryImpl) GetTopic(name string) repository.Topic {
 		name:    name,
 		channel: r.channel,
 	}
+}
+
+func (r *RabbitRepositoryImpl) connect() error {
+	repositoryAddress := fmt.Sprintf("amqp://%s:%s@%s:%s/",
+		config.RABBITMQ_USERNAME,
+		url.QueryEscape(config.RABBITMQ_PASSWORD),
+		config.RABBITMQ_HOST,
+		config.RABBITMQ_PORT)
+
+	conn, err := amqp091.Dial(repositoryAddress)
+	if err != nil {
+		return fmt.Errorf("Failed to connect to RabbitMQ: %v", err)
+	}
+
+	channel, err := conn.Channel()
+	if err != nil {
+		return fmt.Errorf("Failed to open channel: %v", err)
+	}
+
+	r.conn = conn
+	r.channel = channel
+	return nil
 }

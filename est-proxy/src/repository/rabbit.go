@@ -2,6 +2,7 @@ package repository
 
 type RabbitRepository interface {
 	GetTopic(name string) Topic
+	Refresh()
 	Close()
 }
 
