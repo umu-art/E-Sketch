@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getAllFigures } from './app.api';
 import * as JSDOM from 'jsdom';
 import { Board } from 'paint/dist';
 import { DefaultFigure } from 'figures/dist';
 import * as sharp from 'sharp';
+import { getAllFigures } from '../api/back.api';
 
 @Injectable()
-export class AppService {
+export class PaintService {
 
-  private readonly logger = new Logger(AppService.name);
+  private readonly logger = new Logger(PaintService.name);
 
   async getPreview(boardId: string, width: number, height: number): Promise<Buffer> {
     return this.getPreviewPart(boardId, width, height, undefined, undefined, undefined, undefined);
