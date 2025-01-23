@@ -25,18 +25,8 @@ export class Line extends DefaultFigure {
 
     const path = toSvgPath(this.points);
     element.setAttribute('d', path);
-
-    if (this.color) {
-      element.setAttribute('stroke', this.color);
-    } else {
-      element.setAttribute('stroke', 'black');
-    }
-
-    if (this.thickness) {
-      element.setAttribute('stroke-width', this.thickness.toString());
-    } else {
-      element.setAttribute('stroke-width', '1');
-    }
+    element.setAttribute('stroke', this.color || 'black');
+    element.setAttribute('stroke-width', (this.thickness || 1).toString());
 
     return element;
   }

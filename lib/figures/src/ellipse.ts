@@ -1,7 +1,7 @@
 import { DefaultFigure, FigureHeader, FigureHeaderBuilder, getFromHeader, getIntFromHeader } from './default';
 import { Point } from './point';
 
-export class Rectangle extends DefaultFigure {
+export class Ellipse extends DefaultFigure {
 
   color?: string;
   fillColor?: string;
@@ -21,20 +21,22 @@ export class Rectangle extends DefaultFigure {
       .build();
   }
 
-  public set(topLeft: Point, bottomRight: Point): void {
-    this.points = [topLeft, bottomRight];
+  public set(center: Point, radiusX: number, radiusY: number): void {
+    this.points = [center, new Point(radiusX, radiusY)];
   }
 
-  public toSvg(document: Document): SVGPathElement {
-    const [topLeft, bottomRight] = this.points;
-    let element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  public toSvg(document: Document): SVGEllipseElement {
+    let element = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
     element.setAttribute('id', this.id);
     element.setAttribute('fill', this.fillColor || 'white');
     element.setAttribute('stroke', this.color || 'black');
-    element.setAttribute('x', topLeft.x.toString());
-    element.setAttribute('y', topLeft.y.toString());
-    element.setAttribute('width', (bottomRight.x - topLeft.x).toString());
-    element.setAttribute('height', (bottomRight.y - topLeft.y).toString());
+
+    const [center, radius] = this.points;
+    element.setAttribute('cx', center.x.toString());
+    element.setAttribute('cy', center.y.toString());
+    element.setAttribute('rx', radius.x.toString());
+    element.setAttribute('ry', radius.y.toString());
+
     return element;
   }
 }

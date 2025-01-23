@@ -1,5 +1,5 @@
 export * from './default';
 export * from './line';
-export * from './circle';
+export * from './ellipse';
 export * from './rectangle';
 export * from './point';

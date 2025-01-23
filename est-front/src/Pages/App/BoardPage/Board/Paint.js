@@ -98,7 +98,7 @@ export function registerDrawListener(board, boardController) {
     boardController.upsertFigure(currentFigure);
 
     triggerUpdateFigure(currentFigure, oldCurrentFigure);
-    oldCurrentFigure = cloneLine(currentFigure);
+    oldCurrentFigure = currentFigure.clone();
   }
 
   function waitForDrawingState() {
@@ -183,7 +183,7 @@ export function registerDrawListener(board, boardController) {
 
     if (drawing.state === DrawingStates.DRAWING) {
       triggerUpdateFigure(currentFigure, oldCurrentFigure);
-      oldCurrentFigure = cloneLine(currentFigure);
+      oldCurrentFigure = currentFigure.clone();
     }
   }
 
@@ -213,10 +213,4 @@ function triggerUpdateFigure(newFigure, oldFigure) {
   } else {
     updateFigure(newFigure, oldFigure);
   }
-}
-
-function cloneLine(line) {
-  const newPoints = line.points.map((point) => new Point(point.x, point.y));
-
-  return new Line(line.type, line.id, [line.color, line.thickness], newPoints);
 }

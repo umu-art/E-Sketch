@@ -24,6 +24,11 @@ export abstract class DefaultFigure {
   public abstract exportHeader(): FigureHeader;
 
   public abstract toSvg(document: Document): SVGPathElement;
+
+  public clone(): DefaultFigure {
+    const newPoints = this.points.map((point) => new Point(point.x, point.y));
+    return new (this.constructor as any)(this.type, this.id, this.exportHeader(), newPoints);
+  }
 }
 
 export type FigureHeader = string[];
