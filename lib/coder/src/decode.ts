@@ -1,4 +1,4 @@
-import { Circle, DefaultFigure, FigureType, Line, Rectangle } from 'figures/dist';
+import { Ellipse, DefaultFigure, FigureType, Line, Rectangle } from 'figures/dist';
 import { Point } from 'figures/dist/point';
 
 /**
@@ -37,8 +37,8 @@ export function decode(encodedString: string): DefaultFigure {
       return new Rectangle(type, id, header, points);
     case FigureType.LINE:
       return new Line(type, id, header, points);
-    case FigureType.CIRCLE:
-      return new Circle(type, id, header, points);
+    case FigureType.ELLIPSE:
+      return new Ellipse(type, id, header, points);
     default:
       throw new TypeError('Invalid figure type');
   }

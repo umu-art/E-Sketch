@@ -3,7 +3,7 @@ import { Point } from './point';
 export enum FigureType {
   LINE = 0,
   RECTANGLE = 1,
-  CIRCLE = 2,
+  ELLIPSE = 2,
 }
 
 export abstract class DefaultFigure {
