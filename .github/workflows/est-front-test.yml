@@ -26,6 +26,10 @@ jobs:
         working-directory: ./est-front
         run: npm install
 
+      - name: Build front
+        working-directory: ./est-front
+        run: npm run build
+
       - name: Test front
         working-directory: ./est-front
         run: npm run test

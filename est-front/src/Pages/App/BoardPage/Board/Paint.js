@@ -120,6 +120,8 @@ export function registerDrawListener(board, boardController) {
         case DrawingStates.DRAWING:
           finishDrawing();
           break;
+        default:
+          break;
       }
     } else if (e.button === 2) {
       isMoving = false;
