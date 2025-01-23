@@ -242,8 +242,6 @@ paths:
       responses:
         200:
           description: Успешное обновление
-        400:
-          description: Некорректный запрос
     delete:
       tags:
         - figure

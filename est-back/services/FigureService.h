@@ -1,53 +1,26 @@
 #pragma once
 
+#include <drogon/orm/Row.h>
+#include <drogon/HttpAppFramework.h>
+
 #include "../../api/build/est-back-cpp/model/FigureListDto.h"
 #include "../../api/build/est-back-cpp/model/FigureIdDto.h"
+#include "../errors/ServiceException.h"
+#include "../utils/utils.h"
 
 namespace est_back::service {
     namespace osm = org::openapitools::server::model;
+    namespace err = est_back::errors;
 
-    osm::FigureDto rowToFigureDto(const drogon::orm::Row& row) {
-        osm::FigureDto figureDto;
-        figureDto.setData(row["figure_data"].as<std::string>());
-        return figureDto;
-    }
+    osm::FigureDto rowToFigureDto(const drogon::orm::Row& row);
 
-    osm::FigureListDto getFigureListDto(const std::string& boardId) {
-        auto clientPtr = drogon::app().getDbClient("est-data");
-        auto res = clientPtr->execSqlSync("select figure_data from figure where board_id = $1;", boardId);
-        osm::FigureListDto figureListDto;
-        std::vector<osm::FigureDto> figureList;
-        for (const auto& row : res) {
-            figureList.push_back(rowToFigureDto(row));
-        }
-        figureListDto.setFigures(figureList);
-        return figureListDto;
-    }
+    osm::FigureListDto getFigureListDto(const std::string& boardId);
 
-    osm::FigureIdDto createFigure(const std::string& boardId) {
-        auto clientPtr = drogon::app().getDbClient("est-data");
-        auto figureId = drogon::utils::getUuid();
-        clientPtr->execSqlSync("insert into figure(id, board_id) values($1, $2);", figureId, boardId);
-        osm::FigureIdDto figureIdDto;
-        figureIdDto.setId(figureId);
-        return figureIdDto;
-    }
+    osm::FigureIdDto createFigure(const std::string& boardId);
 
-    osm::FigureDto getFigure(const std::string& figureId) {
-        auto clientPtr = drogon::app().getDbClient("est-data");
-        auto res = clientPtr->execSqlSync("select figure_data from figure where id = $1;", figureId);
-        return rowToFigureDto(res[0]);
-    }
+    osm::FigureDto getFigure(const std::string& figureId);
 
-    void updateFigure(const osm::FigureDto& figureDto, const std::string& figureId) {
-        auto clientPtr = drogon::app().getDbClient("est-data");
-        auto figureData = figureDto.getData();
-        std::vector<char> figureDataVec(figureData.begin(), figureData.end());
-        clientPtr->execSqlSync("update figure set figure_data = $1 where id = $2;", figureDataVec, figureId);
-    }
+    void updateFigure(const osm::FigureDto& figureDto, const std::string& figureId);
 
-    void deleteFigure(const std::string& figureId) {
-        auto clientPtr = drogon::app().getDbClient("est-data");
-        clientPtr->execSqlSync("delete from figure where id = $1", figureId);
-    }
+    void deleteFigure(const std::string& figureId);
 }  // namespace est_back::service

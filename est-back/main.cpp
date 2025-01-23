@@ -1,10 +1,10 @@
 #include <drogon/drogon.h>
 #include "./apm.cpp"
+#include "filters/ExceptionHandlingMiddleware.h"
 
 int main() {
     // Load config
     drogon::app().loadConfigFile("../config.json");
-
     // Register db client
     auto dbConfig = drogon::orm::PostgresConfig{.host = "postgres.databases.svc.cluster.local",
                                                 .port = 5432,
