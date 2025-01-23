@@ -216,6 +216,10 @@ namespace est_back::service {
         if (!existsRes[0][0].as<bool>()) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "User not found");
         }
+        existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
+        if (!existsRes[0][0].as<bool>()) {
+            throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
+        }
         std::string recentBoardId = drogon::utils::getUuid();
         clientPtr->execSqlAsyncFuture(
             "insert into recent_board("

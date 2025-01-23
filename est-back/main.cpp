@@ -1,6 +1,6 @@
 #include <drogon/drogon.h>
 #include "./apm.cpp"
-#include "filters/ExceptionHandlingMiddleware.h"
+#include "errors/ExeptionHandler.h"
 
 int main() {
     // Load config
@@ -21,6 +21,7 @@ int main() {
     // initApm();
 
     // Start
+    drogon::app().setExceptionHandler(est_back::errors::customExceptionHandler);
     drogon::app().run();
     return 0;
 }

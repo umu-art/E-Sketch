@@ -10,7 +10,7 @@ namespace est_back::controller {
     class BoardController : public drogon::HttpController<BoardController> {
     public:
         METHOD_LIST_BEGIN
-        ADD_METHOD_TO(BoardController::listByUserId, "/back/board/list/{userId}", Get, "est_back::middleware::ExceptionHandlingMiddleware");
+        ADD_METHOD_TO(BoardController::listByUserId, "/back/board/list/{userId}", Get);
         ADD_METHOD_TO(BoardController::create, "/back/board/create/{userId}", Post);
         ADD_METHOD_TO(BoardController::getByUuid, "/back/board/{boardId}", Get);
         ADD_METHOD_TO(BoardController::update, "/back/board/{boardId}", Patch);
