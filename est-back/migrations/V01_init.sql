@@ -33,7 +33,7 @@ create table if not exists figure
 (
     id          uuid not null primary key,
     board_id    uuid not null,
-    figure_data text,
+    figure_data bytea,
     foreign key (board_id) references board (id)
 );
 
