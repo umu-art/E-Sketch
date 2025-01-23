@@ -18,10 +18,10 @@ namespace est_back::controller {
         METHOD_LIST_END
     private:
         using Callback = std::function<void(const HttpResponsePtr&)>&&;
-        void listByBoardId(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
-        void createFigure(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
-        void getFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
-        void updateFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
-        void deleteFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
+        static void listByBoardId(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        static void createFigure(const HttpRequestPtr& req, Callback callback, std::string&& boardId);
+        static void getFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
+        static void updateFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
+        static void deleteFigure(const HttpRequestPtr& req, Callback callback, std::string&& figureId);
     };
 }  // namespace est_back::controller
