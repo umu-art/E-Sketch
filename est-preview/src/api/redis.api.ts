@@ -5,19 +5,61 @@ const redisClient = createClient({
   password: process.env.REDIS_PASSWORD || undefined,
 });
 
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
+let isConnected = false;
+const maxReconnectAttempts = 5;
+let reconnectAttempts = 0;
+
+redisClient.on('error', (err) => {
+  console.error('Redis Client Error', err);
+  if (isConnected) {
+    isConnected = false;
+    reconnect();
+  }
+});
+
+redisClient.on('connect', () => {
+  console.log('Connected to Redis');
+  isConnected = true;
+  reconnectAttempts = 0;
+});
+
+async function connect() {
+  try {
+    await redisClient.connect();
+  } catch (error) {
+    console.error('Failed to connect to Redis:', error);
+    reconnect();
+  }
+}
+
+function reconnect() {
+  if (reconnectAttempts < maxReconnectAttempts) {
+    reconnectAttempts++;
+    console.log(`Attempting to reconnect...`);
+    setTimeout(connect, 1000);
+  } else {
+    console.error('Max reconnection attempts reached. Redis is unavailable.');
+    process.exit(4);
+  }
+}
+
+connect().catch(console.error);
+
+process.on('SIGINT', async () => {
+  if (isConnected) {
+    await redisClient.disconnect();
+  }
+  process.exit(0);
+});
 
 export async function saveToken(token: TokenData): Promise<void> {
   try {
-    await redisClient.connect();
     await redisClient.set(`token:${token.boardId}:${token.token}`, 'valid', {
       EX: 300,
     });
   } catch (error) {
     console.error('Error storing token in Redis:', error);
     throw new Error('Failed to create token');
-  } finally {
-    await redisClient.disconnect();
   }
 }
 
@@ -28,7 +70,6 @@ export interface TokenData {
 
 export async function saveTokens(tokens: TokenData[]): Promise<void> {
   try {
-    await redisClient.connect();
     const pipeline = redisClient.multi();
     for (const token of tokens) {
       pipeline.set(`token:${token.boardId}:${token.token}`, 'valid', {
@@ -39,14 +80,11 @@ export async function saveTokens(tokens: TokenData[]): Promise<void> {
   } catch (error) {
     console.error('Error storing tokens in Redis:', error);
     throw new Error('Failed to save tokens');
-  } finally {
-    await redisClient.disconnect();
   }
 }
 
 export async function checkToken(token: TokenData): Promise<boolean> {
   try {
-    await redisClient.connect();
     const key = `token:${token.boardId}:${token.token}`;
     const isValid = await redisClient.get(key);
 
@@ -59,7 +97,5 @@ export async function checkToken(token: TokenData): Promise<boolean> {
   } catch (error) {
     console.error('Error checking token in Redis:', error);
     return false;
-  } finally {
-    await redisClient.disconnect();
   }
 }
