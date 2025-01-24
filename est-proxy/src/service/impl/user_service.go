@@ -2,21 +2,31 @@ package impl
 
 import (
 	"context"
+	"crypto/rand"
+	"est-proxy/src/api"
 	"est-proxy/src/errors"
 	"est-proxy/src/mapper"
 	"est-proxy/src/repository"
 	"est-proxy/src/utils"
 	proxymodels "est_proxy_go/models"
+	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
 )
 
 type UserServiceImpl struct {
 	userRepository repository.UserRepository
+	mailApi        *api.MailApi
+	redisClient    repository.RedisClient
 }
 
-func NewUserServiceImpl(userRepository repository.UserRepository) *UserServiceImpl {
-	return &UserServiceImpl{userRepository: userRepository}
+func NewUserServiceImpl(userRepository repository.UserRepository, mailApi *api.MailApi, redisClient repository.RedisClient) *UserServiceImpl {
+	return &UserServiceImpl{
+		userRepository: userRepository,
+		mailApi:        mailApi,
+		redisClient:    redisClient,
+	}
 }
 
 func (u UserServiceImpl) GetUserById(ctx context.Context, userId *uuid.UUID) (*proxymodels.UserDto, *errors.StatusError) {
@@ -48,20 +58,52 @@ func (u UserServiceImpl) Login(ctx context.Context, authDto *proxymodels.AuthDto
 	return token, nil
 }
 
-func (u UserServiceImpl) Register(ctx context.Context, registerDto *proxymodels.RegisterDto) (*string, *errors.StatusError) {
+func (u UserServiceImpl) Register(ctx context.Context, registerDto *proxymodels.RegisterDto) *errors.StatusError {
 	exists := u.userRepository.UserExistsByUsernameOrEmail(ctx, registerDto.Username, registerDto.Email)
 	if exists {
-		return nil, errors.NewStatusError(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
+		return errors.NewStatusError(http.StatusConflict, "Занято имя пользователя или адрес электронной почты")
 	}
 
-	userId := u.userRepository.Create(ctx, registerDto.Username, registerDto.Email, registerDto.PasswordHash)
+	user := mapper.MapProxyRegisterDto(registerDto)
+
+	token, err := u.generateToken(10)
+	if err != nil {
+		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось отправить письмо для подтверждения почты")
+	}
+	confirmationLink := u.generateConfirmationLink(token)
+
+	err = u.redisClient.AddUser(ctx, token, user)
+	if err != nil {
+		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось отправить письмо для подтверждения почты")
+	}
+
+	err = u.mailApi.SendConfirmationEmail(user.Email, confirmationLink)
+	if err != nil {
+		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось отправить письмо для подтверждения почты")
+	}
+
+	return nil
+}
+
+func (u UserServiceImpl) Confirm(ctx context.Context, userToken string) (*string, *errors.StatusError) {
+	user, err := u.redisClient.GetUser(ctx, userToken)
+	if err != nil {
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Проверьте правильность кода")
+	}
+
+	userId := u.userRepository.Create(ctx, user.Username, user.Email, user.PasswordHash)
 	if userId == nil {
-		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать аккаунт")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось подтвердить аккаунт")
 	}
 
 	token := utils.GenerateUserJWTString(userId)
 	if token == nil {
 		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")
+	}
+
+	err = u.redisClient.RemoveUser(ctx, userToken)
+	if err != nil {
+		log.Println(err.Error())
 	}
 
 	return token, nil
@@ -74,4 +116,33 @@ func (u UserServiceImpl) Search(ctx context.Context, query string) (*[]proxymode
 	}
 
 	return mapper.MapUserListToProxy(*users), nil
+}
+
+func (u UserServiceImpl) generateToken(length int) (string, error) {
+	bytes := make([]byte, length)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		char := bytes[i] % 62
+		if char < 10 {
+			result[i] = char + '0'
+		} else if char < 36 {
+			result[i] = char - 10 + 'A'
+		} else {
+			result[i] = char - 36 + 'a'
+		}
+	}
+
+	log.Printf("New user token: %s", string(result))
+
+	return string(result), nil
+}
+
+func (u UserServiceImpl) generateConfirmationLink(token string) string {
+	addr := "https://e-sketch.ru/confirm"
+	return fmt.Sprintf("%s?token=%s", addr, token)
 }
