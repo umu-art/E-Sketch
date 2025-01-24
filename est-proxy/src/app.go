@@ -41,6 +41,9 @@ func main() {
 	}
 	gptApi := api.NewGptApi(gptApiClient)
 
+	// Mail api
+	mailApi := api.NewMailApi()
+
 	// RabbitMQ
 	rabbitService := repoimpl.NewRabbitRepositoryImpl()
 	defer rabbitService.Close()
@@ -48,13 +51,18 @@ func main() {
 	figureTopic := rabbitService.GetTopic(config.RABBITMQ_FIGURE_TOPIC_EXCHANGE)
 	markerTopic := rabbitService.GetTopic(config.RABBITMQ_MARKER_TOPIC_EXCHANGE)
 
+	// Redis
+	redisClient := repoimpl.NewRedisClientImpl()
+	defer redisClient.Close()
+	go redisClient.Refresh()
+
 	// PostgreSQL
 	postgresService := repoimpl.NewPostgresServiceImpl()
 	defer postgresService.Release()
 
 	// UserService
 	userRepository := repoimpl.NewUserRepositoryImpl(postgresService)
-	userService := serviceimpl.NewUserServiceImpl(userRepository)
+	userService := serviceimpl.NewUserServiceImpl(userRepository, mailApi, redisClient)
 
 	//FigureBuffer
 	figureBuffer := utils.NewFigureBuffer()

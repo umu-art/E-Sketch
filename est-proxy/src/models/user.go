@@ -24,6 +24,14 @@ type PublicUser struct {
 	Avatar string
 }
 
+type RegisteredUser struct {
+	Username string
+
+	PasswordHash string
+
+	Email string
+}
+
 func (u User) Public() *PublicUser {
 	return &PublicUser{
 		ID:       u.ID,

@@ -114,7 +114,20 @@ func (u UserListener) Register(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
 	}
 
-	token, statusError := u.userService.Register(ctx.Request().Context(), &regDto)
+	statusError := u.userService.Register(ctx.Request().Context(), &regDto)
+	if statusError != nil {
+		return statusError.Send(ctx)
+	}
+
+	return ctx.String(http.StatusOK, "Регистрация прошла успешно. Пожалуйста, проверьте вашу электронную почту для подтверждения аккаунта")
+}
+
+func (u UserListener) Confirm(ctx echo.Context) error {
+	var confirmDto proxymodels.ConfirmationDto
+	if err := ctx.Bind(&confirmDto); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("Некорреткный запрос: %v", err))
+	}
+	token, statusError := u.userService.Confirm(ctx.Request().Context(), confirmDto.Token)
 	if statusError != nil {
 		return statusError.Send(ctx)
 	}
@@ -128,7 +141,8 @@ func (u UserListener) Register(ctx echo.Context) error {
 	cookie.SameSite = http.SameSiteNoneMode // for debug only; TODO: remove
 	ctx.SetCookie(cookie)
 
-	return ctx.String(http.StatusOK, "Аккаунт успешно зарегистрирован")
+	return ctx.String(http.StatusOK, "Аккаунт успешно подтверждён")
+
 }
 
 func (u UserListener) Search(ctx echo.Context) error {

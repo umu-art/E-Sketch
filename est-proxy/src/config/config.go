@@ -31,10 +31,24 @@ const JWT_DURATION_TIME = time.Hour * 48
 
 const JWT_COOKIE_NAME string = "estu"
 
-const BUFFERED_FIGURE_LIVE_TIME time.Duration = 500 * time.Millisecond
+const BUFFERED_FIGURE_EXPIRATION_TIME = 500 * time.Millisecond
+
+var SMTP_SERVER = os.Getenv("SMTP_SERVER")
+var SMTP_PORT = os.Getenv("SMTP_PORT")
+
+var SMTP_USERNAME = os.Getenv("MAIL_ACCOUNT")
+var SMTP_PASSWORD = os.Getenv("MAIL_PASSWORD")
+
+var REDIS_HOST = os.Getenv("REDIS_HOST")
+var REDIS_PORT = os.Getenv("REDIS_PORT")
+var REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
+var REDIS_DB = os.Getenv("REDIS_DB")
+
+const REDIS_EXPIRATION_TIME = 5 * time.Minute
 
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",
 	"/register",
+	"/confirm",
 	"/actuator",
 }

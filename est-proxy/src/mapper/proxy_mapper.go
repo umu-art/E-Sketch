@@ -128,5 +128,13 @@ func getMappedPreviewTokens(boards []estbackapi.BackBoardDto, getPreviewTokens G
 	return getPreviewTokens(boardIds)
 }
 
+func MapProxyRegisterDto(dto *proxymodels.RegisterDto) *models.RegisteredUser {
+	return &models.RegisteredUser{
+		Username:     dto.Username,
+		PasswordHash: dto.PasswordHash,
+		Email:        dto.Email,
+	}
+}
+
 type GetUsersFunc func([]string) []models.PublicUser
 type GetPreviewTokensFunc func([]string) map[string]string
