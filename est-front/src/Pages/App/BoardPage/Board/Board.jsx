@@ -12,8 +12,10 @@ const toolsIcons = {
   "eraser": eraserIcon,
 }
 
+export let boardControllerRef;
+
 const Board = ({ className, style, boardId, currentTool }) => {
-  const boardControllerRef = useRef(null);
+  boardControllerRef = useRef(null);
   const [cursor, setCursor] = useState(currentTool);
 
   useEffect(() => {
