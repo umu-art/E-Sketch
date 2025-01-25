@@ -9,7 +9,6 @@ import HeadMenu from './HeadMenu/HeadMenu';
 
 import { drawing } from './Board/Paint';
 import ErrorPage from '../../ErrorPages/ErrorPage';
-import { Minimap } from './Minimap/Minimap';
 
 const apiInstance = new BoardApi();
 
@@ -30,15 +29,15 @@ const BoardPage = () => {
   };
 
   const refreshBoardData = () => {
-    apiInstance.getByUuid(boardId).then((data) => {
-      setData(data);
-    }).catch((error) => {
-      if (error.code === 401) {
-        navigate('/auth/signin');
-      } else {
-        setErr(error);
-      }
-    });
+      apiInstance.getByUuid(boardId).then((data) => {
+        setData(data);
+      }).catch((error) => {
+        if (error.code === 401) {
+          navigate('/auth/signin');
+        } else {
+          setErr(error);
+        }
+      });
   };
 
 
@@ -62,20 +61,7 @@ const BoardPage = () => {
 
   return (
     <>
-      <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} currentTool={tool} />
-      <Minimap
-        boardId={boardId}
-        className={'shadow'}
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          width: '200px',
-          height: '130px',
-          zIndex: 6,
-          borderRadius: '8px',
-        }}></Minimap>
-
+      <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} currentTool={tool}/>
       { /* Menu wrap */}
       <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute' }} vertical
             align="center" justify="space-between">
