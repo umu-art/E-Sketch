@@ -8,9 +8,9 @@ import pencilIcon from './pencil.svg';
 import eraserIcon from './eraser.svg';
 
 const toolsIcons = {
-  "pencil": pencilIcon,
-  "eraser": eraserIcon,
-}
+  'pencil': pencilIcon,
+  'eraser': eraserIcon,
+};
 
 const Board = ({ className, style, boardId, currentTool }) => {
   const boardControllerRef = useRef(null);
@@ -40,7 +40,13 @@ const Board = ({ className, style, boardId, currentTool }) => {
   return (<svg
     id={boardId}
     className={`${className} board`}
-    style={{ ...style, backgroundColor: 'white', overflow: 'hidden', zIndex: 5, cursor: `url(${toolsIcons[cursor]}), auto` }}
+    style={{
+      ...style,
+      backgroundColor: 'white',
+      overflow: 'hidden',
+      zIndex: 5,
+      cursor: `url(${toolsIcons[cursor]}), auto`,
+    }}
   ></svg>);
 };
 

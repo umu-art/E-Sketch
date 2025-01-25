@@ -9,6 +9,7 @@ import HeadMenu from './HeadMenu/HeadMenu';
 
 import { drawing } from './Board/Paint';
 import ErrorPage from '../../ErrorPages/ErrorPage';
+import ScaleElement from './Scale/Scale';
 
 const apiInstance = new BoardApi();
 
@@ -29,15 +30,15 @@ const BoardPage = () => {
   };
 
   const refreshBoardData = () => {
-      apiInstance.getByUuid(boardId).then((data) => {
-        setData(data);
-      }).catch((error) => {
-        if (error.code === 401) {
-          navigate('/auth/signin');
-        } else {
-          setErr(error);
-        }
-      });
+    apiInstance.getByUuid(boardId).then((data) => {
+      setData(data);
+    }).catch((error) => {
+      if (error.code === 401) {
+        navigate('/auth/signin');
+      } else {
+        setErr(error);
+      }
+    });
   };
 
 
@@ -61,7 +62,8 @@ const BoardPage = () => {
 
   return (
     <>
-      <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} currentTool={tool}/>
+      <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} currentTool={tool} />
+      <ScaleElement style={{ position: 'absolute', right: '0', bottom: '0', zIndex: '6' }}></ScaleElement>
       { /* Menu wrap */}
       <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute' }} vertical
             align="center" justify="space-between">
