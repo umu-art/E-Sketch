@@ -153,7 +153,7 @@ export function registerDrawListener(board, boardController) {
   function handleWheel(event) {
     event.preventDefault();
 
-    const scaleChange = event.deltaY < 0 ? 1.1 : 0.9;
+    const scaleChange = event.deltaY < 0 ? 1.01 : 0.99;
 
     const rect = board.getBoundingClientRect();
     const cursorX = (event.offsetX + BASE_OFFSET_X - rect.left) / drawing.scale;
