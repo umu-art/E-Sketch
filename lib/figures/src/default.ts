@@ -19,6 +19,12 @@ export abstract class DefaultFigure {
     this.parseHeader(header);
   }
 
+  static startProcess(type: FigureType, id: string, header: FigureHeader, point: Point) {
+    return new (this.constructor as any)(type, id, header, [point]);
+  };
+
+  abstract process(cursor: Point): void;
+
   protected abstract parseHeader(_header: FigureHeader): void;
 
   public abstract exportHeader(): FigureHeader;

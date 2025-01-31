@@ -1,8 +1,9 @@
 import { createMarker, onMarkerUpdate } from './SocketApi';
 import { Point } from 'figures/dist';
 
-import { drawing, BASE_OFFSET_X, BASE_OFFSET_Y } from './Paint';
+import { BASE_OFFSET_X, BASE_OFFSET_Y } from './Paint';
 import { UserApi } from 'est_proxy_api';
+import store from '../../../../redux/store';
 
 const apiInstance = new UserApi();
 
@@ -40,11 +41,19 @@ function generateColorFromUsername(username) {
   return colorPalette[colorIndex];
 }
 
-export function registerMarkersListener(board) {
+export function registerMarkersListener(board, initialDrawing) {
   let markersMap = new Map();
   let timersMap = new Map();
 
   let me;
+
+  let drawing = initialDrawing;
+
+  store.subscribe(() => {
+    const newState = store.getState()
+
+    drawing = newState;
+  })
 
   apiInstance.getSelf().then((data) => {
     me = data;
@@ -55,8 +64,8 @@ export function registerMarkersListener(board) {
   board.addEventListener('mousemove', (event) => {
     const rect = board.getBoundingClientRect();
 
-    const x = (event.offsetX + BASE_OFFSET_X - rect.left) / drawing.scale - drawing.offsetX;
-    const y = (event.offsetY + BASE_OFFSET_Y - rect.top) / drawing.scale - drawing.offsetY;
+    const x = (event.offsetX + BASE_OFFSET_X - rect.left) / drawing.view.scale - drawing.view.offsetX;
+    const y = (event.offsetY + BASE_OFFSET_Y - rect.top) / drawing.view.scale - drawing.view.offsetY;
 
     const point = new Point(x, y);
 
@@ -94,8 +103,8 @@ export function registerMarkersListener(board) {
 
     document.body.removeChild(marker);
 
-    const x = (point.x + drawing.offsetX) * drawing.scale;
-    const y = (point.y + drawing.offsetY) * drawing.scale;
+    const x = (point.x + drawing.view.offsetX) * drawing.view.scale;
+    const y = (point.y + drawing.view.offsetY) * drawing.view.scale;
 
     const safeX = Math.min(Math.max(x, 0), windowWidth - markerWidth);
     const safeY = Math.min(Math.max(y - markerHeight, 0), windowHeight - markerHeight - 1);

@@ -1,4 +1,4 @@
-import { DefaultFigure, FigureHeader, FigureHeaderBuilder, getFromHeader, getIntFromHeader } from './default';
+import { DefaultFigure, FigureHeader, FigureHeaderBuilder, FigureType, getFromHeader, getIntFromHeader } from './default';
 import { Point } from './point';
 
 export class Ellipse extends DefaultFigure {
@@ -13,6 +13,14 @@ export class Ellipse extends DefaultFigure {
     this.thickness = getIntFromHeader(header, 2);
   }
 
+  static startProcess(type: FigureType, id: string, header: FigureHeader, point: Point) {
+    return new Ellipse(type, id, header, [point, point]);
+  }
+  
+  process(cursor: Point): void {
+    this.points[1] = cursor;
+  };
+
   public exportHeader(): FigureHeader {
     return new FigureHeaderBuilder()
       .add(this.color)
@@ -26,16 +34,23 @@ export class Ellipse extends DefaultFigure {
   }
 
   public toSvg(document: Document): SVGEllipseElement {
+    const centerX = (this.points[0].x + this.points[1].x) / 2;
+    const centerY = (this.points[0].y + this.points[1].y) / 2;
+    const radiusX = Math.abs(this.points[1].x - this.points[0].x) / 2;
+    const radiusY = Math.abs(this.points[1].y - this.points[0].y) / 2;
+
     let element = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
     element.setAttribute('id', this.id);
     element.setAttribute('fill', this.fillColor || 'white');
     element.setAttribute('stroke', this.color || 'black');
+    if (this.thickness) {
+      element.setAttribute('stroke-width', this.thickness.toString());
+    }
 
-    const [center, radius] = this.points;
-    element.setAttribute('cx', center.x.toString());
-    element.setAttribute('cy', center.y.toString());
-    element.setAttribute('rx', radius.x.toString());
-    element.setAttribute('ry', radius.y.toString());
+    element.setAttribute('cx', centerX.toString());
+    element.setAttribute('cy', centerY.toString());
+    element.setAttribute('rx', radiusX.toString());
+    element.setAttribute('ry', radiusY.toString());
 
     return element;
   }

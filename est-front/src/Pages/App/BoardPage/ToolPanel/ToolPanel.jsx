@@ -1,40 +1,47 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, Card, Divider, Flex } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined } from '@ant-design/icons';
 
 import { ReactComponent as EraserOutlined } from './eraser.svg';
+import { ReactComponent as RectangleOutlined } from './rectangle.svg';
+import { ReactComponent as EllipseOutlined } from './ellipse.svg';
 
-const ToolPanel = ({ onToolChange }) => {
-  const [selectedTool, setSelectedTool] = useState('pencil');
+import ToolButton from './tools/ToolButton';
 
-  const handleToolChange = (tool) => {
-    setSelectedTool(tool);
-    onToolChange(tool);
-  };
-
+const ToolPanel = () => {
   return (
     <Card size="small" className="shadow" style={{ zIndex: 15 }}>
       <Flex gap="small" align="center">
-        <Button
-          type={selectedTool === 'pencil' ? 'primary' : 'default'}
+        <ToolButton
+          tool="pencil"
           icon={<EditOutlined />}
-          onClick={() => handleToolChange('pencil')}
-          key="pencil"
+          showColorChange
+          showWidthChange
         />
-        <Button
-          type={selectedTool === 'eraser' ? 'primary' : 'default'}
+        <ToolButton
+          tool="eraser"
           icon={<Icon component={EraserOutlined} />}
-          onClick={() => handleToolChange('eraser')}
-          key="eraser"
+          showWidthChange
+        />
+        <ToolButton
+          tool="rectangle"
+          icon={<Icon component={RectangleOutlined} />}
+          showWidthChange
+          showColorChange
+          showFillColorChange
+        />
+        <ToolButton
+          tool="ellipse"
+          icon={<Icon component={EllipseOutlined} />}
+          showWidthChange
+          showColorChange
+          showFillColorChange
         />
         <Divider type="vertical" style={{ height: 30 }} />
-        <Button
-          type={'default'}
-          icon={<EllipsisOutlined key="ellipsis" />}
-          key="ellipsis"
-        ></Button>
+        <Button 
+          icon={<EllipsisOutlined />}
+        />
       </Flex>
-
     </Card>
   );
 };
