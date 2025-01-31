@@ -6,15 +6,21 @@ import { registerMarkersListener } from './Markers';
 
 import pencilIcon from './pencil.svg';
 import eraserIcon from './eraser.svg';
+import { useSelector } from 'react-redux';
 
 const toolsIcons = {
   'pencil': pencilIcon,
   'eraser': eraserIcon,
 };
 
-const Board = ({ className, style, boardId, currentTool }) => {
+const Board = ({ className, style, boardId }) => {
   const boardControllerRef = useRef(null);
+
+  const currentTool = useSelector((state) => state.tool);
+
   const [cursor, setCursor] = useState(currentTool);
+
+  const drawing = useSelector((state) => state);
 
   useEffect(() => {
     setCursor(currentTool);
@@ -31,11 +37,11 @@ const Board = ({ className, style, boardId, currentTool }) => {
     connectToMarkers(boardId);
 
     figureWebSocket.addEventListener('open', () => {
-      registerDrawListener(boardElement, boardControllerRef.current);
+      registerDrawListener(boardElement, boardControllerRef.current, drawing);
     });
 
-    registerMarkersListener(boardElement);
-  }, [boardId]);
+    registerMarkersListener(boardElement, drawing);
+  }, [boardId, drawing]);
 
   return (<svg
     id={boardId}

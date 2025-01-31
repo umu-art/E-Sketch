@@ -1,9 +1,10 @@
 import { Point } from 'figures/dist/point';
-import { FigureType, Line } from 'figures/dist';
+import { Ellipse, FigureType, Line, Rectangle } from 'figures/dist';
 import { changeFigure, createFigure, deleteFigure, getAllFigures, onNewFigure, onUpdateFigure, updateFigure } from './SocketApi';
 import { decode, encode } from 'coder/dist';
 
 import * as d3 from 'd3';
+import store from '../../../../redux/store';
 
 const FPS = 60;
 export const BASE_OFFSET_X = 0;
@@ -15,25 +16,27 @@ export const DrawingStates = {
   DRAWING: 'drawing',
 };
 
+export function registerDrawListener(board, boardController, initialDrawing) {
+  let settings = initialDrawing;
 
-export const drawing = {
-  tool: 'pencil',
-  state: DrawingStates.IDLE,
-  nowX: 0,
-  nowY: 0,
-  lineColor: 'red',
-  lineWidth: 2,
-  scale: 1,
-  offsetX: 0,
-  offsetY: 0,
-};
+  let drawing = {
+    nowX: 0,
+    nowY: 0,
+  }
 
-export function registerDrawListener(board, boardController) {
   let currentFigure;
   let oldCurrentFigure;
   let isMoving = false;
 
   let isMouseDown = false;
+
+  store.subscribe(() => {
+    const newState = store.getState()
+
+    settings = newState;
+
+    updateViewBox();
+  })
 
   d3.select('.board')
     .on('mousedown', function(event) {
@@ -50,7 +53,7 @@ export function registerDrawListener(board, boardController) {
       if (target.tagName !== 'path')
         return;
 
-      if (drawing.tool !== 'eraser' || !isMouseDown)
+      if (settings.tool !== 'eraser' || !isMouseDown)
         return;
 
       const pathId = d3.select(target).attr('id');
@@ -72,29 +75,41 @@ export function registerDrawListener(board, boardController) {
 
   getAllFigures();
 
+  const toolToClass = {
+    'pencil': Line,
+    'rectangle': Rectangle,
+    'ellipse': Ellipse,
+  }
+
+  const toolToFigureType = {
+    'pencil': FigureType.LINE,
+    'rectangle': FigureType.RECTANGLE,
+    'ellipse': FigureType.ELLIPSE,
+  }
+
   function handleMouseDown(e) {
     e.preventDefault();
 
-    if (e.button === 0 && drawing.tool === 'pencil') {
-      drawing.state = DrawingStates.CREATING;
-      currentFigure = new Line(FigureType.LINE, 'waiting', [drawing.lineColor, drawing.lineWidth], []);
+    if (e.button === 0 && settings.tool !== 'eraser') {
+      settings.state = DrawingStates.CREATING;
+
+      currentFigure = toolToClass[settings.tool].startProcess(toolToFigureType[settings.tool], 'waiting', Object.values(settings.tools[settings.tool]), new Point(drawing.nowX, drawing.nowY));
       oldCurrentFigure = null;
 
       createFigure((uuid) => {
         currentFigure.id = uuid;
-        drawing.state = DrawingStates.DRAWING;
+        settings.state = DrawingStates.DRAWING;
       });
-    } else if (e.button === 0 && drawing.tool === 'eraser') {
     } else if (e.button === 2) {
       isMoving = true;
 
-      drawing.startX = e.clientX;
-      drawing.startY = e.clientY;
+      settings.view.startX = e.clientX;
+      settings.view.startY = e.clientY;
     }
   }
 
   function finishDrawing() {
-    drawing.state = DrawingStates.IDLE;
+    settings.state = DrawingStates.IDLE;
     boardController.upsertFigure(currentFigure);
 
     triggerUpdateFigure(currentFigure, oldCurrentFigure);
@@ -102,7 +117,7 @@ export function registerDrawListener(board, boardController) {
   }
 
   function waitForDrawingState() {
-    if (drawing.state === DrawingStates.DRAWING) {
+    if (settings.state === DrawingStates.DRAWING) {
       finishDrawing();
     } else {
       setTimeout(waitForDrawingState, 50);
@@ -112,8 +127,8 @@ export function registerDrawListener(board, boardController) {
   function handleMouseUp(e) {
     e.preventDefault();
 
-    if (e.button === 0 && drawing.tool === 'pencil') {
-      switch (drawing.state) {
+    if (e.button === 0 && (settings.tool !== 'eraser')) {
+      switch (settings.state) {
         case DrawingStates.CREATING:
           waitForDrawingState();
           break;
@@ -130,58 +145,89 @@ export function registerDrawListener(board, boardController) {
 
   function handleMouseMove(event) {
     const rect = board.getBoundingClientRect();
-    drawing.nowX = (event.offsetX + BASE_OFFSET_X - rect.left) / drawing.scale - drawing.offsetX;
-    drawing.nowY = (event.offsetY + BASE_OFFSET_Y - rect.top) / drawing.scale - drawing.offsetY;
+    drawing.nowX = (event.offsetX + BASE_OFFSET_X - rect.left) / settings.view.scale - settings.view.offsetX;
+    drawing.nowY = (event.offsetY + BASE_OFFSET_Y - rect.top) / settings.view.scale - settings.view.offsetY;
 
     if (isMoving) {
-      const dx = event.clientX - drawing.startX;
-      const dy = event.clientY - drawing.startY;
+      const dx = event.clientX - settings.view.startX;
+      const dy = event.clientY - settings.view.startY;
 
-      drawing.offsetX += dx / drawing.scale;
-      drawing.offsetY += dy / drawing.scale;
+      settings.view.offsetX += dx / settings.view.scale;
+      settings.view.offsetY += dy / settings.view.scale;
 
-      drawing.startX = event.clientX;
-      drawing.startY = event.clientY;
+      settings.view.startX = event.clientX;
+      settings.view.startY = event.clientY;
 
-      const newWidth = board.clientWidth / drawing.scale;
-      const newHeight = board.clientHeight / drawing.scale;
+      const newWidth = board.clientWidth / settings.view.scale;
+      const newHeight = board.clientHeight / settings.view.scale;
 
-      board.setAttribute('viewBox', `${-drawing.offsetX} ${-drawing.offsetY} ${newWidth} ${newHeight}`);
+      board.setAttribute('viewBox', `${-settings.view.offsetX} ${-settings.view.offsetY} ${newWidth} ${newHeight}`);
     }
   }
 
   function handleWheel(event) {
     event.preventDefault();
 
-    const scaleChange = event.deltaY < 0 ? 1.03 : 0.97;
+    const scaleChange = getScaleChange(event.deltaY);
+    const cursorPosition = calculateCursorPosition(event);
 
-    const rect = board.getBoundingClientRect();
-    const cursorX = (event.offsetX + BASE_OFFSET_X - rect.left) / drawing.scale;
-    const cursorY = (event.offsetY + BASE_OFFSET_Y - rect.top) / drawing.scale;
+    updateDrawingPosition(cursorPosition, scaleChange);
+    updateViewBox();
+  }
 
-    drawing.nowX = cursorX - drawing.offsetX;
-    drawing.nowY = cursorY - drawing.offsetY;
+  function getScaleChange(deltaY) {
+      return deltaY < 0 ? 1.1 : 0.9;
+  }
 
-    drawing.scale *= scaleChange;
+  function calculateCursorPosition(event) {
+      const rect = board.getBoundingClientRect();
+      const cursorX = (event.offsetX + BASE_OFFSET_X - rect.left) / settings.view.scale;
+      const cursorY = (event.offsetY + BASE_OFFSET_Y - rect.top) / settings.view.scale;
+      return { x: cursorX, y: cursorY };
+  }
 
-    const newWidth = board.clientWidth / drawing.scale;
-    const newHeight = board.clientHeight / drawing.scale;
+  const minScale = 0.1;
+  const maxScale = 10;
 
-    drawing.offsetX = -(drawing.nowX - cursorX / scaleChange);
-    drawing.offsetY = -(drawing.nowY - cursorY / scaleChange);
+  function updateDrawingPosition(cursorPosition, scaleChange) {
+      drawing.nowX = cursorPosition.x - settings.view.offsetX;
+      drawing.nowY = cursorPosition.y - settings.view.offsetY;
 
-    board.setAttribute('viewBox', `${-drawing.offsetX} ${-drawing.offsetY} ${newWidth} ${newHeight}`);
+      settings.view.scale *= scaleChange;
+
+      settings.view.scale = Math.min(Math.max(settings.view.scale, minScale), maxScale);
+
+      settings.view.offsetX = -(drawing.nowX - cursorPosition.x / scaleChange);
+      settings.view.offsetY = -(drawing.nowY - cursorPosition.y / scaleChange);
+  }
+
+  function updateViewBox() {
+      const newWidth = board.clientWidth / settings.view.scale;
+      const newHeight = board.clientHeight / settings.view.scale;
+
+      board.setAttribute('viewBox', `${-settings.view.offsetX} ${-settings.view.offsetY} ${newWidth} ${newHeight}`);
   }
 
   function updateDrawing() {
-    if (drawing.state === DrawingStates.IDLE) {
+    if (settings.state === DrawingStates.IDLE) {
       return;
     }
 
-    currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
+    currentFigure.process(new Point(drawing.nowX, drawing.nowY));
     boardController.upsertFigure(currentFigure);
 
-    if (drawing.state === DrawingStates.DRAWING) {
+    // if (settings.tool === "pencil") {
+    //   currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
+    //   boardController.upsertFigure(currentFigure);
+    // } else if (settings.tool === "rectangle") {
+    //   currentFigure.points[1].x = drawing.nowX;
+    //   currentFigure.points[1].y = drawing.nowY;
+
+    //   boardController.upsertFigure(currentFigure);
+    // }
+
+
+    if (settings.state === DrawingStates.DRAWING) {
       triggerUpdateFigure(currentFigure, oldCurrentFigure);
       oldCurrentFigure = currentFigure.clone();
     }
