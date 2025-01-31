@@ -2,14 +2,18 @@ import './global.scss';
 import React from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 
+import { Provider } from 'react-redux';
+
 import SignUpPage from './Pages/Auth/SignUpPage/SignUpPage';
 import SignInPage from './Pages/Auth/SignInPage/SignInPage';
 import HomePage from './Pages/App/HomePage/HomePage';
 import BoardPage from './Pages/App/BoardPage/BoardPage';
+import store from './redux/store';
 
 
 function App() {
     return (
+        <Provider store={store}>
         <Router>
             <Routes>
                 <Route path='auth'>
@@ -26,6 +30,7 @@ function App() {
                 <Route path='' element={<Navigate to="app"/>}/>
             </Routes>
         </Router>
+        </Provider>
     );
 }
 

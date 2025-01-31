@@ -7,7 +7,6 @@ import { BoardApi } from 'est_proxy_api';
 import LoadingPage from '../../LoadingPage/LoadingPage';
 import HeadMenu from './HeadMenu/HeadMenu';
 
-import { drawing } from './Board/Paint';
 import ErrorPage from '../../ErrorPages/ErrorPage';
 import ScaleElement from './Scale/Scale';
 
@@ -16,7 +15,7 @@ const apiInstance = new BoardApi();
 const BoardPage = () => {
   const { boardId } = useParams();
   const [data, setData] = useState(null);
-  const [tool, setTool] = useState(drawing.tool);
+
   const [err, setErr] = useState(null);
 
   const navigate = useNavigate();
@@ -61,25 +60,22 @@ const BoardPage = () => {
   }
 
   return (
-    <>
-      <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} currentTool={tool} />
-      <ScaleElement style={{ position: 'absolute', right: '0', bottom: '0', zIndex: '6' }}></ScaleElement>
-      { /* Menu wrap */}
-      <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute' }} vertical
-            align="center" justify="space-between">
-        { /* Top */}
-        <HeadMenu data={data} updateData={updateData} refreshData={refreshBoardData} />
-        { /* Bottom */}
-        <Flex className="w100p" justify="center">
-          <ToolPanel onToolChange={(tool) => {
-            console.log(tool);
-            drawing.tool = tool;
-            setTool(tool);
-          }} />
+    // <DrawingSettingsContext.Provider value={{ drawingSettings, setDrawingSettings }}>
+      <div style={{ overflow: 'hidden', height: '100vh', width: '100vw', position: 'absolute' }}>
+        <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} />
+        <ScaleElement style={{ position: 'absolute', right: '0', bottom: '0', zIndex: '6' }}></ScaleElement>
+        { /* Menu wrap */}
+        <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute' }} vertical
+              align="center" justify="space-between">
+          { /* Top */}
+          <HeadMenu data={data} updateData={updateData} refreshData={refreshBoardData} />
+          { /* Bottom */}
+          <Flex className="w100p" justify="center">
+            <ToolPanel/>
+          </Flex>
         </Flex>
-      </Flex>
-    </>
-
+      </div>
+    // </DrawingSettingsContext.Provider>
   );
 };
 
