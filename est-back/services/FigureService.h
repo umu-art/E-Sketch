@@ -23,4 +23,6 @@ namespace est_back::service {
     void updateFigure(const osm::FigureDto& figureDto, const std::string& figureId);
 
     void deleteFigure(const std::string& figureId);
+
+    bool figureExists(const std::string& figureId);
 }  // namespace est_back::service

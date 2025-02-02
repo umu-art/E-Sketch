@@ -1,4 +1,4 @@
-#include "ExeptionHandler.h"
+#include "ExceptionHandler.h"
 
 using namespace drogon;
 

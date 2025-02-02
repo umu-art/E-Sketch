@@ -47,4 +47,6 @@ namespace est_back::service {
 
     void createBoardInDB(const osm::BackBoardDto& boardDto);
 
+    bool boardExists(const std::string& boardId);
+
 }  // namespace est_back::service
