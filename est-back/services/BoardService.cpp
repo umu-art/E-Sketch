@@ -6,10 +6,6 @@ namespace est_back::service {
 
     osm::BackBoardListDto getBackBoardListDto(const std::string& userId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from users where id = $1);", userId);
-        if (!existsRes[0][0].as<bool>()) {
-            throw err::ServiceException(err::ServiceError::NOT_FOUND, "User not found");
-        }
         auto res = clientPtr->execSqlSync(
             "select * "
             "from board "
@@ -69,10 +65,6 @@ namespace est_back::service {
 
     osm::BackBoardDto createBoard(const osm::UpsertBoardDto& upsertBoardDto, const std::string& userId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from users where id = $1);", userId);
-        if (!existsRes[0][0].as<bool>()) {
-            throw err::ServiceException(err::ServiceError::NOT_FOUND, "User not found");
-        }
         osm::BackBoardDto boardDto;
         boardDto.setId(drogon::utils::getUuid());
         boardDto.setName(upsertBoardDto.getName());
@@ -92,8 +84,7 @@ namespace est_back::service {
 
     osm::BackBoardDto getBoard(const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         auto res = clientPtr->execSqlSync("select * from board where id = $1;", boardId);
@@ -118,8 +109,7 @@ namespace est_back::service {
 
     void updateBoard(const osm::UpsertBoardDto& upsertBoardDto, const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         osm::LinkShareMode linkShareMode;
@@ -136,8 +126,7 @@ namespace est_back::service {
 
     void deleteBoard(const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         clientPtr->execSqlSync(
@@ -150,8 +139,7 @@ namespace est_back::service {
 
     void shareBoard(const osm::BackSharingDto& sharingDto, const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         auto sharingExistsRes =
@@ -173,8 +161,7 @@ namespace est_back::service {
 
     void updateShare(const osm::BackSharingDto& sharingDto, const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         auto sharingExistsRes =
@@ -194,8 +181,7 @@ namespace est_back::service {
 
     void unshareBoard(const osm::UnshareBoardDto& unshareBoardDto, const std::string& boardId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         auto sharingExistsRes =
@@ -212,12 +198,7 @@ namespace est_back::service {
 
     void markAsRecent(const std::string& boardId, const std::string& userId) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from users where id = $1);", userId);
-        if (!existsRes[0][0].as<bool>()) {
-            throw err::ServiceException(err::ServiceError::NOT_FOUND, "User not found");
-        }
-        existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
-        if (!existsRes[0][0].as<bool>()) {
+        if (!boardExists(boardId)) {
             throw err::ServiceException(err::ServiceError::NOT_FOUND, "Board not found");
         }
         std::string recentBoardId = drogon::utils::getUuid();
@@ -314,15 +295,16 @@ namespace est_back::service {
 
     void createBoardInDB(const osm::BackBoardDto& boardDto) {
         auto clientPtr = drogon::app().getDbClient("est-data");
-        if (!est_back::utils::isValidUUID(boardDto.getId())) {
-            throw err::ServiceException(err::ServiceError::BAD_REQUEST, "Incorrect board id");
-        } else if (!est_back::utils::isValidUUID(boardDto.getOwnerId())) {
-            throw err::ServiceException(err::ServiceError::BAD_REQUEST, "Incorrect owner id");
-        }
         clientPtr->execSqlSync(
             "insert into board(id, name, description, owner_id, link_shared_mode) "
             "values($1, $2, $3, $4, $5);",
             boardDto.getId(), boardDto.getName(), boardDto.getDescription(), boardDto.getOwnerId(),
             est_back::utils::toUpper(linkSharedModeToString(boardDto.getLinkSharedMode())));
+    }
+
+    bool boardExists(const std::string& boardId) {
+        auto clientPtr = drogon::app().getDbClient("est-data");
+        auto existsRes = clientPtr->execSqlSync("select exists(select 1 from board where id = $1);", boardId);
+        return existsRes[0][0].as<bool>();
     }
 };  // namespace est_back::service

@@ -1,6 +1,6 @@
 #include <drogon/drogon.h>
 #include "./apm.cpp"
-#include "errors/ExeptionHandler.h"
+#include "errors/ExceptionHandler.h"
 
 int main() {
     // Load config
