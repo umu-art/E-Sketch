@@ -10,6 +10,9 @@ const FPS = 60;
 export const BASE_OFFSET_X = 0;
 export const BASE_OFFSET_Y = 20;
 
+export const MIN_SCALE = 0.1;
+export const MAX_SCALE = 10;
+
 export const DrawingStates = {
   IDLE: 'idle',
   CREATING: 'creating',
@@ -22,7 +25,7 @@ export function registerDrawListener(board, boardController, initialDrawing) {
   let drawing = {
     nowX: 0,
     nowY: 0,
-  }
+  };
 
   let currentFigure;
   let oldCurrentFigure;
@@ -31,12 +34,12 @@ export function registerDrawListener(board, boardController, initialDrawing) {
   let isMouseDown = false;
 
   store.subscribe(() => {
-    const newState = store.getState()
+    const newState = store.getState();
 
     settings = newState;
 
     updateViewBox();
-  })
+  });
 
   d3.select('.board')
     .on('mousedown', function(event) {
@@ -79,13 +82,13 @@ export function registerDrawListener(board, boardController, initialDrawing) {
     'pencil': Line,
     'rectangle': Rectangle,
     'ellipse': Ellipse,
-  }
+  };
 
   const toolToFigureType = {
     'pencil': FigureType.LINE,
     'rectangle': FigureType.RECTANGLE,
     'ellipse': FigureType.ELLIPSE,
-  }
+  };
 
   function handleMouseDown(e) {
     e.preventDefault();
@@ -176,36 +179,33 @@ export function registerDrawListener(board, boardController, initialDrawing) {
   }
 
   function getScaleChange(deltaY) {
-      return deltaY < 0 ? 1.1 : 0.9;
+    return deltaY < 0 ? 1.03 : 0.97;
   }
 
   function calculateCursorPosition(event) {
-      const rect = board.getBoundingClientRect();
-      const cursorX = (event.offsetX + BASE_OFFSET_X - rect.left) / settings.view.scale;
-      const cursorY = (event.offsetY + BASE_OFFSET_Y - rect.top) / settings.view.scale;
-      return { x: cursorX, y: cursorY };
+    const rect = board.getBoundingClientRect();
+    const cursorX = (event.offsetX + BASE_OFFSET_X - rect.left) / settings.view.scale;
+    const cursorY = (event.offsetY + BASE_OFFSET_Y - rect.top) / settings.view.scale;
+    return { x: cursorX, y: cursorY };
   }
 
-  const minScale = 0.1;
-  const maxScale = 10;
-
   function updateDrawingPosition(cursorPosition, scaleChange) {
-      drawing.nowX = cursorPosition.x - settings.view.offsetX;
-      drawing.nowY = cursorPosition.y - settings.view.offsetY;
+    drawing.nowX = cursorPosition.x - settings.view.offsetX;
+    drawing.nowY = cursorPosition.y - settings.view.offsetY;
 
-      settings.view.scale *= scaleChange;
+    settings.view.scale *= scaleChange;
 
-      settings.view.scale = Math.min(Math.max(settings.view.scale, minScale), maxScale);
+    settings.view.scale = Math.min(Math.max(settings.view.scale, MIN_SCALE), MAX_SCALE);
 
-      settings.view.offsetX = -(drawing.nowX - cursorPosition.x / scaleChange);
-      settings.view.offsetY = -(drawing.nowY - cursorPosition.y / scaleChange);
+    settings.view.offsetX = -(drawing.nowX - cursorPosition.x / scaleChange);
+    settings.view.offsetY = -(drawing.nowY - cursorPosition.y / scaleChange);
   }
 
   function updateViewBox() {
-      const newWidth = board.clientWidth / settings.view.scale;
-      const newHeight = board.clientHeight / settings.view.scale;
+    const newWidth = board.clientWidth / settings.view.scale;
+    const newHeight = board.clientHeight / settings.view.scale;
 
-      board.setAttribute('viewBox', `${-settings.view.offsetX} ${-settings.view.offsetY} ${newWidth} ${newHeight}`);
+    board.setAttribute('viewBox', `${-settings.view.offsetX} ${-settings.view.offsetY} ${newWidth} ${newHeight}`);
   }
 
   function updateDrawing() {
