@@ -14,4 +14,5 @@ type UserRepository interface {
 	UserExistsByUsernameOrEmail(ctx context.Context, username string, email string) bool
 	SearchByUsernameIgnoreCase(ctx context.Context, username string) *[]models.PublicUser
 	GetUserListByIds(ctx context.Context, ids []uuid.UUID) *[]models.PublicUser
+	UpdateLoggedInUser(ctx context.Context, userId *uuid.UUID)
 }
