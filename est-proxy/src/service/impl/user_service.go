@@ -38,6 +38,8 @@ func (u UserServiceImpl) Login(ctx context.Context, authDto *proxymodels.AuthDto
 		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
 	}
 
+	u.userRepository.UpdateLoggedInUser(ctx, &user.ID)
+
 	token := utils.GenerateUserJWTString(&user.ID)
 	if token == nil {
 		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")

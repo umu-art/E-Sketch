@@ -63,7 +63,7 @@ func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 				continue
 			}
 			if time.Now().Sub(figureData.(figureUpdateData).time) > config.BUFFERED_FIGURE_LIVE_TIME {
-				callback(figureId, figureData.(figureUpdateData).data)
+				fb.safeFlushCall(callback, figureId, figureData.(figureUpdateData).data)
 				fb.data.Del(figureId)
 			} else {
 				inWorkFigures.Enque(figureId)
@@ -74,6 +74,15 @@ func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 			fb.bufferedFigures.Enque(inWorkFigures.Deque().(string))
 		}
 	}
+}
+
+func (fb *FigureBuffer) safeFlushCall(callback FlushFunc, figureId string, message []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered after figure flush callback: %v", r)
+		}
+	}()
+	callback(figureId, message)
 }
 
 type FlushFunc func(figureId string, message []byte)

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"log"
+	"time"
 )
 
 type UserRepositoryImpl struct {
@@ -20,8 +21,8 @@ func NewUserRepositoryImpl(postgresService repository.PostgresService) *UserRepo
 
 func (r *UserRepositoryImpl) Create(ctx context.Context, username string, email string, passwordHash string) *uuid.UUID {
 	_, err := r.postgresService.Exec(ctx,
-		"INSERT INTO users (id, username, password_hash, email, avatar) VALUES ($1, $2, $3, $4, '')",
-		uuid.New(), username, passwordHash, email)
+		"INSERT INTO users (id, username, password_hash, email, avatar, last_login) VALUES ($1, $2, $3, $4, '', $5)",
+		uuid.New(), username, passwordHash, email, time.Now())
 	if err != nil {
 		log.Printf("Failed to create user: %v", err)
 		return nil
@@ -146,4 +147,11 @@ func (r *UserRepositoryImpl) GetUserListByIds(ctx context.Context, ids []uuid.UU
 	}
 
 	return &users
+}
+
+func (r *UserRepositoryImpl) UpdateLoggedInUser(ctx context.Context, userId *uuid.UUID) {
+	_, err := r.postgresService.Exec(ctx, "UPDATE users SET last_login = $1 WHERE id = $2", time.Now(), userId)
+	if err != nil {
+		log.Printf("Failed to update logged in user: %v", err)
+	}
 }

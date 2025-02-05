@@ -50,7 +50,7 @@ func (bs *BoardServiceImpl) GetByUuid(ctx context.Context, userId *uuid.UUID, bo
 		log.Printf("Failed to mark board as recent: %v", err.Error())
 	}
 
-	return mapper.MapBackBoardToProxy(*board, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
+	return mapper.MapBackBoardToProxy(*board, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) List(ctx context.Context, userId *uuid.UUID) (*proxymodels.BoardListDto, *errors.StatusError) {
@@ -60,7 +60,7 @@ func (bs *BoardServiceImpl) List(ctx context.Context, userId *uuid.UUID) (*proxy
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось составить список досок")
 	}
 
-	return mapper.MapManyBoardsToProxy(list, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
+	return mapper.MapManyBoardsToProxy(list, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) Create(ctx context.Context, userId *uuid.UUID, createRequest *proxymodels.CreateRequest) (*proxymodels.BoardDto, *errors.StatusError) {
@@ -76,7 +76,7 @@ func (bs *BoardServiceImpl) Create(ctx context.Context, userId *uuid.UUID, creat
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать доску")
 	}
 
-	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
+	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, boardId *uuid.UUID, updateRequest *proxymodels.CreateRequest) (*proxymodels.BoardDto, *errors.StatusError) {
@@ -101,7 +101,7 @@ func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, board
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось обновить доску")
 	}
 
-	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokenFunc(ctx)), nil
+	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
 
 func (bs *BoardServiceImpl) DeleteBoard(ctx context.Context, userId *uuid.UUID, boardId *uuid.UUID) *errors.StatusError {
@@ -218,12 +218,12 @@ func (bs *BoardServiceImpl) getUsersFunc(ctx context.Context) func([]string) []m
 	}
 }
 
-func (bs *BoardServiceImpl) getPreviewTokenFunc(ctx context.Context) func(boardId string) string {
-	return func(boardId string) string {
-		res, err := bs.previewApi.GetToken(boardId, ctx)
+func (bs *BoardServiceImpl) getPreviewTokensFunc(ctx context.Context) func(boardIds []string) map[string]string {
+	return func(boardIds []string) map[string]string {
+		res, err := bs.previewApi.GetTokens(boardIds, ctx)
 		if err != nil {
 			log.Printf("Failed to get token: %s", err.GetMessage())
-			return ""
+			return nil
 		}
 		return res
 	}
