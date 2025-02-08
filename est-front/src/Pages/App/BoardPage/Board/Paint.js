@@ -172,6 +172,13 @@ export function registerDrawListener(board, boardController, initialDrawing) {
     event.preventDefault();
 
     const scaleChange = getScaleChange(event.deltaY);
+
+    const newScale = settings.view.scale * scaleChange;
+
+    if (newScale < MIN_SCALE || newScale > MAX_SCALE) {
+      return;
+    }
+
     const cursorPosition = calculateCursorPosition(event);
 
     updateDrawingPosition(cursorPosition, scaleChange);
