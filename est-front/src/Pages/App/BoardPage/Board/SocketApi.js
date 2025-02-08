@@ -28,6 +28,17 @@ export function onNewFigure(handler) {
   });
 }
 
+export function onRemoveFigure(handler) {
+  figureWebSocket.addEventListener('message', (event) => {
+    if (event.data.length > 36 &&
+      event.data[0] === '-') {
+      const id = event.data.slice(1, 38);
+
+      handler(id);
+    }
+  });
+}
+
 export function onUpdateFigure(handler) {
   figureWebSocket.addEventListener('message', (event) => {
     if (event.data.length > 36 &&
