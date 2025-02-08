@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { redirect, useNavigate } from 'react-router-dom';
 
 import { Button, Checkbox, Flex, Form, Input, message, Typography } from 'antd';
 import 'antd/dist/reset.css';
@@ -9,7 +9,7 @@ import { UserApi } from 'est_proxy_api';
 import { Config } from '../../../config';
 
 
-const SignInForm = () => {
+const SignInForm = ({ redirectTo }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
 
@@ -35,7 +35,7 @@ const SignInForm = () => {
                 content: 'Авторизация прошла успешно!'
             })
 
-            navigate('/app');
+            navigate(redirectTo);
         } catch (error) {
             messageApi.open({
                 type: 'error',

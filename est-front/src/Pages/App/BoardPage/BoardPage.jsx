@@ -33,7 +33,7 @@ const BoardPage = () => {
       setData(data);
     }).catch((error) => {
       if (error.status === 401) {
-        navigate('/auth/signin');
+        navigate(`/auth/signin?to=${window.location.pathname}${window.location.search}`);
       } else {
         setErr(error);
       }
