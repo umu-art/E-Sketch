@@ -1,6 +1,6 @@
 import { Point } from 'figures/dist/point';
 import { Ellipse, FigureType, Line, Rectangle } from 'figures/dist';
-import { changeFigure, createFigure, deleteFigure, getAllFigures, onNewFigure, onUpdateFigure, updateFigure } from './SocketApi';
+import { changeFigure, createFigure, deleteFigure, getAllFigures, onNewFigure, onRemoveFigure, onUpdateFigure, updateFigure } from './SocketApi';
 import { decode, encode } from 'coder/dist';
 
 import * as d3 from 'd3';
@@ -75,6 +75,7 @@ export function registerDrawListener(board, boardController, initialDrawing) {
 
   onNewFigure(handleNewFigure);
   onUpdateFigure(handleUpdateFigure);
+  onRemoveFigure(handleRemoveFigure);
 
   getAllFigures();
 
@@ -237,6 +238,10 @@ export function registerDrawListener(board, boardController, initialDrawing) {
     if (!currentFigure || figure.id !== currentFigure.id) {
       boardController.upsertFigure(figure);
     }
+  }
+
+  function handleRemoveFigure(id) {
+    boardController.removeFigure(id);
   }
 
   function handleUpdateFigure(id, data) {
