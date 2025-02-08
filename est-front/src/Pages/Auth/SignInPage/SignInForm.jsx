@@ -9,7 +9,7 @@ import { UserApi } from 'est_proxy_api';
 import { Config } from '../../../config';
 
 
-const SignInForm = () => {
+const SignInForm = ({ redirectTo }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
 
@@ -35,7 +35,7 @@ const SignInForm = () => {
                 content: 'Авторизация прошла успешно!'
             })
 
-            navigate('/app');
+            navigate(redirectTo);
         } catch (error) {
             messageApi.open({
                 type: 'error',

@@ -32,8 +32,8 @@ const BoardPage = () => {
     apiInstance.getByUuid(boardId).then((data) => {
       setData(data);
     }).catch((error) => {
-      if (error.code === 401) {
-        navigate('/auth/signin');
+      if (error.status === 401) {
+        navigate(`/auth/signin?to=${window.location.pathname}${window.location.search}`);
       } else {
         setErr(error);
       }
