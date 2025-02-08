@@ -3,19 +3,22 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import store from '../../../../redux/store';
 import { setOffset, setScale } from '../../../../redux/toolSettings/actions';
+import { MAX_SCALE, MIN_SCALE } from '../Board/Paint';
 
 const round = Math.round;
 
 const baseC = 1.1;
 
-const TextAndRect = ({ angle, scale, onChange }) => (
-  <g transform={`rotate(${angle} 170 170)`} style={{pointerEvents: 'all', cursor: "pointer"}} onClick={() => {onChange(scale)}}>
-    <text fill="black" x="63" y="175" fontFamily="Arial" fontSize="15">
+const TextAndRect = ({ angle, scale, onChange }) => {
+  const active = scale < MAX_SCALE * 100 && scale > MIN_SCALE * 100;
+  
+  return <g transform={`rotate(${angle} 170 170)`} style={{pointerEvents: 'all', cursor: active ? "pointer" : "auto"}} onClick={() => {onChange(scale)}}>
+    <text fill={active ? "black" : "gray"} x="63" y="175" fontFamily="Arial" fontSize="15">
       {scale}%
     </text>
     <rect x="115" y="170" width="7" height="0.5" rx="1" fill="black" stroke="black"/>
   </g>
-);
+};
 
 const ScaleElement = ({ style }) => {
   const [currentScale, setCurrentScale] = useState(100);
@@ -37,6 +40,10 @@ const ScaleElement = ({ style }) => {
   ];
 
   const changeScale = (scale) => {
+    if (scale > MAX_SCALE * 100 || scale < MIN_SCALE * 100) {
+      return;
+    }
+
     const state = store.getState()
 
     const scaleChange = state.view.scale / (scale / 100);
@@ -44,12 +51,8 @@ const ScaleElement = ({ style }) => {
     const centerX = (window.innerWidth / 2) / state.view.scale;
     const centerY = (window.innerHeight / 2) / state.view.scale;
 
-    console.log(centerX, centerY);
-
     const nowX = centerX - state.view.offsetX;
     const nowY = centerY - state.view.offsetY;
-
-    console.log(nowX, nowY);
 
     const newOffsetX = -(nowX - centerX / scaleChange);
     const newOffsetY = -(nowY - centerY / scaleChange);
