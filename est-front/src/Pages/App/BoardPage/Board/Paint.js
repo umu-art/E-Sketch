@@ -33,6 +33,8 @@ export function registerDrawListener(board, boardController, initialDrawing) {
 
   let isMouseDown = false;
 
+  const history = [];
+
   store.subscribe(() => {
     const newState = store.getState();
 
@@ -61,8 +63,22 @@ export function registerDrawListener(board, boardController, initialDrawing) {
 
       const pathId = d3.select(target).attr('id');
 
+      const figure = boardController.figures.find(figure => figure.id === pathId);
+      figure.id = "waiting"
+
+      console.log(figure);
+
       boardController.removeFigure(pathId);
       deleteFigure(pathId);
+
+      history.push(() => {
+        createFigure((uuid) => {
+          figure.id = uuid;
+        
+          boardController.upsertFigure(figure);
+          changeFigure(figure);
+        });
+      });
     });
 
   board.addEventListener('mousedown', handleMouseDown);
@@ -102,6 +118,11 @@ export function registerDrawListener(board, boardController, initialDrawing) {
       createFigure((uuid) => {
         currentFigure.id = uuid;
         settings.state = DrawingStates.DRAWING;
+      
+        history.push(() => {
+          boardController.removeFigure(uuid);
+          deleteFigure(uuid);
+        });
       });
     } else if (e.button === 2) {
       isMoving = true;
@@ -251,6 +272,17 @@ export function registerDrawListener(board, boardController, initialDrawing) {
       }
     }
   }
+
+  function keyPressHandler(e) {
+    if (e.ctrlKey && e.keyCode === 90) {
+        if (history.length > 0) {
+          const undoFunction = history.pop();
+          undoFunction();
+        }
+    }
+  }
+
+  window.addEventListener('keydown', keyPressHandler);
 }
 
 function triggerUpdateFigure(newFigure, oldFigure) {
