@@ -37,7 +37,7 @@ const SignUpForm = () => {
                 content: 'Регистрация прошла успешно!',
             });
 
-            navigate("/app");
+            navigate("/auth/confirm");
         } catch (error) {
             messageApi.open({
                 type: 'error',

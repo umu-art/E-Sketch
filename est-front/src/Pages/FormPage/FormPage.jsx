@@ -14,8 +14,8 @@ const FormPage = ({title, form, children}) => {
                 <Flex>
                     <Flex style={{width: 300}} align='center' justify="center" vertical>
                         <img className={classes.logo} src="/logo.png" alt="logo"
-                             style={{width: '120px', height: 'auto'}}/>
-                        <Typography.Title level={2}>{title}</Typography.Title>
+                            style={{width: '120px', height: 'auto'}}/>
+                        <Typography.Title level={2} style={{textAlign: "center"}}>{title}</Typography.Title>
                     </Flex>
                     <Divider type='vertical' style={{height: "auto", margin: "0 24px"}}/>
                     <Flex style={{width: 300}} vertical>

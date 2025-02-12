@@ -9,6 +9,7 @@ import SignInPage from './Pages/Auth/SignInPage/SignInPage';
 import HomePage from './Pages/App/HomePage/HomePage';
 import BoardPage from './Pages/App/BoardPage/BoardPage';
 import store from './redux/store';
+import EmailConfirmPage from './Pages/Auth/EmailConfirmPage/EmailConfirmPage';
 
 
 function App() {
@@ -19,6 +20,9 @@ function App() {
                 <Route path='auth'>
                     <Route path="signup" element={<SignUpPage/>}/>
                     <Route path="signin" element={<SignInPage/>}/>
+                    <Route path='confirm' element={<EmailConfirmPage />}/>
+                    <Route path='*' element={<Navigate to="signin"/>}/>
+                    <Route path='' element={<Navigate to="signin"/>}/>
                 </Route>
                 <Route path="app">
                     <Route path="home/*" element={<HomePage/>}/>
