@@ -6,6 +6,7 @@ require (
 	est_back_go v0.0.1
 	est_proxy_go v0.0.1
 	github.com/dustinxie/lockfree v0.0.0-20210712051436-ed0ed42fd0d6
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
@@ -20,7 +21,9 @@ require (
 
 require (
 	github.com/armon/go-radix v1.0.0 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dchest/siphash v1.2.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-windows v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

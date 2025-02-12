@@ -35,12 +35,10 @@ const BUFFERED_FIGURE_EXPIRATION_TIME = 500 * time.Millisecond
 
 var SMTP_SERVER = os.Getenv("SMTP_SERVER")
 var SMTP_PORT = os.Getenv("SMTP_PORT")
+var SMTP_EMAIL = os.Getenv("SMTP_EMAIL")
+var SMTP_PASSWORD = os.Getenv("SMTP_PASSWORD")
 
-var SMTP_USERNAME = os.Getenv("MAIL_ACCOUNT")
-var SMTP_PASSWORD = os.Getenv("MAIL_PASSWORD")
-
-var REDIS_HOST = os.Getenv("REDIS_HOST")
-var REDIS_PORT = os.Getenv("REDIS_PORT")
+var REDIS_URL = os.Getenv("REDIS_URL")
 var REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
 var REDIS_DB = os.Getenv("REDIS_DB")
 
