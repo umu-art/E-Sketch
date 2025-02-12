@@ -21,7 +21,7 @@ func NewRedisClientImpl() *RedisClientImpl {
 		log.Fatal(err)
 	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.REDIS_HOST, config.REDIS_PORT),
+		Addr:     config.REDIS_URL,
 		Password: config.REDIS_PASSWORD,
 		DB:       db,
 	})
@@ -108,7 +108,7 @@ func (r *RedisClientImpl) connect() error {
 		return err
 	}
 	r.client = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.REDIS_HOST, config.REDIS_PORT),
+		Addr:     config.REDIS_URL,
 		Password: config.REDIS_PASSWORD,
 		DB:       db,
 	})

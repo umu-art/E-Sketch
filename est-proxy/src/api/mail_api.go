@@ -17,7 +17,7 @@ func NewMailApi() *MailApi {
 	return &MailApi{
 		smtpServer: config.SMTP_SERVER,
 		port:       config.SMTP_PORT,
-		username:   config.SMTP_USERNAME,
+		username:   config.SMTP_EMAIL,
 		password:   config.SMTP_PASSWORD,
 	}
 }

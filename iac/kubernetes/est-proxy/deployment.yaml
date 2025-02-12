@@ -90,6 +90,31 @@ spec:
             - name: ELASTIC_APM_ENVIRONMENT
               value: est
 
+            - name: SMTP_SERVER
+              value: smtp.mail.ru
+            - name: SMTP_PORT
+              value: '587'
+            - name: SMTP_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: SMTP_EMAIL
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: SMTP_PASSWORD
+
+            - name: REDIS_URL
+              value: redis://redis.databases.svc.cluster.local:6379
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kasumi-secrets
+                  key: REDIS_PASSWORD
+            - name: REDIS_DB
+              value: '1'
+
           resources:
             requests:
               memory: "100M"
