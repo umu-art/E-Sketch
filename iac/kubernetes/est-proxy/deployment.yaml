@@ -106,7 +106,7 @@ spec:
                   key: SMTP_PASSWORD
 
             - name: REDIS_URL
-              value: redis://redis.databases.svc.cluster.local:6379
+              value: redis.databases.svc.cluster.local:6379
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
