@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"est-proxy/src/api"
+	"est-proxy/src/config"
 	"est-proxy/src/errors"
 	"est-proxy/src/mapper"
 	"est-proxy/src/repository"
@@ -143,6 +144,5 @@ func (u UserServiceImpl) generateToken(length int) (string, error) {
 }
 
 func (u UserServiceImpl) generateConfirmationLink(token string) string {
-	addr := "https://e-sketch.ru/confirm"
-	return fmt.Sprintf("%s?token=%s", addr, token)
+	return fmt.Sprintf("%s?token=%s", config.CONFIRM_URL, token)
 }

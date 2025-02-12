@@ -44,6 +44,8 @@ var REDIS_DB = os.Getenv("REDIS_DB")
 
 const REDIS_EXPIRATION_TIME = 5 * time.Minute
 
+const CONFIRM_URL string = "https://e-sketch.ru/auth/confirm"
+
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",
 	"/register",
