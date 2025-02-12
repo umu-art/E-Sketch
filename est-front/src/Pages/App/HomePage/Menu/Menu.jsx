@@ -1,9 +1,9 @@
-import { Menu, message } from 'antd';
+import { Button, Flex, Menu, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import { AppstoreOutlined, LinkOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, LinkOutlined, LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { UserApi } from 'est_proxy_api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 const items = (data) => [
@@ -50,6 +50,8 @@ const AppMenu = () => {
 
     const [messageApi, context] = message.useMessage();
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         apiInstance.getSelf().then((data) => {
             setUserData(data);
@@ -69,7 +71,7 @@ const AppMenu = () => {
     }
 
     return (
-        <>
+        <div style={{display: "flex", flexDirection: "column", alignContent: "space-between"}}>
             {context}
             <Menu
                 className='h100p'
@@ -79,7 +81,22 @@ const AppMenu = () => {
                 }}
                 items={items(userData)}
             />
-        </>
+            <Flex style={{width: "100%"}} align='center' alignContent="center">
+                <Button icon={<LogoutOutlined />} onClick={
+                    () => {
+                        apiInstance.logout().then(() => {
+                            navigate('/');
+                        }).catch((error) => {
+                            console.log(error);
+                            messageApi.open({
+                                type: "error",
+                                content: error,
+                            })
+                        });
+                    }
+                }>Выйти</Button>
+            </Flex>
+        </div>
     );
 };
 
