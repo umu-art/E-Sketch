@@ -118,10 +118,10 @@ spec:
           resources:
             requests:
               memory: "100M"
-              cpu: "200m"
+              cpu: "500m"
             limits:
               memory: "100M"
-              cpu: "500m"
+              cpu: "1000m"
 
           readinessProbe:
             httpGet:
