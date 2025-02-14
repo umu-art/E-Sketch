@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Board as BoardController } from 'paint/dist';
 import { registerDrawListener } from './Paint';
-import { connectToMarkers } from './SocketApi';
 import { registerMarkersListener } from './Markers';
 
 import pencilIcon from './pencil.svg';
 import eraserIcon from './eraser.svg';
 import { useSelector } from 'react-redux';
-import { FigureWebSocket } from './Sockets/FigureSocket';
+import FigureWebSocket from './Sockets/FigureSocket';
+import MarkerWebSocket from './Sockets/MarkerSocket';
 
 const toolsIcons = {
   'pencil': pencilIcon,
@@ -35,14 +35,13 @@ const Board = ({ className, style, boardId }) => {
     boardControllerRef.current = new BoardController(boardElement);
 
     const figureWebSocket = new FigureWebSocket(boardId);
-
-    connectToMarkers(boardId);
+    const markerWebSocket = new MarkerWebSocket(boardId);
 
     figureWebSocket.webSocket.addEventListener('open', () => {
       registerDrawListener(boardElement, boardControllerRef.current, drawing, figureWebSocket);
     });
 
-    registerMarkersListener(boardElement, drawing);
+    registerMarkersListener(boardElement, drawing, markerWebSocket);
   }, [boardId, drawing]);
 
   return (<svg

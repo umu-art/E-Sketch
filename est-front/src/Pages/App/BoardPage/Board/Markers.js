@@ -1,4 +1,3 @@
-import { createMarker, onMarkerUpdate } from './SocketApi';
 import { Point } from 'figures/dist';
 
 import { BASE_OFFSET_X, BASE_OFFSET_Y } from './Paint';
@@ -41,7 +40,7 @@ function generateColorFromUsername(username) {
   return colorPalette[colorIndex];
 }
 
-export function registerMarkersListener(board, initialDrawing) {
+export function registerMarkersListener(board, initialDrawing, markerWebSocket) {
   let markersMap = new Map();
   let timersMap = new Map();
 
@@ -69,10 +68,10 @@ export function registerMarkersListener(board, initialDrawing) {
 
     const point = new Point(x, y);
 
-    createMarker(point);
+    markerWebSocket.createMarker(point);
   });
 
-  onMarkerUpdate((point, username) => {
+  markerWebSocket.onMarkerUpdate((point, username) => {
     if (username === me.username) {
       return;
     }
