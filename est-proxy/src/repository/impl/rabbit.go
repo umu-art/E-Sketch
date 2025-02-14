@@ -37,21 +37,27 @@ func (r *RabbitRepositoryImpl) Close() {
 
 func (r *RabbitRepositoryImpl) Refresh() {
 	for {
-		<-r.conn.NotifyClose(make(chan *amqp091.Error))
+		time.Sleep(5 * time.Second)
+		if !r.conn.IsClosed() {
+			continue
+		}
+
+		log.Println("RabbitMQ connection is closed, attempting to reconnect")
 		failedAttempts := 0
 		for {
 			time.Sleep(5 * time.Second)
+			log.Printf("Trying to reconnect to RabbitMQ")
 			if err := r.connect(); err == nil {
+				log.Println("Successfully reconnected to RabbitMQ")
 				break
 			}
-
-			if failedAttempts++; failedAttempts > 5 {
-				log.Fatalf("Failed to reconnect to RabbitMQ")
+			failedAttempts++
+			if failedAttempts > 5 {
+				log.Fatalf("Failed to reconnect to RabbitMQ after %d attempts", failedAttempts)
 			}
 		}
 	}
 }
-
 func (r *RabbitRepositoryImpl) GetTopic(name string) repository.Topic {
 	err := r.channel.ExchangeDeclare(
 		name,
