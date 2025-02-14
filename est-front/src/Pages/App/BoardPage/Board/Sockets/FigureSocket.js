@@ -2,7 +2,7 @@ import { decode, encode } from 'coder/dist';
 
 const backUrl = 'wss://e-sketch.ru';
 
-export class FigureWebSocket {
+class FigureWebSocket {
     constructor(boardId) {
         this.boardId = boardId;
         this.webSocket = null;
@@ -122,3 +122,5 @@ export class FigureWebSocket {
         this.sendMessage(String.fromCharCode(4));
     }
 }
+
+export default FigureWebSocket;
