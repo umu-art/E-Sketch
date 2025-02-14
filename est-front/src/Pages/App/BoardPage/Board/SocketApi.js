@@ -7,14 +7,14 @@ export let figureWebSocket;
 export function connectToFigures(boardId) {
   figureWebSocket = new WebSocket(backUrl + '/proxy/figure/ws?boardId=' + boardId);
 
-  figureWebSocket.addEventListener('open', () => {
+  figureWebSocket.onopen = () => {
     console.log('WebSocket connected to figures');
-  });
+  };
 
-  figureWebSocket.addEventListener('close', () => {
+  figureWebSocket.onclose = () => {
     console.log('WebSocket disconnected from figures');
     connectToFigures(boardId);
-  });
+  };
 }
 
 export function onNewFigure(handler) {

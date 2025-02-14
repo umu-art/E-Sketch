@@ -32,15 +32,31 @@ export class Board {
     }
   }
 
+  private comparePaths(path1: any, path2: any): any {
+    const d1 = path1.getAttribute('d');
+    const d2 = path2.getAttribute('d');
+
+    if (d1 === d2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
   private renderFigure(figure: DefaultFigure) {
-    let figureElement = findFigureById(this.svgElement, figure.id);
+    const figureElement = findFigureById(this.svgElement, figure.id);
+
+    const newFigureElement = figure.toSvg(this.svgElement.ownerDocument);
 
     if (figureElement) {
-      this.svgElement.removeChild(figureElement);
+        if (!this.comparePaths(figureElement, newFigureElement)) {
+          this.svgElement.appendChild(newFigureElement);
+          
+          this.svgElement.removeChild(figureElement);
+        }
+    } else {
+        this.svgElement.appendChild(newFigureElement);
     }
-
-    figureElement = figure.toSvg(this.svgElement.ownerDocument);
-    this.svgElement.appendChild(figureElement);
   }
 }
 

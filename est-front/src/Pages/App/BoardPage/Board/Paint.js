@@ -1,6 +1,5 @@
 import { Point } from 'figures/dist/point';
 import { Ellipse, FigureType, Line, Rectangle } from 'figures/dist';
-import { changeFigure, createFigure, deleteFigure, getAllFigures, onNewFigure, onRemoveFigure, onUpdateFigure, updateFigure } from './SocketApi';
 import { decode, encode } from 'coder/dist';
 
 import * as d3 from 'd3';
@@ -19,7 +18,7 @@ export const DrawingStates = {
   DRAWING: 'drawing',
 };
 
-export function registerDrawListener(board, boardController, initialDrawing) {
+export function registerDrawListener(board, boardController, initialDrawing, figureWebSocket) {
   let settings = initialDrawing;
 
   let drawing = {
@@ -66,17 +65,15 @@ export function registerDrawListener(board, boardController, initialDrawing) {
       const figure = boardController.figures.find(figure => figure.id === pathId);
       figure.id = "waiting"
 
-      console.log(figure);
-
       boardController.removeFigure(pathId);
-      deleteFigure(pathId);
+      figureWebSocket.deleteFigure(pathId);
 
       history.push(() => {
-        createFigure((uuid) => {
+        figureWebSocket.createFigure((uuid) => {
           figure.id = uuid;
         
           boardController.upsertFigure(figure);
-          changeFigure(figure);
+          figureWebSocket.changeFigure(figure);
         });
       });
     });
@@ -89,11 +86,9 @@ export function registerDrawListener(board, boardController, initialDrawing) {
 
   setInterval(updateDrawing, 1000 / FPS);
 
-  onNewFigure(handleNewFigure);
-  onUpdateFigure(handleUpdateFigure);
-  onRemoveFigure(handleRemoveFigure);
-
-  getAllFigures();
+  figureWebSocket.onNewFigure(handleNewFigure);
+  figureWebSocket.onUpdateFigure(handleUpdateFigure);
+  figureWebSocket.onRemoveFigure(handleRemoveFigure);
 
   const toolToClass = {
     'pencil': Line,
@@ -116,13 +111,13 @@ export function registerDrawListener(board, boardController, initialDrawing) {
       currentFigure = toolToClass[settings.tool].startProcess(toolToFigureType[settings.tool], 'waiting', Object.values(settings.tools[settings.tool]), new Point(drawing.nowX, drawing.nowY));
       oldCurrentFigure = null;
 
-      createFigure((uuid) => {
+      figureWebSocket.createFigure((uuid) => {
         currentFigure.id = uuid;
         settings.state = DrawingStates.DRAWING;
       
         history.push(() => {
           boardController.removeFigure(uuid);
-          deleteFigure(uuid);
+          figureWebSocket.deleteFigure(uuid);
         });
       });
     } else if (e.button === 2) {
@@ -245,17 +240,6 @@ export function registerDrawListener(board, boardController, initialDrawing) {
     currentFigure.process(new Point(drawing.nowX, drawing.nowY));
     boardController.upsertFigure(currentFigure);
 
-    // if (settings.tool === "pencil") {
-    //   currentFigure.points.push(new Point(drawing.nowX, drawing.nowY));
-    //   boardController.upsertFigure(currentFigure);
-    // } else if (settings.tool === "rectangle") {
-    //   currentFigure.points[1].x = drawing.nowX;
-    //   currentFigure.points[1].y = drawing.nowY;
-
-    //   boardController.upsertFigure(currentFigure);
-    // }
-
-
     if (settings.state === DrawingStates.DRAWING) {
       triggerUpdateFigure(currentFigure, oldCurrentFigure);
       oldCurrentFigure = currentFigure.clone();
@@ -263,6 +247,10 @@ export function registerDrawListener(board, boardController, initialDrawing) {
   }
 
   function handleNewFigure(figure) {
+    if (!figure.id) {
+      return;
+    }
+
     if (!currentFigure || figure.id !== currentFigure.id) {
       boardController.upsertFigure(figure);
     }
@@ -293,14 +281,15 @@ export function registerDrawListener(board, boardController, initialDrawing) {
         }
     }
   }
+  
+  function triggerUpdateFigure(newFigure, oldFigure) {
+    if (!oldFigure) {
+      figureWebSocket.changeFigure(newFigure);
+    } else {
+      figureWebSocket.updateFigure(newFigure, oldFigure);
+    }
+  }
 
   window.addEventListener('keydown', keyPressHandler);
 }
 
-function triggerUpdateFigure(newFigure, oldFigure) {
-  if (!oldFigure) {
-    changeFigure(newFigure);
-  } else {
-    updateFigure(newFigure, oldFigure);
-  }
-}
