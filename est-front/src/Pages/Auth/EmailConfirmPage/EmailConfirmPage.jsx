@@ -56,7 +56,7 @@ const EmailConfirmPage = () => {
         if (token) {
             onFinish();
         }
-    }, [])
+    })
 
     return (
         <FormPage title={"Подтверждение почты"} form={
