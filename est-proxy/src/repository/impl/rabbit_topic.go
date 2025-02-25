@@ -2,14 +2,23 @@ package impl
 
 import (
 	"est-proxy/src/repository"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"log"
 )
 
 type TopicImpl struct {
-	name    string
-	channel *amqp091.Channel
+	name      string
+	channel   *amqp091.Channel
+	callbacks []repository.Callback
+}
+
+func NewTopicImpl(name string, channel *amqp091.Channel) *TopicImpl {
+	return &TopicImpl{
+		name:    name,
+		channel: channel,
+	}
 }
 
 func (topic *TopicImpl) Publish(message []byte) error {
@@ -70,6 +79,21 @@ func (topic *TopicImpl) Subscribe(callback repository.Callback) error {
 			}
 		}
 	}()
+
+	topic.callbacks = append(topic.callbacks, callback)
+
+	return nil
+}
+
+func (topic *TopicImpl) Reconnect(channel *amqp091.Channel) error {
+	topic.channel = channel
+
+	for _, callback := range topic.callbacks {
+		err := topic.Subscribe(callback)
+		if err != nil {
+			return fmt.Errorf("error subscribing to topic %s: %v", topic.name, err)
+		}
+	}
 
 	return nil
 }

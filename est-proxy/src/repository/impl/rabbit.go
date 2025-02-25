@@ -11,8 +11,9 @@ import (
 )
 
 type RabbitRepositoryImpl struct {
-	conn    *amqp091.Connection
-	channel *amqp091.Channel
+	conn      *amqp091.Connection
+	channel   *amqp091.Channel
+	topicList []repository.Topic
 }
 
 func NewRabbitRepositoryImpl() *RabbitRepositoryImpl {
@@ -48,6 +49,7 @@ func (r *RabbitRepositoryImpl) Refresh() {
 			time.Sleep(5 * time.Second)
 			log.Printf("Trying to reconnect to RabbitMQ")
 			if err := r.connect(); err == nil {
+				r.reconnectTopics()
 				log.Println("Successfully reconnected to RabbitMQ")
 				break
 			}
@@ -72,10 +74,10 @@ func (r *RabbitRepositoryImpl) GetTopic(name string) repository.Topic {
 		log.Fatalf("Failed to declare topic exchange: %v", err)
 	}
 
-	return &TopicImpl{
-		name:    name,
-		channel: r.channel,
-	}
+	topic := NewTopicImpl(name, r.channel)
+	r.topicList = append(r.topicList, topic)
+
+	return topic
 }
 
 func (r *RabbitRepositoryImpl) connect() error {
@@ -87,15 +89,31 @@ func (r *RabbitRepositoryImpl) connect() error {
 
 	conn, err := amqp091.Dial(repositoryAddress)
 	if err != nil {
-		return fmt.Errorf("Failed to connect to RabbitMQ: %v", err)
+		return fmt.Errorf("failed to connect to RabbitMQ: %v", err)
+	}
+
+	if r.channel != nil && !r.channel.IsClosed() {
+		err = r.channel.Close()
+		if err != nil {
+			log.Printf("Failed to close channel: %v", err)
+		}
 	}
 
 	channel, err := conn.Channel()
 	if err != nil {
-		return fmt.Errorf("Failed to open channel: %v", err)
+		return fmt.Errorf("failed to open channel: %v", err)
 	}
 
 	r.conn = conn
 	r.channel = channel
 	return nil
+}
+
+func (r *RabbitRepositoryImpl) reconnectTopics() {
+	for _, topic := range r.topicList {
+		err := topic.Reconnect(r.channel)
+		if err != nil {
+			log.Fatalf("Failed to reconnect to topic %v", err)
+		}
+	}
 }
