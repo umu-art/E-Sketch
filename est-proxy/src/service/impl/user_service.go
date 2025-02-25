@@ -42,18 +42,22 @@ func (u UserServiceImpl) GetUserById(ctx context.Context, userId *uuid.UUID) (*p
 func (u UserServiceImpl) Login(ctx context.Context, authDto *proxymodels.AuthDto) (*string, *errors.StatusError) {
 	user := u.userRepository.GetUserByEmail(ctx, authDto.Email)
 	if user == nil {
-		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
+		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутствует или некорректный адрес почты или пароль")
+	}
+
+	if user.IsBanned {
+		return nil, errors.NewStatusError(http.StatusForbidden, "Аккаунт заблокирован")
 	}
 
 	if authDto.PasswordHash != user.PasswordHash {
-		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутвует или некорректный адрес почты или пароль")
+		return nil, errors.NewStatusError(http.StatusBadRequest, "Отсутствует или некорректный адрес почты или пароль")
 	}
 
 	u.userRepository.UpdateLoggedInUser(ctx, &user.ID)
 
 	token := utils.GenerateUserJWTString(&user.ID)
 	if token == nil {
-		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось войти в аккаунт")
 	}
 
 	return token, nil
@@ -99,7 +103,7 @@ func (u UserServiceImpl) Confirm(ctx context.Context, userToken string) (*string
 
 	token := utils.GenerateUserJWTString(userId)
 	if token == nil {
-		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось начать сессию")
+		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось войти в аккаунт")
 	}
 
 	err = u.redisClient.RemoveUser(ctx, userToken)
