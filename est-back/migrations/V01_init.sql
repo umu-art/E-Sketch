@@ -16,7 +16,8 @@ create table if not exists users
     password_hash varchar(512) not null,
     email         varchar(128) not null unique,
     avatar        varchar(64),
-    last_login    timestamp    not null default now()
+    last_login    timestamp    not null default now(),
+    is_banned     boolean      not null default false
 );
 
 create index if not exists idx_username on users (username);

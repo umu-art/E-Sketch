@@ -35,9 +35,9 @@ func (r *UserRepositoryImpl) GetUserByEmail(ctx context.Context, email string) *
 	var row pgx.Row
 
 	row = r.postgresService.QueryRow(ctx,
-		"SELECT id, username, password_hash, email, avatar FROM users WHERE email = $1",
+		"SELECT id, username, password_hash, email, avatar, is_banned FROM users WHERE email = $1",
 		email)
-	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar)
+	err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email, &user.Avatar, &user.IsBanned)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil
@@ -67,9 +67,9 @@ func (r *UserRepositoryImpl) GetUserByID(ctx context.Context, id *uuid.UUID) *mo
 	var row pgx.Row
 
 	row = r.postgresService.QueryRow(ctx,
-		"SELECT id, username, email, avatar FROM users WHERE id = $1",
+		"SELECT id, username, email, avatar, is_banned FROM users WHERE id = $1",
 		id)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Avatar)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Avatar, &user.IsBanned)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil
