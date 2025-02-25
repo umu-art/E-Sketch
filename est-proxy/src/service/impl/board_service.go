@@ -43,12 +43,7 @@ func (bs *BoardServiceImpl) GetByUuid(ctx context.Context, userId *uuid.UUID, bo
 		return nil, errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
-	_, err = bs.boardApi.MarkAsRecent(ctx, userId.String()).BoardIdDto(estbackapi.BoardIdDto{
-		Id: boardId.String(),
-	}).Execute()
-	if err != nil {
-		log.Printf("Failed to mark board as recent: %v", err.Error())
-	}
+	bs.markRecent(ctx, userId.String(), boardId.String())
 
 	return mapper.MapBackBoardToProxy(*board, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
@@ -76,6 +71,8 @@ func (bs *BoardServiceImpl) Create(ctx context.Context, userId *uuid.UUID, creat
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось создать доску")
 	}
 
+	bs.markRecent(ctx, userId.String(), boardDto.Id)
+
 	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
 
@@ -100,6 +97,8 @@ func (bs *BoardServiceImpl) Update(ctx context.Context, userId *uuid.UUID, board
 	if err != nil {
 		return nil, errors.NewStatusError(http.StatusInternalServerError, "Не получилось обновить доску")
 	}
+
+	bs.markRecent(ctx, userId.String(), boardId.String())
 
 	return mapper.MapBackBoardToProxy(*boardDto, bs.getUsersFunc(ctx), bs.getPreviewTokensFunc(ctx)), nil
 }
@@ -226,5 +225,14 @@ func (bs *BoardServiceImpl) getPreviewTokensFunc(ctx context.Context) func(board
 			return nil
 		}
 		return res
+	}
+}
+
+func (bs *BoardServiceImpl) markRecent(ctx context.Context, userId string, boardId string) {
+	_, err := bs.boardApi.MarkAsRecent(ctx, userId).BoardIdDto(estbackapi.BoardIdDto{
+		Id: boardId,
+	}).Execute()
+	if err != nil {
+		log.Printf("Failed to mark board as recent: %v", err.Error())
 	}
 }
