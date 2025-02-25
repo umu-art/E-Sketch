@@ -1,6 +1,7 @@
 package impl
 
 import (
+	esterrors "est-proxy/src/errors"
 	"est-proxy/src/repository"
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
@@ -13,6 +14,9 @@ type TopicImpl struct {
 }
 
 func (topic *TopicImpl) Publish(message []byte) error {
+	if topic.channel == nil || topic.channel.IsClosed() {
+		return esterrors.ErrRabbitChannelClosed
+	}
 	return topic.channel.Publish(
 		topic.name,
 		"*",

@@ -3,7 +3,8 @@ package impl
 import (
 	"context"
 	"encoding/json"
-	"est-proxy/src/errors"
+	"errors"
+	esterrors "est-proxy/src/errors"
 	"est-proxy/src/repository"
 	"est-proxy/src/utils"
 	"est-proxy/src/ws"
@@ -58,9 +59,9 @@ func NewWsFigureServiceImpl(
 	return service
 }
 
-func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.Request, userId uuid.UUID, boardId uuid.UUID) *errors.StatusError {
+func (l *WsFigureServiceImpl) Listen(writer http.ResponseWriter, request *http.Request, userId uuid.UUID, boardId uuid.UUID) *esterrors.StatusError {
 	if !l.checkAvailability(userId, boardId) {
-		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
+		return esterrors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
 	}
 
 	l.channel.Listen(writer, request,
@@ -232,13 +233,13 @@ func (l *WsFigureServiceImpl) notifyChangedFigure(boardId uuid.UUID, figureData 
 
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
-		log.Printf("Error marshaling message: %v", err)
+		log.Printf("Failed to marshal json ws message: %v", err)
 		return
 	}
 
 	err = l.topic.Publish(jsonMessage)
-	if err != nil {
-		log.Printf("Error publishing message: %v", err)
+	if err != nil && !errors.Is(err, esterrors.ErrRabbitChannelClosed) {
+		log.Printf("Failed to publish json ws message: %v", err)
 		return
 	}
 }
