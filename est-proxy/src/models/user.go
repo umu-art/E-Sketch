@@ -14,6 +14,8 @@ type User struct {
 	Email string
 
 	Avatar string
+
+	IsBanned bool
 }
 
 type PublicUser struct {
