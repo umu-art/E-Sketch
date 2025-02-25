@@ -1,6 +1,9 @@
 package errors
 
-import "github.com/labstack/echo/v4"
+import (
+	"errors"
+	"github.com/labstack/echo/v4"
+)
 
 type StatusError struct {
 	HttpStatus int
@@ -18,3 +21,5 @@ func (e *StatusError) Send(ctx echo.Context) error {
 func (e *StatusError) GetMessage() string {
 	return e.message
 }
+
+var ErrRabbitChannelClosed = errors.New("channel is closed")
