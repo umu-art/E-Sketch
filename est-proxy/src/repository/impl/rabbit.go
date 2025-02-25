@@ -11,13 +11,14 @@ import (
 )
 
 type RabbitRepositoryImpl struct {
-	conn      *amqp091.Connection
-	channel   *amqp091.Channel
-	topicList []repository.Topic
+	conn           *amqp091.Connection
+	channel        *amqp091.Channel
+	declaredTopics map[string]repository.Topic
 }
 
 func NewRabbitRepositoryImpl() *RabbitRepositoryImpl {
 	var rabbitRepo RabbitRepositoryImpl
+	rabbitRepo.declaredTopics = make(map[string]repository.Topic)
 	if err := rabbitRepo.connect(); err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -61,21 +62,10 @@ func (r *RabbitRepositoryImpl) Refresh() {
 	}
 }
 func (r *RabbitRepositoryImpl) GetTopic(name string) repository.Topic {
-	err := r.channel.ExchangeDeclare(
-		name,
-		"topic",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Failed to declare topic exchange: %v", err)
-	}
+	r.declareTopic(name)
 
 	topic := NewTopicImpl(name, r.channel)
-	r.topicList = append(r.topicList, topic)
+	r.declaredTopics[name] = topic
 
 	return topic
 }
@@ -110,10 +100,26 @@ func (r *RabbitRepositoryImpl) connect() error {
 }
 
 func (r *RabbitRepositoryImpl) reconnectTopics() {
-	for _, topic := range r.topicList {
+	for name, topic := range r.declaredTopics {
+		r.declareTopic(name)
 		err := topic.Reconnect(r.channel)
 		if err != nil {
 			log.Fatalf("Failed to reconnect to topic %v", err)
 		}
+	}
+}
+
+func (r *RabbitRepositoryImpl) declareTopic(name string) {
+	err := r.channel.ExchangeDeclare(
+		name,
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("Failed to declare topic exchange: %v", err)
 	}
 }
