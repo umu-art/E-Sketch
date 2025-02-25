@@ -232,13 +232,11 @@ func (l *WsFigureServiceImpl) notifyChangedFigure(boardId uuid.UUID, figureData 
 
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
-		log.Printf("Error marshaling message: %v", err)
 		return
 	}
 
 	err = l.topic.Publish(jsonMessage)
 	if err != nil {
-		log.Printf("Error publishing message: %v", err)
 		return
 	}
 }
