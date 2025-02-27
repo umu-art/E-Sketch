@@ -14,6 +14,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
 	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/toorop/go-dkim v0.0.0-20250226130143-9025cce95817
 	go.elastic.co/apm/module/apmechov4/v2 v2.6.2
 	go.elastic.co/apm/module/apmhttp/v2 v2.6.2
 	go.elastic.co/apm/v2 v2.6.2
@@ -26,6 +27,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-windows v1.0.0 // indirect
+	github.com/go-test/deep v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
