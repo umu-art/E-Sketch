@@ -37,6 +37,7 @@ var SMTP_SERVER = os.Getenv("SMTP_SERVER")
 var SMTP_PORT = os.Getenv("SMTP_PORT")
 var SMTP_EMAIL = os.Getenv("SMTP_EMAIL")
 var SMTP_PASSWORD = os.Getenv("SMTP_PASSWORD")
+var SMTP_DKIM_KEY_FILE = os.Getenv("SMTP_DKIM_KEY_FILE")
 
 var REDIS_URL = os.Getenv("REDIS_URL")
 var REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")

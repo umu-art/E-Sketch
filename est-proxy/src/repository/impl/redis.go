@@ -36,7 +36,7 @@ func NewRedisClientImpl() *RedisClientImpl {
 
 func (r *RedisClientImpl) AddUser(ctx context.Context, userKey string, user *models.RegisteredUser) error {
 	value := fmt.Sprintf(
-		"%s | %s | %s",
+		"%s|#&^|%s|#&^|%s",
 		user.Username,
 		user.Email,
 		user.PasswordHash)
@@ -50,7 +50,7 @@ func (r *RedisClientImpl) GetUser(ctx context.Context, userKey string) (*models.
 	}
 
 	user := models.RegisteredUser{}
-	_, err = fmt.Sscanf(val, "%s | %s | %s",
+	_, err = fmt.Sscanf(val, "%s|#&^|%s|#&^|%s",
 		&user.Username,
 		&user.Email,
 		&user.PasswordHash)

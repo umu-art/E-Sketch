@@ -79,11 +79,13 @@ func (u UserServiceImpl) Register(ctx context.Context, registerDto *proxymodels.
 
 	err = u.redisClient.AddUser(ctx, token, user)
 	if err != nil {
+		log.Printf("Failed to add user to redis: %v", err)
 		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось отправить письмо для подтверждения почты")
 	}
 
-	err = u.mailApi.SendConfirmationEmail(user.Email, confirmationLink)
+	err = u.mailApi.SendConfirmationEmail(user.Email, confirmationLink, token)
 	if err != nil {
+		log.Printf("Failed to send email to user: %v", err)
 		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось отправить письмо для подтверждения почты")
 	}
 
