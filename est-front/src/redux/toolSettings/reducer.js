@@ -1,5 +1,5 @@
 import { SET_FILL_COLOR, SET_LINE_COLOR, SET_LINE_WIDTH, SET_OFFSET, SET_SCALE, SET_STATE, SET_TOOL } from './actions';
-import { MIN_SCALE, MAX_SCALE } from '../../Pages/App/BoardPage/Board/Paint';
+import { MIN_SCALE, MAX_SCALE } from '../../Pages/App/BoardPage/Board/Drawing/Constants';
 
 const initialState = {
   state: 'idle',

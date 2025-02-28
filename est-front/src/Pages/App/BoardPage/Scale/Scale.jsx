@@ -3,14 +3,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import store from '../../../../redux/store';
 import { setOffset, setScale } from '../../../../redux/toolSettings/actions';
-import { MAX_SCALE, MIN_SCALE } from '../Board/Paint';
+
+import { MAX_SCALE, MIN_SCALE } from '../Board/Drawing/Constants';
 
 const round = Math.round;
 
 const baseC = 1.1;
 
 const TextAndRect = ({ angle, scale, onChange }) => {
-  const active = scale < MAX_SCALE * 100 && scale > MIN_SCALE * 100;
+  const active = scale < MAX_SCALE * 100 && scale > MIN_SCALE  * 100;
   
   return <g transform={`rotate(${angle} 170 170)`} style={{pointerEvents: 'all', cursor: active ? "pointer" : "auto"}} onClick={() => {onChange(scale)}}>
     <text fill={active ? "black" : "gray"} x="63" y="175" fontFamily="Arial" fontSize="15">

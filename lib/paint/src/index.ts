@@ -32,16 +32,9 @@ export class Board {
     }
   }
 
-  private comparePaths(path1: any, path2: any): any {
-    const d1 = path1.getAttribute('d');
-    const d2 = path2.getAttribute('d');
-
-    if (d1 === d2) {
-        return true;
-    } else {
-        return false;
-    }
-}
+  private compare(path1: any, path2: any): any {
+    return path1 === path2;
+  }
 
   private renderFigure(figure: DefaultFigure) {
     const figureElement = findFigureById(this.svgElement, figure.id);
@@ -49,13 +42,13 @@ export class Board {
     const newFigureElement = figure.toSvg(this.svgElement.ownerDocument);
 
     if (figureElement) {
-        if (!this.comparePaths(figureElement, newFigureElement)) {
-          this.svgElement.appendChild(newFigureElement);
-          
-          this.svgElement.removeChild(figureElement);
-        }
-    } else {
+      if (!this.compare(figureElement, newFigureElement)) {
         this.svgElement.appendChild(newFigureElement);
+        
+        this.svgElement.removeChild(figureElement);
+      }  
+    } else {
+      this.svgElement.appendChild(newFigureElement);
     }
   }
 }

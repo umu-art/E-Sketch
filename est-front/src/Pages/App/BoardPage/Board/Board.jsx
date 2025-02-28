@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Board as BoardController } from 'paint/dist';
-import { registerDrawListener } from './Paint';
+import { registerDrawListener } from './Drawing/Paint';
 import { registerMarkersListener } from './Markers';
 
 import pencilIcon from './pencil.svg';
@@ -52,7 +52,7 @@ const Board = ({ className, style, boardId }) => {
       backgroundColor: 'white',
       overflow: 'hidden',
       zIndex: 5,
-      cursor: `url(${toolsIcons[cursor]}), auto`,
+      cursor: `url(${toolsIcons[cursor]}) 0 20, auto`,
     }}
   ></svg>);
 };
