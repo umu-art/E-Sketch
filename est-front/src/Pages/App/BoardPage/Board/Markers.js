@@ -1,6 +1,6 @@
 import { Point } from 'figures/dist';
 
-import { BASE_OFFSET_X, BASE_OFFSET_Y } from './Paint';
+import { BASE_OFFSET_X, BASE_OFFSET_Y } from './Drawing/Constants'
 import { UserApi } from 'est_proxy_api';
 import store from '../../../../redux/store';
 
