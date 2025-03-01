@@ -77,7 +77,7 @@ const drawingReducer = (state = initialState, action) => {
         },
       };
     }
-    case SET_SCALE:
+    case SET_SCALE: {
       const boundedScale = Math.min(Math.max(action.payload, MIN_SCALE), MAX_SCALE);
 
       return {
@@ -87,6 +87,7 @@ const drawingReducer = (state = initialState, action) => {
           scale: boundedScale,
         },
       };
+    }
     case SET_OFFSET:
       return {
         ...state,

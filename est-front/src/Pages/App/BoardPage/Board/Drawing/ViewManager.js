@@ -96,18 +96,6 @@ export class ViewManager {
         return { x: cursorX, y: cursorY };
     }
 
-    // updateDrawingPosition(cursorPosition, scaleChange) {
-    //     this.drawing.nowX = cursorPosition.x - this.settings.view.offsetX;
-    //     this.drawing.nowY = cursorPosition.y - this.settings.view.offsetY;
-
-    //     this.settings.view.scale *= scaleChange;
-
-    //     this.settings.view.scale = Math.min(Math.max(this.settings.view.scale, MIN_SCALE), MAX_SCALE);
-
-    //     this.settings.view.offsetX = -(this.drawing.nowX - cursorPosition.x / scaleChange);
-    //     this.settings.view.offsetY = -(this.drawing.nowY - cursorPosition.y / scaleChange);
-    // }
-
     updateViewBox() {
         const newWidth = this.board.clientWidth / this.settings.view.scale;
         const newHeight = this.board.clientHeight / this.settings.view.scale;

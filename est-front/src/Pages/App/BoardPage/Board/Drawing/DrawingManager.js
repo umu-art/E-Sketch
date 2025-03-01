@@ -1,6 +1,7 @@
 import { decode, encode } from 'coder/dist';
 import { BASE_OFFSET_X, BASE_OFFSET_Y, DrawingStates, FPS } from './Constants';
 import { toolToClass, toolToFigureType } from './ToolMapping';
+import { ViewManager } from './ViewManager';
 import { Point } from 'figures/dist/point';
 import store from '../../../../../redux/store';
 
@@ -8,6 +9,8 @@ export class DrawingManager {
     constructor(boardController, figureWebSocket, settings, drawing) {
         this.boardController = boardController;
         this.board = boardController.svgElement;
+
+        this.viewManager = new ViewManager(this.board, settings);
 
         this.figureWebSocket = figureWebSocket;
         
