@@ -137,7 +137,7 @@ const ScaleElement = ({ style }) => {
                 fill="white" />
         </svg>  
         <g transform={`rotate(${rotate} 170 170)`}>
-          {angles.map((angle, index) => <TextAndRect angle={angle} scale={scales[index]} onChange={changeScale} key={index}/>)}
+          {angles.map((angle, index) => <TextAndRect angle={angle} scale={scales[index]} onChange={changeScale} key={"key-" + index}/>)}
         </g>
         <g transform="rotate(45 170 170)">
           <rect x="55" y="159" width="60" height="22" rx="4.5" fill="white" stroke="black" />

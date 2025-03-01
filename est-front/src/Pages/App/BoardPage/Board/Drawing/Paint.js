@@ -1,6 +1,5 @@
 import store from '../../../../../redux/store';
 import { DrawingManager } from './DrawingManager';
-import { ViewManager } from './ViewManager';
 
 import * as d3 from 'd3';
 
@@ -9,7 +8,6 @@ export function registerDrawListener(board, boardController, initialDrawing, fig
     let drawing = { nowX: 0, nowY: 0 };
 
     const drawingManager = new DrawingManager(boardController, figureWebSocket, settings, drawing);
-    new ViewManager(board, settings);
 
     store.subscribe(() => {
         const newState = store.getState();
