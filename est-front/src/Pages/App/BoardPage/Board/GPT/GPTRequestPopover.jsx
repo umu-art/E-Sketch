@@ -21,6 +21,8 @@ const useGPTRequest = (boardId, popover) => {
     const handleSubmit = async () => {
         if (!message.trim()) return;
 
+        dispatch(hideGPTPopover());
+
         const opts = {
             gPTRequestDto: {
                 boardId,
@@ -53,7 +55,6 @@ const useGPTRequest = (boardId, popover) => {
         } finally {
             setTimeout(() => dispatch(setGPTStatus(null)), 3000);
             setMessage('');
-            dispatch(hideGPTPopover());
         }
     };
 
