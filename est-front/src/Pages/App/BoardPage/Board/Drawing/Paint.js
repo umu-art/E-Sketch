@@ -9,7 +9,9 @@ export function registerDrawListener(board, boardController, initialDrawing, fig
     let drawing = { nowX: 0, nowY: 0 };
 
     const drawingManager = new DrawingManager(boardController, figureWebSocket, settings, drawing);
-    new GPTManager(drawingManager);
+    const gptManager = new GPTManager(drawingManager);
+
+    console.log(gptManager);
 
     store.subscribe(() => {
         const newState = store.getState();
