@@ -90,7 +90,9 @@ const MessageCard = React.memo(({ message, index, total, isCollapsed, isExpanded
             </Flex>
         }
         style={{ width: !isCollapsed && isExpanded ? 600 : 300 }}
-        bodyStyle={{ padding: isCollapsed ? 0 : null }}
+        styles={{
+            body: { padding: isCollapsed ? 0 : undefined }
+        }}
     >
         <Flex vertical style={{ height: isCollapsed ? 0 : (isExpanded ? 500 : 250), overflowY: 'auto' }}>
             {renderMarkdownWithLatex(message.content)}

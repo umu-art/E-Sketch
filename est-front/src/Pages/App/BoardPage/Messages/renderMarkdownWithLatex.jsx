@@ -20,8 +20,6 @@ const preprocess = (text) => {
 }
 
 const renderMarkdownWithLatex = (markdownText) => {
-  console.log(preprocess(markdownText));
-  
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath]} // Подключаем remarkMath для распознавания математики

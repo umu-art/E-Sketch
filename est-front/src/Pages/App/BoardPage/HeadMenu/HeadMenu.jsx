@@ -7,6 +7,8 @@ import useMessage from 'antd/es/message/useMessage';
 
 import classes from './HeadMenu.module.css';
 
+import PropTypes from 'prop-types';
+
 const boardApiInstance = new BoardApi();
 const userApiInstance = new UserApi();
 
@@ -104,6 +106,16 @@ const UserAvatar = ({ user, access, boardId, refreshData }) => {
       </Flex>
     </Flex>
   );
+};
+
+UserAvatar.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+  }).isRequired,
+  access: PropTypes.oneOf(['read', 'write', 'admin', 'owner']).isRequired,
+  boardId: PropTypes.string,
+  refreshData: PropTypes.func,
 };
 
 const HeadMenu = ({ data, updateData, refreshData }) => {
@@ -296,6 +308,28 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
       </Card>
     </Flex>
   );
+};
+
+HeadMenu.propTypes = {
+  data: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    ownerInfo: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+    }).isRequired,
+    sharedWith: PropTypes.arrayOf(
+      PropTypes.shape({
+        userInfo: PropTypes.shape({
+          id: PropTypes.string.isRequired,
+          username: PropTypes.string.isRequired,
+        }).isRequired,
+        access: PropTypes.oneOf(['read', 'write', 'admin', 'owner']).isRequired,
+      })
+    ).isRequired,
+  }).isRequired,
+  updateData: PropTypes.func.isRequired,
+  refreshData: PropTypes.func.isRequired,
 };
 
 export default HeadMenu;
