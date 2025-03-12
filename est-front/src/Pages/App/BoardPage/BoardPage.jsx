@@ -9,6 +9,8 @@ import HeadMenu from './HeadMenu/HeadMenu';
 
 import ErrorPage from '../../ErrorPages/ErrorPage';
 import ScaleElement from './Scale/Scale';
+import Messages from './Messages/Messages';
+import GPTRequestPopover from './Board/GPT/GPTRequestPopover';
 
 const apiInstance = new BoardApi();
 
@@ -60,22 +62,26 @@ const BoardPage = () => {
   }
 
   return (
-    // <DrawingSettingsContext.Provider value={{ drawingSettings, setDrawingSettings }}>
       <div style={{ overflow: 'hidden', height: '100vh', width: '100vw', position: 'absolute' }}>
+        <GPTRequestPopover boardId={boardId}/>
         <Board className="h100vh w100vw" style={{ position: 'absolute' }} boardId={boardId} />
         <ScaleElement style={{ position: 'absolute', right: '0', bottom: '0', zIndex: '6' }}></ScaleElement>
         { /* Menu wrap */}
-        <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute' }} vertical
+        <Flex className="h100vh w100vw" style={{ padding: '20px 20px', position: 'absolute'}} vertical
               align="center" justify="space-between">
           { /* Top */}
-          <HeadMenu data={data} updateData={updateData} refreshData={refreshBoardData} />
+          <Flex className='w100p' gap="small" vertical>
+            <HeadMenu data={data} updateData={updateData} refreshData={refreshBoardData} />
+            <Flex className='w100p' justify="end">
+              <Messages />
+            </Flex>
+          </Flex>
           { /* Bottom */}
           <Flex className="w100p" justify="center">
             <ToolPanel/>
           </Flex>
         </Flex>
       </div>
-    // </DrawingSettingsContext.Provider>
   );
 };
 

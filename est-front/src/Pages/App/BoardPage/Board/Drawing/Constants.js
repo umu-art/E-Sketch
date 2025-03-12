@@ -11,4 +11,5 @@ export const DrawingStates = {
     DRAWING: 'drawing',
     WAITING: 'waiting',
     FINISHING: 'finishing',
+    SELECTING: 'selecting',
 };

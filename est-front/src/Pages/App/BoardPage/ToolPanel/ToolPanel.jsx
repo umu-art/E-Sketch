@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Divider, Flex } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined } from '@ant-design/icons';
+import Icon, { EditOutlined, EllipsisOutlined, OpenAIOutlined } from '@ant-design/icons';
 
 import { ReactComponent as EraserOutlined } from './eraser.svg';
 import { ReactComponent as RectangleOutlined } from './rectangle.svg';
@@ -36,6 +36,10 @@ const ToolPanel = () => {
           showWidthChange
           showColorChange
           showFillColorChange
+        />
+        <ToolButton
+          tool="gpt"
+          icon={<Icon component={OpenAIOutlined} />}  
         />
         <Divider type="vertical" style={{ height: 30 }} />
         <Button 

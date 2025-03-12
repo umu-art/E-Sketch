@@ -53,7 +53,7 @@ export class DrawingManager {
     handleMouseDown(e) {
         e.preventDefault();
 
-        if (e.button !== 0 || this.settings.tool === 'eraser' || this.settings.state !== DrawingStates.IDLE) {
+        if (e.button !== 0 || this.settings.tool === 'eraser' || this.settings.tool === "gpt" || this.settings.state !== DrawingStates.IDLE) {
             return;
         }
 
