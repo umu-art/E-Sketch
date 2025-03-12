@@ -277,7 +277,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
           <Button icon={<UploadOutlined />}></Button>
         </Flex>
       </Card>
-      <Card size="small" className="shadow">
+      <Card size="small" className="shadow" style={{width: 300}}>
         <Flex gap="small" align="center">
           <Typography.Link href="/app/home/my">
             <Avatar src={'https://api.dicebear.com/7.x/miniavs/svg?seed=' + data.ownerInfo.id}
@@ -288,6 +288,7 @@ const HeadMenu = ({ data, updateData, refreshData }) => {
             type="primary"
             icon={<LockOutlined />}
             onClick={() => setAccessSettingsOpened(true)}
+            style={{width: "-webkit-fill-available"}}
           >
             Настройки Доступа
           </Button>

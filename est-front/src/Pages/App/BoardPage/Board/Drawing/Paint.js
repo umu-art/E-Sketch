@@ -2,12 +2,14 @@ import store from '../../../../../redux/store';
 import { DrawingManager } from './DrawingManager';
 
 import * as d3 from 'd3';
+import { GPTManager } from '../GPT/GPTManager';
 
 export function registerDrawListener(board, boardController, initialDrawing, figureWebSocket) {
     let settings = initialDrawing;
     let drawing = { nowX: 0, nowY: 0 };
 
     const drawingManager = new DrawingManager(boardController, figureWebSocket, settings, drawing);
+    new GPTManager(drawingManager);
 
     store.subscribe(() => {
         const newState = store.getState();

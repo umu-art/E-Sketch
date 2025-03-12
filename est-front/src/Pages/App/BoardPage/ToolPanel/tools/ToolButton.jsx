@@ -1,7 +1,8 @@
-import { Button, ColorPicker, Flex, InputNumber, Popover } from 'antd';
+import { Badge, Button, ColorPicker, Flex, InputNumber, Popover } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFillColor, setLineColor, setLineWidth, setTool } from '../../../../../redux/toolSettings/actions';
+import PropTypes from 'prop-types';
 
 
 const basicColors = [
@@ -28,6 +29,7 @@ const ToolButton = ({
 }) => {
     const dispatch = useDispatch();
     const selectedTool = useSelector((state) => state.tool);
+    const selectedToolStatus = useSelector((state) => state.tools[tool].status);
     const selectedColor = useSelector((state) => state.tools[tool].lineColor);
     const selectedWidth = useSelector((state) => state.tools[tool].lineWidth);
     const selectedFillColor = useSelector((state) => state.tools[tool].fillColor);
@@ -94,16 +96,32 @@ const ToolButton = ({
                     }
                 </Flex>
             }
-            trigger="click"
+            trigger={(showColorChange || showFillColorChange || showWidthChange) && "click"}
         >
-            <Button
-                type={selectedTool === tool ? 'primary' : 'default'}
-                icon={icon}
-                onClick={handleClick}
-                key="pencil"
-            />
+            <Badge status={selectedToolStatus} dot={selectedToolStatus}>
+                <Button
+                    type={selectedTool === tool ? 'primary' : 'default'}
+                    icon={icon}
+                    onClick={handleClick}
+                    key="pencil"
+                />
+            </Badge>
         </Popover>
     );
+};
+
+ToolButton.propTypes = {
+    tool: PropTypes.string.isRequired,
+    icon: PropTypes.node.isRequired,
+    showColorChange: PropTypes.bool,
+    showWidthChange: PropTypes.bool,
+    showFillColorChange: PropTypes.bool,
+};
+
+ToolButton.defaultProps = {
+    showColorChange: false,
+    showWidthChange: false,
+    showFillColorChange: false,
 };
 
 export default ToolButton;
