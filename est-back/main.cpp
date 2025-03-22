@@ -8,11 +8,11 @@ int main() {
     // Register db client
     auto dbConfig = drogon::orm::PostgresConfig{.host = "192.168.31.10",
                                                 .port = 5432,
-                                                .databaseName = getenv("POSTGRES_USERNAME"),
+                                                .databaseName = "e-sketch",
                                                 .username = getenv("POSTGRES_USERNAME"),
                                                 .password = getenv("POSTGRES_PASSWORD"),
                                                 .connectionNumber = 10,
-                                                .name = "e-sketch",
+                                                .name = getenv("POSTGRES_USERNAME"),
                                                 .timeout = 60,
                                                 .autoBatch = true};
     drogon::app().addDbClient(dbConfig);
