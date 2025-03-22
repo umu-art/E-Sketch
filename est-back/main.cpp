@@ -12,7 +12,7 @@ int main() {
                                                 .username = getenv("POSTGRES_USERNAME"),
                                                 .password = getenv("POSTGRES_PASSWORD"),
                                                 .connectionNumber = 10,
-                                                .name = "e-sketch",
+                                                .name = "est-data",
                                                 .timeout = 60,
                                                 .autoBatch = true};
     drogon::app().addDbClient(dbConfig);
