@@ -107,6 +107,8 @@ spec:
                 secretKeyRef:
                   name: e-sketch-secrets
                   key: SMTP_PASSWORD
+            - name: SMTP_DKIM_KEY_FILE
+              value: /dkim.private
 
             - name: REDIS_URL
               value: redis.databases.svc.cluster.local:6379
@@ -117,6 +119,12 @@ spec:
                   key: REDIS_PASSWORD
             - name: REDIS_DB
               value: '1'
+
+          volumeMounts:
+            - mountPath: /dkim.private
+              name: e-sketch-dkim-cert
+              subPath: dkim.private
+              readOnly: true
 
           resources:
             requests:
@@ -139,6 +147,12 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 20
+
+      volumes:
+        - name: e-sketch-dkim-cert
+          secret:
+            secretName: e-sketch-dkim-cert
+            defaultMode: 0400
 
       imagePullSecrets:
         - name: github-container-registry
