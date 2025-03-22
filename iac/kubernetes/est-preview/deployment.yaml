@@ -31,29 +31,29 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: databases-credentials
                   key: REDIS_PASSWORD
 
             - name: S3_ENDPOINT
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: S3_ENDPOINT
+                  name: e-sketch-s3-credentials
+                  key: S3_URL
             - name: S3_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: S3_ACCESS_KEY_ID
+                  name: e-sketch-s3-credentials
+                  key: S3_ACCESS
             - name: S3_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: S3_SECRET_ACCESS_KEY
+                  name: e-sketch-s3-credentials
+                  key: S3_SECRET
             - name: S3_BUCKET_NAME
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: S3_BUCKET_NAME
+                  name: e-sketch-s3-credentials
+                  key: S3_BUCKET
 
           securityContext:
             allowPrivilegeEscalation: false

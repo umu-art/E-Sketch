@@ -14,7 +14,7 @@ spec:
     targetRevision: HEAD
     directory:
       recurse: true
-  project: default
+  project: e-sketch
   syncPolicy:
     automated:
       prune: true

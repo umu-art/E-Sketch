@@ -1,0 +1,31 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: e-sketch-secrets
+  namespace: e-sketch
+spec:
+  refreshInterval: "15s"
+  secretStoreRef:
+    name: kasumi-secret-store
+    kind: ClusterSecretStore
+  target:
+    name: e-sketch-secrets
+  data:
+    - secretKey: GPT_API_TOKEN
+      remoteRef:
+        key: e-sketch-secrets
+        property: GPT_API_TOKEN
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: e-sketch-secrets
+        property: JWT_SECRET
+    - secretKey: SMTP_EMAIL
+      remoteRef:
+        key: e-sketch-secrets
+        property: SMTP_EMAIL
+    - secretKey: SMTP_PASSWORD
+      remoteRef:
+        key: e-sketch-secrets
+        property: SMTP_PASSWORD
+

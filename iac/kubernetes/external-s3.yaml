@@ -1,0 +1,34 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: e-sketch-s3-credentials
+  namespace: e-sketch
+spec:
+  refreshInterval: "15s"
+  secretStoreRef:
+    name: kasumi-secret-store
+    kind: ClusterSecretStore
+  target:
+    name: e-sketch-s3-credentials
+  data:
+    - secretKey: S3_URL
+      remoteRef:
+        key: e-sketch-s3-credentials
+        property: S3_URL
+    - secretKey: S3_ACCESS
+      remoteRef:
+        key: e-sketch-s3-credentials
+        property: S3_ACCESS
+    - secretKey: S3_SECRET
+      remoteRef:
+        key: e-sketch-s3-credentials
+        property: S3_SECRET
+    - secretKey: S3_REGION
+      remoteRef:
+        key: e-sketch-s3-credentials
+        property: S3_REGION
+    - secretKey: S3_BUCKET
+      remoteRef:
+        key: e-sketch-s3-credentials
+        property: S3_BUCKET

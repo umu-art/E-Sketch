@@ -6,13 +6,13 @@ int main() {
     // Load config
     drogon::app().loadConfigFile("../config.json");
     // Register db client
-    auto dbConfig = drogon::orm::PostgresConfig{.host = "postgres.databases.svc.cluster.local",
+    auto dbConfig = drogon::orm::PostgresConfig{.host = "192.168.31.10",
                                                 .port = 5432,
-                                                .databaseName = "e-sketch",
+                                                .databaseName = getenv("POSTGRES_USERNAME"),
                                                 .username = getenv("POSTGRES_USERNAME"),
                                                 .password = getenv("POSTGRES_PASSWORD"),
                                                 .connectionNumber = 10,
-                                                .name = "est-data",
+                                                .name = "e-sketch",
                                                 .timeout = 60,
                                                 .autoBatch = true};
     drogon::app().addDbClient(dbConfig);

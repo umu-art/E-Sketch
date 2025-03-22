@@ -41,30 +41,33 @@ spec:
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: POSTGRES_USER
+                  name: databases-credentials
+                  key: POSTGRES_USERNAME
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: databases-credentials
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_HOST
-              value: postgres.databases.svc.cluster.local
+              value: 192.168.31.10
             - name: POSTGRES_PORT
               value: '5432'
             - name: POSTGRES_DATABASE
-              value: 'e-sketch'
+              valueFrom:
+                secretKeyRef:
+                  name: databases-credentials
+                  key: POSTGRES_USERNAME
 
             - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: RABBIT_USER
+                  name: databases-credentials
+                  key: RABBITMQ_USERNAME
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
-                  key: RABBIT_PASSWORD
+                  name: databases-credentials
+                  key: RABBITMQ_PASSWORD
             - name: RABBITMQ_HOST
               value: rabbit.databases.svc.cluster.local
             - name: RABBITMQ_PORT
@@ -75,14 +78,14 @@ spec:
             - name: GPT_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: e-sketch-secrets
                   key: GPT_API_TOKEN
 
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: jwt-token
-                  key: token
+                  name: e-sketch-secrets
+                  key: JWT_SECRET
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-server.monitoring.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
@@ -97,12 +100,12 @@ spec:
             - name: SMTP_EMAIL
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: e-sketch-secrets
                   key: SMTP_EMAIL
             - name: SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: e-sketch-secrets
                   key: SMTP_PASSWORD
 
             - name: REDIS_URL
@@ -110,7 +113,7 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: kasumi-secrets
+                  name: databases-credentials
                   key: REDIS_PASSWORD
             - name: REDIS_DB
               value: '1'
