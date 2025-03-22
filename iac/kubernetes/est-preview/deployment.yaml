@@ -8,7 +8,7 @@ metadata:
     app: est-preview
 spec:
   revisionHistoryLimit: 2
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
   selector:
@@ -61,10 +61,10 @@ spec:
           resources:
             requests:
               memory: "100M"
-              cpu: "100m"
+              cpu: "150m"
             limits:
               memory: "100M"
-              cpu: "200m"
+              cpu: "300m"
 
           readinessProbe:
             httpGet:
@@ -72,6 +72,7 @@ spec:
               port: 3000
             initialDelaySeconds: 20
             periodSeconds: 20
+            timeoutSeconds: 5
 
           livenessProbe:
             httpGet:
@@ -79,6 +80,7 @@ spec:
               port: 3000
             initialDelaySeconds: 20
             periodSeconds: 20
+            timeoutSeconds: 5
 
       imagePullSecrets:
         - name: github-container-registry
