@@ -152,7 +152,6 @@ spec:
         - name: e-sketch-dkim-cert
           secret:
             secretName: e-sketch-dkim-cert
-            defaultMode: 0400
 
       imagePullSecrets:
         - name: github-container-registry
