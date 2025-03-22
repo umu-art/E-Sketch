@@ -70,16 +70,16 @@ spec:
             httpGet:
               path: /actuator
               port: 3000
-            initialDelaySeconds: 20
-            periodSeconds: 20
+            initialDelaySeconds: 5
+            periodSeconds: 5
             timeoutSeconds: 5
 
           livenessProbe:
             httpGet:
               path: /actuator
               port: 3000
-            initialDelaySeconds: 20
-            periodSeconds: 20
+            initialDelaySeconds: 5
+            periodSeconds: 5
             timeoutSeconds: 5
 
       imagePullSecrets:
