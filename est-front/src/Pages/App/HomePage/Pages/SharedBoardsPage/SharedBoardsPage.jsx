@@ -11,14 +11,14 @@ import { Config } from '../../../../../config.js';
 import { useNavigate } from 'react-router-dom';
 
 
-const apiInstance = new BoardApi();
-apiInstance.apiClient.basePath = Config.back_url
-
 const SharedBoardsPage = () => {
     const [boards, setBoards] = useState(null);
 
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
+
+    const apiInstance = new BoardApi();
+    apiInstance.apiClient.basePath = Config.back_url
 
     useEffect(() => {
         apiInstance.list().then((data) => {
@@ -37,7 +37,7 @@ const SharedBoardsPage = () => {
                 navigate("/auth/signin");
             }
         })
-    }, [messageApi, navigate])
+    })
 
     return (
         <Flex vertical style={{ padding: "20px 50px", width: '-webkit-fill-available' }}>

@@ -46,6 +46,7 @@ const Board = ({ className, style, boardId }) => {
 
   return (<svg
     id={boardId}
+    data-testid="board-svg"
     className={`${className} board`}
     style={{
       ...style,

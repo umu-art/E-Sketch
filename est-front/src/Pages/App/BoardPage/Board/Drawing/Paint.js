@@ -1,7 +1,7 @@
 import store from '../../../../../redux/store';
 import { DrawingManager } from './DrawingManager';
 
-import * as d3 from 'd3';
+import { select } from 'd3';
 import { GPTManager } from '../GPT/GPTManager';
 
 export function registerDrawListener(board, boardController, initialDrawing, figureWebSocket) {
@@ -18,7 +18,7 @@ export function registerDrawListener(board, boardController, initialDrawing, fig
         settings = newState;
     });
 
-    d3.select('.board')
+    select('.board')
         .on('mousedown', function(event) {
             if (event.button === 0) {
                 drawingManager.isMouseDown = true;
@@ -36,7 +36,7 @@ export function registerDrawListener(board, boardController, initialDrawing, fig
             if (settings.tool !== 'eraser' || !drawingManager.isMouseDown)
                 return;
 
-            const pathId = d3.select(target).attr('id');
+            const pathId = select(target).attr('id');
 
             const figure = boardController.figures.find(figure => figure.id === pathId);
             figure.id = "waiting"
