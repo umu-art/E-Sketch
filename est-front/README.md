@@ -1,70 +1,229 @@
-# Getting Started with Create React App
+# Документация к Фронтенду проекта "E-Sketch".
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Оглавление
+1. [Общее описание](#общее-описание)
+2. [Структура проекта](#структура-проекта)
+3. [Технологический стек](#технологический-стек)
+4. [Установка и запуск](#установка-и-запуск)
+5. [Маршрутизация](#маршрутизация)
+6. [Основные компоненты](#основные-компоненты)
+7. [Система состояний (Redux)](#система-состояний-redux)
+8. [Работа с API](#работа-с-api)
+9. [Функционал доски](#функционал-доски)
+10. [Интеграция с WebSocket](#интеграция-с-websocket)
+11. [Особенности реализации](#особенности-реализации)
+12. [Развертывание](#развертывание)
 
-## Available Scripts
+## Общее описание
 
-In the project directory, you can run:
+E-Sketch - это веб-приложение для совместной работы на интерактивной доске в реальном времени. Основные возможности:
+- Рисование различных фигур (линии, прямоугольники, эллипсы)
+- Удаление элементов
+- Масштабирование и перемещение по доске
+- Совместная работа нескольких пользователей
+- Интеграция с GPT для генерации контента с поддержкой Markdown и LaTeX
+- Управление доступом к доскам
 
-### `npm start`
+## Структура проекта
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+src/
+├── Pages/                     # Основные страницы приложения
+│   ├── App/                   # Страницы после авторизации
+│   │   └── BoardPage/         # Страница работы с доской
+│   │       ├── Board/         # Компоненты доски
+│   │       ├── HeadMenu/      # Верхнее меню
+│   │       ├── Messages/      # Компонент чата
+│   │       ├── Scale/         # Компонент масштабирования
+│   │       └── ToolPanel/     # Панель инструментов
+│   ├── Auth/                  # Страницы авторизации
+│   └── ErrorPages/            # Страницы ошибок
+├── redux/                     # Управление состоянием
+├── config.js                  # Конфигурация приложения
+├── global.scss                # Глобальные стили
+└── variables.scss             # SCSS переменные
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Технологический стек
 
-### `npm test`
+- **React** (v18) - основная библиотека для построения UI
+- **Redux** - управление состоянием приложения
+- **Ant Design** - UI компоненты
+- **React Router** (v6) - маршрутизация
+- **D3.js** - работа с SVG и графикой
+- **WebSocket** - реальное время
+- **Sass/SCSS** - стилизация
+- **KaTeX** - рендеринг математических формул
+- **React Markdown** - рендеринг Markdown
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Установка и запуск
 
-### `npm run build`
+1. Установите зависимости:
+```bash
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Запустите приложение в режиме разработки:
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Соберите production версию:
+```bash
+npm run build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Маршрутизация
 
-### `npm run eject`
+Основные маршруты приложения:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- `/auth/signin` - страница входа
+- `/auth/signup` - страница регистрации
+- `/auth/confirm` - подтверждение email
+- `/app/home` - главная страница с досками
+  - `/app/home/my` - мои доски
+  - `/app/home/shared` - доски, доступные мне
+- `/app/board/:boardId` - страница работы с доской
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Основные компоненты
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### BoardPage
+Главная страница работы с доской. Содержит:
+- `Board` - SVG-холст для рисования
+- `ToolPanel` - панель инструментов
+- `HeadMenu` - верхнее меню с настройками доски
+- `Messages` - чат с сообщениями
+- `Scale` - контроллер масштабирования
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Board (доска)
+Реализована на SVG с использованием:
+- Кастомного рендерера фигур
+- Системы событий для рисования
+- Оптимизированных обновлений через WebSocket
 
-## Learn More
+### ToolPanel
+Инструменты:
+- Карандаш (настройка цвета и толщины)
+- Ластик
+- Прямоугольник (цвет, толщина, заливка)
+- Эллипс (цвет, толщина, заливка)
+- GPT (генерация контента)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Система состояний (Redux)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Состояние приложения хранится в Redux и включает:
 
-### Code Splitting
+```javascript
+{
+  state: 'idle', // Текущее состояние (idle, drawing и др.)
+  tool: 'pencil', // Активный инструмент
+  tools: {
+    // Настройки для каждого инструмента
+    pencil: { lineColor, lineWidth },
+    eraser: { lineWidth },
+    rectangle: { lineColor, fillColor, lineWidth },
+    ellipse: { lineColor, fillColor, lineWidth },
+    gpt: { status }
+  },
+  view: {
+    scale: 1,      // Масштаб
+    offsetX: 0,    // Смещение по X
+    offsetY: 0,    // Смещение по Y
+    startX: 0,     // Начальная точка X
+    startY: 0      // Начальная точка Y
+  },
+  messages: [],    // Сообщения чата
+  popover: {       // Панель GPT
+    visible: false,
+    request: null
+  }
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Работа с API
 
-### Analyzing the Bundle Size
+Приложение использует сгенерированный API клиент (`est_proxy_api`) для работы с бэкендом. Основные методы:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- `BoardApi` - работа с досками (создание, получение, обновление)
+- `UserApi` - авторизация, регистрация, поиск пользователей
+- `GptApi` - интеграция с GPT
 
-### Making a Progressive Web App
+Пример запроса:
+```javascript
+const apiInstance = new BoardApi();
+const data = await apiInstance.getByUuid(boardId);
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Функционал доски
 
-### Advanced Configuration
+### Рисование
+- Поддержка различных инструментов (карандаш, фигуры)
+- Настройка цвета, толщины, заливки
+- Оптимизированная отрисовка через SVG
+- История действий (undo)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Масштабирование и перемещение
+- Плавное масштабирование колесиком мыши
+- Перемещение по доске (правой кнопкой мыши)
+- Визуальный индикатор масштаба
 
-### Deployment
+### Совместная работа
+- Отображение курсоров других пользователей
+- Синхронизация изменений в реальном времени
+- Управление правами доступа
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Интеграция с GPT
+- Выделение области для генерации контента
+- Отправка запросов к GPT
+- Отображение результатов в чате
 
-### `npm run build` fails to minify
+## Интеграция с WebSocket
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Приложение использует два WebSocket соединения:
+
+1. **FigureWebSocket** - для синхронизации фигур:
+   - Создание/удаление/изменение фигур
+   - Оптимизированная передача изменений
+
+2. **MarkerWebSocket** - для отображения курсоров:
+   - Передача позиций курсоров
+   - Визуализация других пользователей
+
+## Особенности реализации
+
+1. **Оптимизация производительности**:
+   - Дифференциальные обновления фигур
+   - Дросселирование событий
+   - Оптимизированный рендеринг SVG
+
+2. **Режимы рисования**:
+   - `idle` - бездействие
+   - `creating` - создание фигуры
+   - `drawing` - процесс рисования
+   - `selecting` - выделение области (для GPT)
+
+3. **Система координат**:
+   - Учет масштаба и смещения
+   - Преобразование координат между экраном и доской
+
+4. **Чат**:
+   - Поддержка Markdown
+   - Рендеринг математических формул (LaTeX)
+   - История сообщений
+
+## Развертывание
+
+1. Production сборка:
+```bash
+npm run build
+```
+
+2. Настройки окружения:
+- `config.js` - URL бэкенда
+- `package.json` - proxy настройки
+
+3. Требования:
+- Node.js v16+
+- Современный браузер с поддержкой ES6
+
+Приложение готово к развертыванию на хостинге.

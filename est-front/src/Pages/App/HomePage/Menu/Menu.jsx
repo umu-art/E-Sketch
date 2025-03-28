@@ -43,8 +43,6 @@ const items = (data) => [
     },
 ]
 
-const apiInstance = new UserApi();
-
 const AppMenu = () => {
     const [userData, setUserData] = useState(null);
 
@@ -52,21 +50,28 @@ const AppMenu = () => {
 
     const navigate = useNavigate();
 
+    const apiInstance = new UserApi();
+    
     useEffect(() => {
-        apiInstance.getSelf().then((data) => {
-            setUserData(data);
-        }).catch((error) => {
-            console.log(error);
-            messageApi.open({
-                type: "error",
-                content: error,
-            })
-        });
-    }, [messageApi]);
+        async function fetchUserData() {
+            try {
+                const data = await apiInstance.getSelf();
+                setUserData(data);
+            } catch (error) {
+                console.log(error);
+                messageApi.open({
+                    type: "error",
+                    content: error,
+                });
+            }
+        }
+
+        fetchUserData();
+    });
 
     if (!userData) {
         return (
-            <></>
+            <>Loading...</>
         );
     }
 

@@ -30,26 +30,26 @@ const EmailConfirmPage = () => {
         ...apiInstance.apiClient.defaultHeaders,
     };
 
-    const onFinish = () => {
-        console.log("onFinish: " + token);
+    const onFinish = async () => {
+        try {
+            await apiInstance.confirm({
+                confirmationDto: {
+                    token: token,
+                }
+            })
 
-        apiInstance.confirm({
-            confirmationDto: {
-                token: token,
-            }
-        }).then((data) => {
             messageApi.open({
                 type: 'success',
                 content: 'Регистрация прошла успешно!'
             })
 
             navigate("/app");
-        }).catch((error) => {
+        } catch(error) {
             messageApi.open({
                 type: 'error',
                 content: error.response ? error.response.text : 'Что-то пошло не так ;(',
             });
-        })
+        }
     }
 
     useEffect(() => {
