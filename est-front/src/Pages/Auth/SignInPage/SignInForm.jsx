@@ -39,7 +39,7 @@ const SignInForm = ({ redirectTo }) => {
         } catch (error) {
             messageApi.open({
                 type: 'error',
-                content: error.response.text,
+                content: error.response ? error.response.text : "Произошла ошибка, попробуйте позже",
             });
         }
     };

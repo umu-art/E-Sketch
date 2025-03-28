@@ -9,11 +9,8 @@ import { BoardApi } from 'est_proxy_api';
 
 import { Config } from '../../../../../config.js';
 import { useNavigate } from 'react-router-dom';
-import CreateBoardForm from '../../CreateBoardForm/CreateBoardForm.jsx';
+import CreateBoardForm from '../../CreateBoardForm/CreateBoardForm';
 
-
-const apiInstance = new BoardApi();
-apiInstance.apiClient.basePath = Config.back_url
 
 const MyBoardsPage = () => {
     const [boards, setBoards] = useState(null);
@@ -23,6 +20,9 @@ const MyBoardsPage = () => {
 
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
+
+    const apiInstance = new BoardApi();
+    apiInstance.apiClient.basePath = Config.back_url
 
     useEffect(() => {
         apiInstance.list().then((data) => {

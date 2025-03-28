@@ -38,7 +38,7 @@ const CreateBoardForm = () => {
         } catch (error) {
             messageApi.open({
                 type: 'error',
-                content: error.response === undefined ? null : error.response.text,
+                content: error.response === undefined ? "Произошла ошибка, попробуйте позже" : error.response.text,
             });
         }
     };
