@@ -12,13 +12,13 @@ import (
 
 type RabbitRepositoryImpl struct {
 	conn           *amqp091.Connection
-	channel        *amqp091.Channel
-	declaredTopics map[string]repository.Topic
+	channel        repository.RabbitChannel
+	declaredTopics map[string]repository.RabbitTopic
 }
 
 func NewRabbitRepositoryImpl() *RabbitRepositoryImpl {
 	var rabbitRepo RabbitRepositoryImpl
-	rabbitRepo.declaredTopics = make(map[string]repository.Topic)
+	rabbitRepo.declaredTopics = make(map[string]repository.RabbitTopic)
 	if err := rabbitRepo.connect(); err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -61,7 +61,7 @@ func (r *RabbitRepositoryImpl) Refresh() {
 		}
 	}
 }
-func (r *RabbitRepositoryImpl) GetTopic(name string) repository.Topic {
+func (r *RabbitRepositoryImpl) GetTopic(name string) repository.RabbitTopic {
 	r.declareTopic(name)
 
 	topic := NewTopicImpl(name, r.channel)

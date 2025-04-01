@@ -8,11 +8,11 @@ import (
 )
 
 type GptServiceImpl struct {
-	previewApi *api.PreviewApi
-	gptApi     *api.GptApi
+	previewApi api.PreviewApi
+	gptApi     api.GptApi
 }
 
-func NewGptServiceImpl(previewApi *api.PreviewApi, gptApi *api.GptApi) *GptServiceImpl {
+func NewGptServiceImpl(previewApi api.PreviewApi, gptApi api.GptApi) *GptServiceImpl {
 	return &GptServiceImpl{previewApi, gptApi}
 }
 

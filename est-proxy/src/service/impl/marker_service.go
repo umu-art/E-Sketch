@@ -18,14 +18,14 @@ type WsMarkerServiceImpl struct {
 	channel     ws.Channel
 	boardApi    *estbackapi.BoardAPIService
 	userService service.UserService
-	topic       repository.Topic
+	topic       repository.RabbitTopic
 }
 
 func NewWsMarkerServiceImpl(
 	channel ws.Channel,
 	boardApi *estbackapi.BoardAPIService,
 	userService service.UserService,
-	topic repository.Topic,
+	topic repository.RabbitTopic,
 ) *WsMarkerServiceImpl {
 
 	markerService := &WsMarkerServiceImpl{
@@ -46,9 +46,9 @@ func NewWsMarkerServiceImpl(
 }
 
 func (l *WsMarkerServiceImpl) Listen(writer http.ResponseWriter, request *http.Request, userId uuid.UUID, boardId uuid.UUID) *errors.StatusError {
-	//if !l.checkAvailability(userId, boardId) {
-	//	return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
-	//}
+	if !l.checkAvailability(userId, boardId) {
+		return errors.NewStatusError(http.StatusForbidden, "Недостаточно прав")
+	}
 
 	userDto, err := l.userService.GetUserById(request.Context(), &userId)
 	if err != nil {

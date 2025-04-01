@@ -11,27 +11,26 @@ import (
 	"time"
 )
 
+var refreshPeriod time.Duration = 5 * time.Second
+
 type RedisClientImpl struct {
-	client *redis.Client
+	client        *redis.Client
+	redisDB       string
+	redisURL      string
+	redisPassword string
 }
 
 func NewRedisClientImpl() *RedisClientImpl {
-	db, err := strconv.Atoi(config.REDIS_DB)
-	if err != nil {
-		log.Fatal(err)
-	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     config.REDIS_URL,
-		Password: config.REDIS_PASSWORD,
-		DB:       db,
-	})
-	if rdb == nil {
-		log.Fatalf("Failed to connect to redis")
+	redisClient := RedisClientImpl{
+		redisDB:       config.REDIS_DB,
+		redisURL:      config.REDIS_URL,
+		redisPassword: config.REDIS_PASSWORD,
 	}
 
-	return &RedisClientImpl{
-		client: rdb,
+	if err := redisClient.connect(); err != nil {
+		log.Fatalf("Connect redis err: %v", err)
 	}
+	return &redisClient
 }
 
 func (r *RedisClientImpl) AddUser(ctx context.Context, userKey string, user *models.RegisteredUser) error {
@@ -79,7 +78,7 @@ func (r *RedisClientImpl) Refresh() {
 			failedAttempts := 0
 
 			for {
-				time.Sleep(5 * time.Second)
+				time.Sleep(refreshPeriod)
 				if err := r.connect(); err == nil {
 					log.Println("Successfully reconnected to Redis")
 					break
@@ -91,7 +90,7 @@ func (r *RedisClientImpl) Refresh() {
 			}
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(refreshPeriod)
 	}
 }
 
@@ -103,13 +102,13 @@ func (r *RedisClientImpl) Close() {
 }
 
 func (r *RedisClientImpl) connect() error {
-	db, err := strconv.Atoi(config.REDIS_DB)
+	db, err := strconv.Atoi(r.redisDB)
 	if err != nil {
 		return err
 	}
 	r.client = redis.NewClient(&redis.Options{
-		Addr:     config.REDIS_URL,
-		Password: config.REDIS_PASSWORD,
+		Addr:     r.redisURL,
+		Password: r.redisPassword,
 		DB:       db,
 	})
 
