@@ -1,7 +1,7 @@
 package main
 
 import (
-	"est-proxy/src/api"
+	apiimpl "est-proxy/src/api/impl"
 	"est-proxy/src/config"
 	"est-proxy/src/http"
 	"est-proxy/src/listener"
@@ -33,16 +33,16 @@ func main() {
 	previewApiClient := &nethttp.Client{
 		Transport: http.NewTransportWithTraceparentHeaders("est-preview"),
 	}
-	previewApi := api.NewPreviewApi(previewApiClient)
+	previewApi := apiimpl.NewPreviewApi(previewApiClient)
 
 	// Клиент для GPT
 	gptApiClient := &nethttp.Client{
 		Transport: http.NewTransportWithTraceparentHeaders("gpt"),
 	}
-	gptApi := api.NewGptApi(gptApiClient)
+	gptApi := apiimpl.NewGptApi(gptApiClient)
 
 	// Mail api
-	mailApi := api.NewMailApi()
+	mailApi := apiimpl.NewMailApi()
 
 	// RabbitMQ
 	rabbitService := repoimpl.NewRabbitRepositoryImpl()

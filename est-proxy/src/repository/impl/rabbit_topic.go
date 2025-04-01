@@ -11,11 +11,11 @@ import (
 
 type TopicImpl struct {
 	name      string
-	channel   *amqp091.Channel
+	channel   repository.RabbitChannel
 	callbacks []repository.Callback
 }
 
-func NewTopicImpl(name string, channel *amqp091.Channel) *TopicImpl {
+func NewTopicImpl(name string, channel repository.RabbitChannel) *TopicImpl {
 	return &TopicImpl{
 		name:    name,
 		channel: channel,
@@ -89,9 +89,8 @@ func (topic *TopicImpl) Subscribe(callback repository.Callback) error {
 	return nil
 }
 
-func (topic *TopicImpl) Reconnect(channel *amqp091.Channel) error {
+func (topic *TopicImpl) Reconnect(channel repository.RabbitChannel) error {
 	topic.channel = channel
-
 	for _, callback := range topic.callbacks {
 		err := topic.Subscribe(callback)
 		if err != nil {

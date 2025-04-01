@@ -29,7 +29,7 @@ type WsFigureServiceImpl struct {
 	channel      ws.Channel
 	figureApi    *estbackapi.FigureAPIService
 	boardApi     *estbackapi.BoardAPIService
-	topic        repository.Topic
+	topic        repository.RabbitTopic
 	figureBuffer *utils.FigureBuffer
 }
 
@@ -37,7 +37,7 @@ func NewWsFigureServiceImpl(
 	channel ws.Channel,
 	figureApi *estbackapi.FigureAPIService,
 	boardApi *estbackapi.BoardAPIService,
-	topic repository.Topic,
+	topic repository.RabbitTopic,
 	figureBuffer *utils.FigureBuffer,
 ) *WsFigureServiceImpl {
 

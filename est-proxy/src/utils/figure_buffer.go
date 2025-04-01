@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var bufferedFigureExpirationTime = config.BUFFERED_FIGURE_EXPIRATION_TIME
+
 type FigureBuffer struct {
 	data            lockfree.HashMap
 	bufferedFigures lockfree.Queue
@@ -47,7 +49,7 @@ func (fb *FigureBuffer) Remove(figureId string) bool {
 
 func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 	for {
-		time.Sleep(config.BUFFERED_FIGURE_EXPIRATION_TIME)
+		time.Sleep(bufferedFigureExpirationTime)
 
 		if fb.bufferedFigures.Len() == 0 {
 			continue
@@ -62,7 +64,7 @@ func (fb *FigureBuffer) ServeFlush(callback FlushFunc) {
 				log.Printf("Figure %s not found in buffer", figureId) //for debug TODO: remove this
 				continue
 			}
-			if time.Now().Sub(figureData.(figureUpdateData).time) > config.BUFFERED_FIGURE_EXPIRATION_TIME {
+			if time.Now().Sub(figureData.(figureUpdateData).time) > bufferedFigureExpirationTime {
 				fb.safeFlushCall(callback, figureId, figureData.(figureUpdateData).data)
 				fb.data.Del(figureId)
 			} else {

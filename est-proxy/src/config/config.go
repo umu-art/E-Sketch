@@ -26,12 +26,12 @@ var GPT_API_TOKEN = os.Getenv("GPT_API_TOKEN")
 
 var JWT_SECRET = os.Getenv("JWT_SECRET")
 
-const JWT_SIGNING_METHOD string = "HS256"
-const JWT_DURATION_TIME = time.Hour * 48
+var JWT_SIGNING_METHOD string = "HS256"
+var JWT_DURATION_TIME = time.Hour * 48
 
-const JWT_COOKIE_NAME string = "estu"
+var JWT_COOKIE_NAME string = "estu"
 
-const BUFFERED_FIGURE_EXPIRATION_TIME = 500 * time.Millisecond
+var BUFFERED_FIGURE_EXPIRATION_TIME = 500 * time.Millisecond
 
 var SMTP_SERVER = os.Getenv("SMTP_SERVER")
 var SMTP_PORT = os.Getenv("SMTP_PORT")
@@ -43,9 +43,9 @@ var REDIS_URL = os.Getenv("REDIS_URL")
 var REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
 var REDIS_DB = os.Getenv("REDIS_DB")
 
-const REDIS_EXPIRATION_TIME = 5 * time.Minute
+var REDIS_EXPIRATION_TIME = 5 * time.Minute
 
-const CONFIRM_URL string = "https://e-sketch.ru/auth/confirm"
+var CONFIRM_URL string = "https://e-sketch.ru/auth/confirm"
 
 var SESSION_CHECK_EXCLUDED_PATH_SUFFIXES = []string{
 	"/login",

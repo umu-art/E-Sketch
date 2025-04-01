@@ -17,11 +17,11 @@ import (
 
 type BoardServiceImpl struct {
 	boardApi       *estbackapi.BoardAPIService
-	previewApi     *api.PreviewApi
+	previewApi     api.PreviewApi
 	userRepository repository.UserRepository
 }
 
-func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, previewApi *api.PreviewApi, userRepository repository.UserRepository) *BoardServiceImpl {
+func NewBoardServiceImpl(boardApi *estbackapi.BoardAPIService, previewApi api.PreviewApi, userRepository repository.UserRepository) *BoardServiceImpl {
 	return &BoardServiceImpl{
 		boardApi:       boardApi,
 		previewApi:     previewApi,
@@ -114,7 +114,6 @@ func (bs *BoardServiceImpl) DeleteBoard(ctx context.Context, userId *uuid.UUID, 
 	}
 
 	_, err = bs.boardApi.DeleteBoard(ctx, boardId.String()).Execute()
-
 	if err != nil {
 		return errors.NewStatusError(http.StatusInternalServerError, "Не получилось удалить доску")
 	}

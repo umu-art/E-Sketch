@@ -18,11 +18,11 @@ import (
 
 type UserServiceImpl struct {
 	userRepository repository.UserRepository
-	mailApi        *api.MailApi
+	mailApi        api.MailApi
 	redisClient    repository.RedisClient
 }
 
-func NewUserServiceImpl(userRepository repository.UserRepository, mailApi *api.MailApi, redisClient repository.RedisClient) *UserServiceImpl {
+func NewUserServiceImpl(userRepository repository.UserRepository, mailApi api.MailApi, redisClient repository.RedisClient) *UserServiceImpl {
 	return &UserServiceImpl{
 		userRepository: userRepository,
 		mailApi:        mailApi,
@@ -55,7 +55,7 @@ func (u UserServiceImpl) Login(ctx context.Context, authDto *proxymodels.AuthDto
 
 	u.userRepository.UpdateLoggedInUser(ctx, &user.ID)
 
-	token := utils.GenerateUserJWTString(&user.ID)
+	token := generateJWTString(&user.ID)
 	if token == nil {
 		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось войти в аккаунт")
 	}
@@ -103,8 +103,8 @@ func (u UserServiceImpl) Confirm(ctx context.Context, userToken string) (*string
 		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось подтвердить аккаунт")
 	}
 
-	token := utils.GenerateUserJWTString(userId)
-	if token == nil {
+	jwt := generateJWTString(userId)
+	if jwt == nil {
 		return nil, errors.NewStatusError(http.StatusUnauthorized, "Не получилось войти в аккаунт")
 	}
 
@@ -113,7 +113,7 @@ func (u UserServiceImpl) Confirm(ctx context.Context, userToken string) (*string
 		log.Println(err.Error())
 	}
 
-	return token, nil
+	return jwt, nil
 }
 
 func (u UserServiceImpl) Search(ctx context.Context, query string) (*[]proxymodels.UserDto, *errors.StatusError) {
@@ -152,3 +152,5 @@ func (u UserServiceImpl) generateToken(length int) (string, error) {
 func (u UserServiceImpl) generateConfirmationLink(token string) string {
 	return fmt.Sprintf("%s?token=%s", config.CONFIRM_URL, token)
 }
+
+var generateJWTString = utils.GenerateUserJWTString
