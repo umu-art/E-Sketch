@@ -7,7 +7,7 @@ metadata:
   labels:
     app: est-proxy
 spec:
-  revisionHistoryLimit: 2
+  revisionHistoryLimit: 1
   replicas: 2
 
   strategy:
@@ -129,10 +129,10 @@ spec:
           resources:
             requests:
               memory: "100M"
-              cpu: "500m"
+              cpu: "100m"
             limits:
               memory: "100M"
-              cpu: "1000m"
+              cpu: "100m"
 
           readinessProbe:
             httpGet:

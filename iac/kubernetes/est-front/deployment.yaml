@@ -8,7 +8,7 @@ metadata:
     app: est-front
 spec:
   revisionHistoryLimit: 2
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
   selector:
@@ -34,7 +34,7 @@ spec:
               cpu: "50m"
             limits:
               memory: "50M"
-              cpu: "100m"
+              cpu: "50m"
 
           readinessProbe:
             httpGet:

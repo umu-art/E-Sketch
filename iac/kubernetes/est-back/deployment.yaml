@@ -8,7 +8,7 @@ metadata:
     app: est-back
 spec:
   revisionHistoryLimit: 2
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
   selector:
@@ -45,7 +45,7 @@ spec:
               cpu: "100m"
             limits:
               memory: "100M"
-              cpu: "200m"
+              cpu: "100m"
 
 #          readinessProbe:
 #            httpGet:
