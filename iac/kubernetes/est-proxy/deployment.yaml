@@ -111,7 +111,7 @@ spec:
               value: /dkim.private
 
             - name: REDIS_URL
-              value: redis.redis.svc.cluster.local:6379
+              value: redis-master.redis.svc.cluster.local:6379
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
