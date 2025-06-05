@@ -7,31 +7,31 @@ metadata:
 spec:
   refreshInterval: "15s"
   secretStoreRef:
-    name: kasumi-secret-store
+    name: kv
     kind: ClusterSecretStore
   target:
     name: databases-credentials
   data:
     - secretKey: REDIS_PASSWORD
       remoteRef:
-        key: databases-credentials
+        key: e-sketch-secrets
         property: REDIS_PASSWORD
 
     - secretKey: RABBITMQ_USERNAME
       remoteRef:
-        key: databases-credentials
+        key: e-sketch-secrets
         property: RABBITMQ_USERNAME
     - secretKey: RABBITMQ_PASSWORD
       remoteRef:
-        key: databases-credentials
+        key: e-sketch-secrets
         property: RABBITMQ_PASSWORD
 
     - secretKey: POSTGRES_USERNAME
       remoteRef:
-        key: databases-credentials
-        property: E_SKETCH_POSTGRES_USERNAME
+        key: e-sketch-secrets
+        property: POSTGRES_USERNAME
     - secretKey: POSTGRES_PASSWORD
       remoteRef:
-        key: databases-credentials
-        property: E_SKETCH_POSTGRES_PASSWORD
+        key: e-sketch-secrets
+        property: POSTGRES_PASSWORD
 

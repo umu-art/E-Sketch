@@ -7,12 +7,12 @@ metadata:
 spec:
   refreshInterval: "15s"
   secretStoreRef:
-    name: kasumi-secret-store
+    name: kv
     kind: ClusterSecretStore
   target:
     name: e-sketch-dkim-cert
   data:
     - secretKey: dkim.private
       remoteRef:
-        key: e-sketch-dkim-cert
+        key: e-sketch-secrets
         property: dkim.private

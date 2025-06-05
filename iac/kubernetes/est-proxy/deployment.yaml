@@ -49,7 +49,7 @@ spec:
                   name: databases-credentials
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_HOST
-              value: 192.168.31.10
+              value: 192.168.32.12
             - name: POSTGRES_PORT
               value: '5432'
             - name: POSTGRES_DATABASE
@@ -69,7 +69,7 @@ spec:
                   name: databases-credentials
                   key: RABBITMQ_PASSWORD
             - name: RABBITMQ_HOST
-              value: rabbit.databases.svc.cluster.local
+              value: rabbitmq.rabbitmq.svc.cluster.local
             - name: RABBITMQ_PORT
               value: '5672'
 
@@ -87,7 +87,7 @@ spec:
                   name: e-sketch-secrets
                   key: JWT_SECRET
             - name: ELASTIC_APM_SERVER_URL
-              value: http://apm-server.monitoring.svc.cluster.local:8200
+              value: http://apm-server.elastic.svc.cluster.local:8200
             - name: ELASTIC_APM_SERVICE_NAME
               value: est-proxy
             - name: ELASTIC_APM_ENVIRONMENT
@@ -111,7 +111,7 @@ spec:
               value: /dkim.private
 
             - name: REDIS_URL
-              value: redis.databases.svc.cluster.local:6379
+              value: redis.redis.svc.cluster.local:6379
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:

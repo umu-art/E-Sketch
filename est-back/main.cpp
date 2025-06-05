@@ -6,12 +6,12 @@ int main() {
     // Load config
     drogon::app().loadConfigFile("../config.json");
     // Register db client
-    auto dbConfig = drogon::orm::PostgresConfig{.host = "192.168.31.10",
+    auto dbConfig = drogon::orm::PostgresConfig{.host = "192.168.32.12",
                                                 .port = 5432,
                                                 .databaseName = getenv("POSTGRES_USERNAME"),
                                                 .username = getenv("POSTGRES_USERNAME"),
                                                 .password = getenv("POSTGRES_PASSWORD"),
-                                                .connectionNumber = 10,
+                                                .connectionNumber = 2,
                                                 .name = "est-data",
                                                 .timeout = 60,
                                                 .autoBatch = true};

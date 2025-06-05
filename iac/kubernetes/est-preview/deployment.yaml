@@ -27,7 +27,7 @@ spec:
 
           env:
             - name: REDIS_URL
-              value: redis://redis.databases.svc.cluster.local:6379
+              value: redis://redis-master.redis.svc.cluster.local:6379
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:

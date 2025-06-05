@@ -7,7 +7,7 @@ metadata:
 spec:
   refreshInterval: "15s"
   secretStoreRef:
-    name: kasumi-secret-store
+    name: kv
     kind: ClusterSecretStore
   target:
     name: e-sketch-secrets

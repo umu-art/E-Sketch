@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: e-sketch-gateway
+  namespace: e-sketch
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "e-sketch.ru"
+      tls:
+        mode: SIMPLE
+        credentialName: e-sketch-tls-certificate
