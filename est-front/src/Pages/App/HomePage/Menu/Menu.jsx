@@ -1,5 +1,5 @@
 import { Button, Flex, Menu, message } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { AppstoreOutlined, LinkOutlined, LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { UserApi } from 'est_proxy_api';
@@ -50,7 +50,7 @@ const AppMenu = () => {
 
     const navigate = useNavigate();
 
-    const apiInstance = new UserApi();
+    const apiInstance = useMemo(() => new UserApi(), []);
     
     useEffect(() => {
         async function fetchUserData() {
@@ -67,7 +67,7 @@ const AppMenu = () => {
         }
 
         fetchUserData();
-    });
+    }, [apiInstance, messageApi]);
 
     if (!userData) {
         return (
