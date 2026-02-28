@@ -36,8 +36,6 @@ spec:
                 secretKeyRef:
                   name: databases-credentials
                   key: POSTGRES_PASSWORD
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://apm-server.elastic.svc.cluster.local:8200/v1/traces
 
           resources:
             requests:

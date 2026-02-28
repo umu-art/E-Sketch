@@ -86,12 +86,6 @@ spec:
                 secretKeyRef:
                   name: e-sketch-secrets
                   key: JWT_SECRET
-            - name: ELASTIC_APM_SERVER_URL
-              value: http://apm-server.elastic.svc.cluster.local:8200
-            - name: ELASTIC_APM_SERVICE_NAME
-              value: est-proxy
-            - name: ELASTIC_APM_ENVIRONMENT
-              value: est
 
             - name: SMTP_SERVER
               value: smtp.mail.ru
