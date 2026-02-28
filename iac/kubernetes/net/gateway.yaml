@@ -4,7 +4,7 @@ metadata:
   name: e-sketch-gateway
   namespace: istio-system
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   gatewayClassName: istio
   addresses:
