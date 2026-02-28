@@ -8,7 +8,8 @@ spec:
   selector:
     app: est-front
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      name: http
+      targetPort: http
   type: ClusterIP

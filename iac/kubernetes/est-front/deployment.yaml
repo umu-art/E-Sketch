@@ -50,6 +50,10 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 20
 
+          ports:
+            - name: http
+              containerPort: 80
+
       imagePullSecrets:
         - name: github-container-registry
 

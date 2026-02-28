@@ -82,6 +82,10 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 5
 
+          ports:
+            - name: http
+              containerPort: 3000
+
       imagePullSecrets:
         - name: github-container-registry
 

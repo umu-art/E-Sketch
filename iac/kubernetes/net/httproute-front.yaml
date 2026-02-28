@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: est-front-route
+  namespace: e-sketch
+spec:
+  parentRefs:
+    - name: e-sketch-gateway
+      namespace: istio-system
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: est-front
+          port: 80

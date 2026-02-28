@@ -1,13 +1,13 @@
 ---
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: databases-credentials
   namespace: e-sketch
 spec:
-  refreshInterval: "15s"
+  refreshInterval: 1h
   secretStoreRef:
-    name: umu-kv
+    name: cluster-secret-store
     kind: ClusterSecretStore
   target:
     name: databases-credentials

@@ -8,8 +8,8 @@ spec:
   selector:
     app: est-preview
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      targetPort: 3000
-      name: http
+      targetPort: http
   type: ClusterIP

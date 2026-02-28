@@ -1,18 +1,24 @@
-apiVersion: networking.istio.io/v1
+apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: e-sketch-gateway
-  namespace: e-sketch
+  namespace: istio-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
 spec:
-  selector:
-    istio: ingressgateway
-  servers:
-    - port:
-        number: 443
-        name: https
-        protocol: HTTPS
-      hosts:
-        - "e-sketch.ru"
+  gatewayClassName: istio
+  addresses:
+    - type: Hostname
+      value: istio-ingressgateway.istio-system.svc.cluster.local
+  listeners:
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: "e-sketch.ru"
       tls:
-        mode: SIMPLE
-        credentialName: e-sketch-tls-certificate
+        certificateRefs:
+          - name: e-sketch-ru-tls
+        mode: Terminate
+      allowedRoutes:
+        namespaces:
+          from: All
