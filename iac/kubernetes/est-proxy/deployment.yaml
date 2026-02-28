@@ -118,7 +118,7 @@ spec:
                   name: databases-credentials
                   key: REDIS_PASSWORD
             - name: REDIS_DB
-              value: '1'
+              value: '9'
 
           volumeMounts:
             - mountPath: /dkim.private

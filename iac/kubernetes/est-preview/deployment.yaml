@@ -8,7 +8,7 @@ metadata:
     app: est-preview
 spec:
   revisionHistoryLimit: 2
-  replicas: 1
+  replicas: 0
   strategy:
     type: RollingUpdate
   selector:
