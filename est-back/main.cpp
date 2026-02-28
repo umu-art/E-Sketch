@@ -6,7 +6,7 @@ int main() {
     // Load config
     drogon::app().loadConfigFile("../config.json");
     // Register db client
-    auto dbConfig = drogon::orm::PostgresConfig{.host = "192.168.32.12",
+    auto dbConfig = drogon::orm::PostgresConfig{.host = "80.90.187.12",
                                                 .port = 5432,
                                                 .databaseName = getenv("POSTGRES_USERNAME"),
                                                 .username = getenv("POSTGRES_USERNAME"),
